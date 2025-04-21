@@ -1,2 +1,5 @@
 .venv
 .env
+
+wikipedia_db/*
+wikipedia_db
