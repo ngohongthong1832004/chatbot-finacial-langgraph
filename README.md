@@ -8,6 +8,8 @@ LangGraph-based system for financial chatbot tasks using:
 - **AI Models**: OpenAI Embeddings and GPT-4 for various NLP tasks
 - **Graph Nodes**: Modular functions for query, response, summarization, etc.
 - **Decision Logic**: Routes between different data gathering and reasoning methods
+  
+![output](https://github.com/user-attachments/assets/feccdc3d-fe40-4287-a022-65385eff58a2)
 
 ## Quick Setup
 
