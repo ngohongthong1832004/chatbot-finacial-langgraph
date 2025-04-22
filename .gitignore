@@ -1,5 +1,16 @@
 .venv
+venv
+photo/
+store/
+# ignore all files .bin in store
+store/*.bin
 .env
-
-wikipedia_db/*
-wikipedia_db
+__pycache__
+db.sqlite3
+migrations/
+*.pyc
+data_mori/
+mori/.env
+# Ignore all .env files
+.env
+*/.env
