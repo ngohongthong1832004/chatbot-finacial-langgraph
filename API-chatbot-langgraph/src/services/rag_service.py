@@ -251,6 +251,12 @@ def web_search(state):
     try:
         search_results = tv_search.invoke(question)
         web_content = "\n\n".join([f"Source: {res['url']}\n{res['content']}" for res in search_results])
+        
+        print(f"Web search results: {len(search_results)} sources")
+        print(f"Web search content: {web_content[:]}...")
+        
+        return
+        
         web_doc = Document(page_content=web_content)
         documents.append(web_doc)
         print(f"Added web search results ({len(search_results)} sources)")
