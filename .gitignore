@@ -14,3 +14,9 @@ mori/.env
 # Ignore all .env files
 .env
 */.env
+kiennguyen/financial_data_db/*
+chatfinan/wikipedia_db/*
+chatfinan/financial_data_db/*
+chatfinan/data/*
+kiennguyen/*.txt
+kiennguyen/*.csv

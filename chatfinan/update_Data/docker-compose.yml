@@ -1,0 +1,36 @@
+services:
+  airflow-mention:
+    image: postgres:13
+    container_name: airflow-mention
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - 5432:5432
+    networks:
+      - airflow-net
+      
+  data-update-finan:
+    container_name: data-update-finan
+    build: .
+    env_file:
+      - .env
+    user: "${AIRFLOW_UID:-50000}:0"
+    volumes:
+      - ./log:/var/log/mention_schedule
+      - ./dags:/opt/airflow/dags
+    ports:
+      - 8095:8080
+    command: bash -c '(${AIRFLOW_DB_INIT_COMMAND} && ${AIRFLOW_USER_CREATE_COMMAND}); ${AIRFLOW_COMMAND}'
+    networks:
+      - airflow-net
+
+volumes:
+  dags:
+  data_local:
+
+networks:
+  airflow-net:
+    name: airflow-net
+    external: true

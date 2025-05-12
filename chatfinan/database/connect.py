@@ -2,10 +2,9 @@ import os
 import psycopg2
 import pandas as pd
 from dotenv import load_dotenv
+from langchain.schema import Document
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.schema import Document
-
 from langchain_core.output_parsers import StrOutputParser
 from .templates_promt import TABLES_QUERY, GET_COLUMNS_BY_TABLE, SAMPLE_QUERY, PROMT_SQL
 
@@ -42,6 +41,7 @@ def execute_sql_query(conn, query):
 
 def get_schema_and_samples(conn):
     try:
+
         # get all tables
         tables_df = pd.read_sql(TABLES_QUERY, conn)
         schema_info = {}

@@ -15,7 +15,7 @@ def create_rag_graph():
     agentic_rag.add_node("web_search", web_search)
     agentic_rag.add_node("query_sql", query_sql)
     agentic_rag.add_node("generate_answer", generate_answer)
-    # ✅ Entry point
+    # Entry point
     agentic_rag.set_entry_point("retrieve")
     # Edges
     agentic_rag.add_edge("retrieve", "grade_documents")

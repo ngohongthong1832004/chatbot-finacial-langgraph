@@ -6,12 +6,11 @@ from operator import itemgetter
 from langchain.schema import Document
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 
-
 import os
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-llm = ChatOpenAI(model="gpt-4", temperature=0, api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=OPENAI_API_KEY)
 
 grade_prompt = ChatPromptTemplate.from_messages([
     ("system", "You are an expert grader assessing relevance of a retrieved document to a user question.\nAnswer only 'yes' or 'no' depending on whether the document is relevant to the question."),
@@ -30,15 +29,12 @@ def grade_documents(state):
     
     # Define database related keywords
     database_keywords = [
-        "database", 
-        "sql",
-        "select",
-        "from table",
-        "stocks", 
-        "query",
-        "table",
-        "dữ liệu",
-        "cơ sở dữ liệu"
+        "database", "sql", "select", "from table", "query", "dữ liệu", "cơ sở dữ liệu",
+        "bảng", "bản ghi", "giá cổ phiếu", "symbol", "ticker", "ticker symbol",
+        "giá mở cửa", "giá đóng cửa", "tăng trưởng", "lợi tức", "dividend",
+        "PE ratio", "market cap", "volume", "doanh nghiệp", "công ty", "chỉ số DJIA",
+        "truy vấn", "thống kê", "so sánh", "câu lệnh SQL", "tham chiếu", "foreign key",
+        "bảng giá", "bảng công ty", "liên kết bảng", "tham chiếu bảng", "trường dữ liệu"
     ]
 
     # Check if question is related to database first
@@ -81,6 +77,7 @@ Original question: {question}
 Search query:"""
 )
 question_rewriter = (re_write_prompt|llm|StrOutputParser())
+
 def rewrite_query(state):
     print("---REWRITING QUERY FOR WEB SEARCH---")
     question = state.question
