@@ -151,7 +151,7 @@ def retrieve(state):
     if retriever:
         try:
             documents = retriever.invoke(question)
-            # print("Documents :",documents)
+            print("Documents :",documents)
             # print(f"Retrieved {len(documents)} documents")
         except Exception as e:
             print(f"Error during retrieval: {e}")
@@ -387,45 +387,79 @@ def decide_to_generate(state):
         return "generate_answer"
 
 # Initialize graph
+# def create_rag_graph():
+#     agentic_rag = StateGraph(GraphState)
+
+#     # Nodes
+#     agentic_rag.add_node("retrieve", retrieve)
+#     agentic_rag.add_node("grade_documents", grade_documents)
+#     agentic_rag.add_node("rewrite_query", rewrite_query)
+#     agentic_rag.add_node("web_search", web_search)
+#     agentic_rag.add_node("query_sql", query_sql)
+#     agentic_rag.add_node("generate_answer", generate_answer)
+
+#     # ✅ Entry point
+#     agentic_rag.set_entry_point("retrieve")
+
+#     # Edges
+#     agentic_rag.add_edge("retrieve", "grade_documents")
+#     agentic_rag.add_conditional_edges(
+#         "grade_documents",
+#         decide_to_generate,
+#         {
+#             "rewrite_query": "rewrite_query",
+#             "generate_answer": "generate_answer",
+#             "query_sql": "query_sql"
+#         }
+#     )
+#     agentic_rag.add_edge("rewrite_query", "web_search")
+#     agentic_rag.add_edge("web_search", "generate_answer")
+#     agentic_rag.add_edge("query_sql", "generate_answer")
+#     agentic_rag.add_edge("generate_answer", END)
+
+#     return agentic_rag.compile()
+
 def create_rag_graph():
     agentic_rag = StateGraph(GraphState)
 
     # Nodes
     agentic_rag.add_node("retrieve", retrieve)
     agentic_rag.add_node("grade_documents", grade_documents)
-    agentic_rag.add_node("rewrite_query", rewrite_query)
-    agentic_rag.add_node("web_search", web_search)
-    agentic_rag.add_node("query_sql", query_sql)
-    agentic_rag.add_node("generate_answer", generate_answer)
 
     # ✅ Entry point
     agentic_rag.set_entry_point("retrieve")
 
     # Edges
     agentic_rag.add_edge("retrieve", "grade_documents")
-    agentic_rag.add_conditional_edges(
-        "grade_documents",
-        decide_to_generate,
-        {
-            "rewrite_query": "rewrite_query",
-            "generate_answer": "generate_answer",
-            "query_sql": "query_sql"
-        }
-    )
-    agentic_rag.add_edge("rewrite_query", "web_search")
-    agentic_rag.add_edge("web_search", "generate_answer")
-    agentic_rag.add_edge("query_sql", "generate_answer")
-    agentic_rag.add_edge("generate_answer", END)
+    agentic_rag.add_edge("grade_documents", END)  # ⛔ Stop tại đây, không tiếp tục
 
     return agentic_rag.compile()
 
 
+# def process_query(query: str) -> Dict[str, Any]:
+#     """
+#     Gọi pipeline Agentic RAG để xử lý câu hỏi và trả về kết quả.
+#     """
+#     print(f"📥 Processing query: {query}")
+#     rag_graph = create_rag_graph()
+#     result = rag_graph.invoke({"question": query})
+#     print(f"📤 Done. Generation: {result.get('generation', '')[:100]}")
+#     return result
+
 def process_query(query: str) -> Dict[str, Any]:
     """
-    Gọi pipeline Agentic RAG để xử lý câu hỏi và trả về kết quả.
+    Gọi pipeline Agentic RAG để xử lý câu hỏi và TRẢ VỀ CÁC DOCUMENTS đã được đánh giá phù hợp.
+    Không sinh câu trả lời, chỉ test retrieve + grading.
     """
     print(f"📥 Processing query: {query}")
     rag_graph = create_rag_graph()
     result = rag_graph.invoke({"question": query})
-    print(f"📤 Done. Generation: {result.get('generation', '')[:100]}")
+
+    # ✅ In tài liệu đã lọc sau grade_documents
+    print("\n📚 Filtered Relevant Documents:\n")
+    for i, doc in enumerate(result.get("documents", [])):
+        print(f"--- Document #{i+1} ---")
+        print(doc.page_content[:1000])  # In tối đa 1000 ký tự mỗi document
+        print("-" * 80)
+
     return result

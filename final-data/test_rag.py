@@ -69,34 +69,6 @@ def print_results(results: List[Dict[str, Any]], query: str):
         
         print("\n" + "=" * 80 + "\n")
 
-def test_queries():
-    """Run test queries on the RAG system."""
-    # Load resources
-    resource_dir = "sec_embeddings"
-    chunks, embeddings, index = load_rag_resources(resource_dir)
-    
-    # Test queries
-    queries = [
-        "What is the adsh field?",
-        "How are the NUM and SUB tables related?",
-        "What is the format of the ddate field in the NUM table?",
-        "Tell me about the TAG table and its fields",
-        "What is the Field Name in the SUB table that contains company name?",
-        "How does the PRE table link to other tables?",
-        "What is the maximum size of the tag field?",
-        "Which fields in NUM table are nullable?",
-        "What does the format ALPHANUMERIC mean in SEC data?"
-    ]
-    
-    # Run each query
-    for query in queries:
-        results = query_rag(query, chunks, index, top_k=3)
-        print_results(results, query)
-        
-        # Ask if user wants to continue
-        if query != queries[-1]:
-            input("Press Enter to continue to the next query...")
-
 def interactive_mode():
     """Run in interactive mode where users can input their own queries."""
     # Load resources
@@ -119,14 +91,7 @@ def main():
     if not os.path.exists("sec_embeddings/chunks.json"):
         print("Error: Embeddings not found. Run create_embeddings.py first.")
         return
-    
-    # Ask user which mode to run
-    mode = input("Choose mode (1: Test predefined queries, 2: Interactive): ")
-    
-    if mode == "1":
-        test_queries()
-    else:
-        interactive_mode()
+    interactive_mode()
 
 if __name__ == "__main__":
     main()
