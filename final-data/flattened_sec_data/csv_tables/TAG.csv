@@ -1,0 +1,20 @@
+Field Name,Field Description,Field Type,Max Size,May be NULL,Key
+tag,"The unique identifier (name) for a tag in a specific
+  taxonomy release.",ALPHANUMERIC,256,No,*
+version,"For a standard tag, an identifier for the taxonomy;
+  otherwise the accession number where the tag was defined.",ALPHANUMERIC,20,No,*
+custom,"1 if tag is custom (version=adsh), 0 if it is standard.Note: This flag is technically redundant with the  version and adsh
+  columns.",BOOLEAN (1 if true and 0 if false),1,No,
+abstract,1 if the tag is not used to represent a numeric fact.,BOOLEAN (1 if true and 0 if false),1,No,
+datatype,"If abstract=1, then NULL, otherwise the data type
+  (e.g., monetary) for the tag.",ALPHANUMERIC,20,Yes,
+iord,"If abstract=1, then NULL; otherwise, I if the value
+  is a point-in time, or D if the value is a duration.",ALPHANUMERIC,1,No,
+crdr,"If datatype = monetary, then the tags natural
+  accounting balance (debit or credit); if not defined, then NULL.",ALPHANUMERIC (C or D),1,Yes,
+tlabel,"If a standard tag, then the label text provided by the
+  taxonomy, otherwise the text provided by the filer.  A tag which had
+  neither would have a NULL value here.",ALPHANUMERIC,512,Yes,
+doc,"The detailed definition for the tag. If a standard tag,
+  then the text provided by the taxonomy, otherwise the text assigned by the
+  filer.  Some tags have neither, and this field is NULL.",ALPHANUMERIC,,Yes,

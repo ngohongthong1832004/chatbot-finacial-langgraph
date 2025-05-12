@@ -1,0 +1,31 @@
+Cơ sở dữ liệu này lưu trữ thông tin về các công ty trong chỉ số Dow Jones Industrial Average (DJIA) và dữ liệu giá cổ phiếu lịch sử của họ.
+
+Các bảng:
+
+djia_companies: Thông tin về các công ty DJIA.
+
+symbol (VARCHAR): Mã cổ phiếu (Khóa chính).
+name (VARCHAR): Tên công ty.
+sector (VARCHAR): Lĩnh vực kinh doanh.
+industry (VARCHAR): Ngành cụ thể.
+country (VARCHAR): Quốc gia trụ sở.
+Các cột khác: website, market_cap (BIGINT), pe_ratio (FLOAT), dividend_yield (FLOAT), 52_week_high (FLOAT), 52_week_low (FLOAT), description (TEXT).
+djia_prices: Dữ liệu giá cổ phiếu lịch sử hàng ngày.
+
+"Date" (TIMESTAMP): Ngày giao dịch.
+"Open" (FLOAT): Giá mở cửa.
+"High" (FLOAT): Giá cao nhất.
+"Low" (FLOAT): Giá thấp nhất.
+"Close" (FLOAT): Giá đóng cửa.
+"Volume" (INTEGER): Khối lượng giao dịch.
+"Dividends" (FLOAT): Cổ tức.
+"Stock Splits" (FLOAT): Tỷ lệ chia tách cổ phiếu.
+"Ticker" (VARCHAR): Mã cổ phiếu (Khóa ngoại tham chiếu djia_companies.symbol).
+Quan hệ:
+
+djia_prices."Ticker" tham chiếu djia_companies.symbol (Quan hệ Một-Nhiều: Một công ty có nhiều dòng giá).
+Lưu ý quan trọng cho PostgreSQL:
+
+Tên các cột trong bảng djia_prices là phân biệt chữ hoa/thường.
+Luôn sử dụng dấu ngoặc kép cho các cột này trong truy vấn: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits", "Ticker".
+Tên các cột trong bảng djia_companies không cần dấu ngoặc kép.

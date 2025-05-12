@@ -19,11 +19,11 @@ openai_embed_model = OpenAIEmbeddings(
 def init_vector_store():
     try:
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # vị trí thực tế của file này
-        persist_path = os.path.abspath(os.path.join(BASE_DIR, "../../wikipedia_db"))
+        persist_path = os.path.abspath(os.path.join(BASE_DIR, "../vector_db/financial_db"))
         print(f"📁 Loading vector DB from: {persist_path}")
         
         db = Chroma(
-            collection_name='rag_wikipedia_db',
+            collection_name='rag_financial_db',
             embedding_function=openai_embed_model,
             collection_metadata={"hnsw:space": "cosine"},
             persist_directory=persist_path
