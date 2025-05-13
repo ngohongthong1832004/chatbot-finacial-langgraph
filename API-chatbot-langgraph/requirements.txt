@@ -13,3 +13,5 @@ pydantic-settings
 python-multipart
 tavily-python
 python-dotenv
+faiss-cpu
+sentence-transformers

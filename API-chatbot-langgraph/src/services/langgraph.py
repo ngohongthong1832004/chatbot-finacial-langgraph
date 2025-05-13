@@ -48,7 +48,7 @@ chroma_db = None
 similarity_threshold_retriever = None
 ENABLE_WEB_SEARCH = False
 ENABLE_GPT_GRADING = True
-ENABLE_GPT_GENERATION = False
+
 
 chunks, index, embedding_model = None, None, None
 
