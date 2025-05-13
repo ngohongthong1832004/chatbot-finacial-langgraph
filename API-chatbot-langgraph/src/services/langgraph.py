@@ -12,6 +12,16 @@ from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from src.database.connection import connect_to_database, execute_sql_query, get_schema_and_samples, generate_sql_query
 
 import os
+import json
+import numpy as np
+import faiss
+import pickle
+from sentence_transformers import SentenceTransformer
+from typing import List, Dict, Any, Tuple
+import google.generativeai as genai
+
+
+import os
 from dotenv import load_dotenv
 
 # Load biến môi trường từ file .env
@@ -19,7 +29,10 @@ load_dotenv()
 
 # Dùng os.environ để truy cập
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+
+genai.configure(api_key=GEMINI_API_KEY)
 
 DB_CONFIG = {
     "dbname": os.getenv("DBNAME"),
@@ -34,7 +47,10 @@ DB_CONFIG = {
 chroma_db = None
 similarity_threshold_retriever = None
 ENABLE_WEB_SEARCH = False
+ENABLE_GPT_GRADING = True
+ENABLE_GPT_GENERATION = False
 
+chunks, index, embedding_model = None, None, None
 
 
 # Data model for graph state
@@ -51,56 +67,46 @@ class GraphState(BaseModel):
 
 # Initialize models and tools
 openai_embed_model = OpenAIEmbeddings(model='text-embedding-3-small', api_key=OPENAI_API_KEY)
-llm = ChatOpenAI(model="gpt-4", temperature=0, api_key=OPENAI_API_KEY)
-chatgpt = ChatOpenAI(model="gpt-4", temperature=0, api_key=OPENAI_API_KEY)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=OPENAI_API_KEY) if ENABLE_GPT_GRADING else None
 tv_search = TavilySearchResults(max_results=3, search_depth='advanced', max_tokens=10000, api_key=TAVILY_API_KEY)
 
 
-
-def get_vector_store_and_retriever():
-    global chroma_db, similarity_threshold_retriever
-    if chroma_db is not None and similarity_threshold_retriever is not None:
+def get_vector_store_and_retriever(resource_dir: str = "sec_embeddings") -> Tuple[List[Dict[str, Any]], faiss.Index, SentenceTransformer]:
+    global chunks, index, embedding_model
+    
+    if chunks is not None and index is not None and embedding_model is not None:
         print("✅ Vector store & retriever already initialized. Reusing...")
-        return chroma_db, similarity_threshold_retriever
+        return chunks, index, embedding_model
 
     try:
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        persist_path = os.path.abspath(os.path.join(BASE_DIR, "../vector_db/financial_db"))
-        print(f"📁 Loading vector DB from: {persist_path}")
+        print(f"📁 Loading RAG vector store from: {resource_dir}")
         
-        chroma_db = Chroma(
-            collection_name='financial_db',
-            embedding_function=openai_embed_model,
-            collection_metadata={"hnsw:space": "cosine"},
-            persist_directory=persist_path
-        )
-        print(f"✅ Vector DB loaded with {chroma_db._collection.count()} documents.")
+        with open(os.path.join(resource_dir, "chunks.json"), 'r', encoding='utf-8') as f:
+            chunks = json.load(f)
         
-        try:
-            similarity_threshold_retriever = chroma_db.as_retriever(
-                search_type="similarity_score_threshold",
-                search_kwargs={"k": 3, "score_threshold": 0.3}
-            )
-            print("✅ Retriever initialized with similarity_score_threshold.")
-        except Exception as e:
-            print(f"⚠️ Failed to init threshold-based retriever: {e}")
-            similarity_threshold_retriever = chroma_db.as_retriever(
-                search_type="similarity", search_kwargs={"k": 3}
-            )
-            print("🔁 Fallback to regular similarity retriever.")
+        with open(os.path.join(resource_dir, "embeddings.pkl"), 'rb') as f:
+            embeddings = pickle.load(f)
+        
+        index = faiss.read_index(os.path.join(resource_dir, "faiss_index.bin"))
+        embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+        
+        print(f"✅ Loaded {len(chunks)} chunks into memory.")
+        print("✅ FAISS index and SentenceTransformer initialized.")
 
     except Exception as e:
-        print(f"❌ Failed to initialize Chroma DB: {e}")
-        chroma_db = None
-        similarity_threshold_retriever = None
+        print(f"❌ Failed to load vector store and retriever: {e}")
+        chunks = None
+        index = None
+        embedding_model = None
 
-    return chroma_db, similarity_threshold_retriever
-
+    return chunks, index, embedding_model
 
 # Create grader chain
 grade_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert grader assessing relevance of a retrieved document to a user question.\nAnswer only 'yes' or 'no' depending on whether the document is relevant to the question."),
-    ("human", "Retrieved document:\n{document}\n\nUser question:\n{question}")
+    ("system", "You are an expert grader assessing relevance of a retrieved document to a user question.\n"
+               "You will assess both the content and metadata.\n"
+               "If the document explains a term or field name explicitly mentioned in the question, answer 'yes'."),
+    ("human", "Document:\n{document}\n\nMetadata:\n{metadata}\n\nQuestion:\n{question}")
 ])
 doc_grader = grade_prompt | llm | StrOutputParser()
 
@@ -122,15 +128,26 @@ prompt_template = ChatPromptTemplate.from_template(
 def format_docs(docs):
     return "\n\n".join(doc.page_content if isinstance(doc, Document) else str(doc) for doc in docs)
 
-qa_rag_chain = (
-    {
-        "context": (itemgetter('context') | RunnableLambda(format_docs)),
-        "question": itemgetter('question')
-    }
-    | prompt_template 
-    | chatgpt
-    | StrOutputParser()
-)
+
+def call_gemini_rag(question: str, context: str) -> str:
+    prompt = f"""
+You are an assistant for question-answering tasks.
+Use the following pieces of retrieved context to answer the question.
+If no context is present or if you don't know the answer, just say that you don't know the answer.
+Do not make up the answer unless it is there in the provided context.
+
+Question: {question}
+
+Context:
+{context}
+
+Answer:
+"""
+    model = genai.GenerativeModel("gemini-1.5-flash")
+    response = model.generate_content(prompt)
+    return response.text.strip()
+
+
 
 # Query rewriter for web search
 re_write_prompt = ChatPromptTemplate.from_template(
@@ -140,23 +157,35 @@ re_write_prompt = ChatPromptTemplate.from_template(
 )
 question_rewriter = (re_write_prompt|llm|StrOutputParser())
 
-# Graph components
 def retrieve(state):
     print("---RETRIEVAL FROM VECTOR DB---")
     question = state.question
     documents = []
 
-    _, retriever = get_vector_store_and_retriever()
+    chunks, index, model = get_vector_store_and_retriever(resource_dir=os.path.join(os.path.dirname(__file__), "sec_embeddings"))
 
-    if retriever:
+    if index and chunks and model:
         try:
-            documents = retriever.invoke(question)
-            print("Documents :",documents)
-            # print(f"Retrieved {len(documents)} documents")
+            # Encode query
+            query_embedding = model.encode([question])[0].reshape(1, -1).astype(np.float32)
+
+            # Search in the index
+            distances, indices = index.search(query_embedding, 3)
+            print(f"📌 Retrieved top {len(indices[0])} docs from FAISS")
+
+            for i, idx in enumerate(indices[0]):
+                if idx < len(chunks):
+                    chunk = chunks[idx]
+                    content = chunk["content"]
+                    metadata = chunk.get("metadata", {})
+                    score = float(1.0 / (1.0 + distances[0][i]))
+                    doc = Document(page_content=content, metadata=metadata)
+                    doc.metadata["score"] = score
+                    documents.append(doc)
         except Exception as e:
-            print(f"Error during retrieval: {e}")
+            print(f"❌ Retrieval error: {e}")
     else:
-        print("❌ No retriever available.")
+        print("❌ No index/model/chunks available.")
 
     return {"documents": documents, "question": question}
 
@@ -179,7 +208,12 @@ def grade_documents(state):
         "query",
         "table",
         "dữ liệu",
-        "cơ sở dữ liệu"
+        "cơ sở dữ liệu",
+        "truy vấn",
+        "truy vấn sql",
+        "Lấy dữ liệu",
+        "sinh sql",
+        "câu lệnh",
     ]
 
     # Check if question is related to database first
@@ -194,10 +228,18 @@ def grade_documents(state):
         }
     
     if documents:
-        for d in documents:
+        for i, d in enumerate(documents):
+            
+            print(f"\n📝 Grading document #{i+1}")
+            print(f"📌 Question:\n{question}")
+            print(f"📄 Document Content (preview):\n{d.page_content[:1000]}")  # Giới hạn 1000 ký tự
+            print("-" * 60)
+            
+            
             score = doc_grader.invoke({
                 "question": question,
-                "document": d.page_content
+                "document": d.page_content,
+                "metadata": json.dumps(d.metadata, indent=2)  # hoặc chỉ select key metadata fields
             })
             if score.strip().lower() == "yes":
                 print("---GRADE: DOCUMENT RELEVANT---")
@@ -238,8 +280,6 @@ def web_search(state):
         
         print(f"Web search results: {len(search_results)} sources")
         print(f"Web search content: {web_content[:]}...")
-        
-        return
         
         web_doc = Document(page_content=web_content)
         documents.append(web_doc)
@@ -336,7 +376,6 @@ def generate_answer(state):
     if not documents:
         generation = "I don't have enough information to answer this question."
     elif use_sql == "Yes":
-    # Tách riêng document chứa SQL và document chứa kết quả
         sql_doc = next((doc for doc in documents if doc.page_content.startswith("SQL used:")), None)
         result_doc = next((doc for doc in documents if doc.page_content.startswith("SQL Query Results:")), None)
 
@@ -348,22 +387,9 @@ def generate_answer(state):
 
         generation = "\n\n".join(generation_parts) if generation_parts else "No SQL content found."
     else:
-        # Loại bỏ documents trùng lặp
         unique_docs = list({doc.page_content: doc for doc in documents}.values())
         formatted_context = format_docs(unique_docs)
-
-        # print("---FORMATTED CONTEXT PREVIEW---")
-        # print(formatted_context[:300])
-
-        generation = qa_rag_chain.invoke({
-            "context": formatted_context,
-            "question": question
-        })
-
-    # print(f"Question: {question}")
-    # print(f"documents: {formatted_context}")
-    # print(f"Answer: {generation}")
-    # print(f"Documents count: {len(documents)}")
+        generation = call_gemini_rag(question, formatted_context)
 
     return {
         "documents": documents,
@@ -387,79 +413,45 @@ def decide_to_generate(state):
         return "generate_answer"
 
 # Initialize graph
-# def create_rag_graph():
-#     agentic_rag = StateGraph(GraphState)
-
-#     # Nodes
-#     agentic_rag.add_node("retrieve", retrieve)
-#     agentic_rag.add_node("grade_documents", grade_documents)
-#     agentic_rag.add_node("rewrite_query", rewrite_query)
-#     agentic_rag.add_node("web_search", web_search)
-#     agentic_rag.add_node("query_sql", query_sql)
-#     agentic_rag.add_node("generate_answer", generate_answer)
-
-#     # ✅ Entry point
-#     agentic_rag.set_entry_point("retrieve")
-
-#     # Edges
-#     agentic_rag.add_edge("retrieve", "grade_documents")
-#     agentic_rag.add_conditional_edges(
-#         "grade_documents",
-#         decide_to_generate,
-#         {
-#             "rewrite_query": "rewrite_query",
-#             "generate_answer": "generate_answer",
-#             "query_sql": "query_sql"
-#         }
-#     )
-#     agentic_rag.add_edge("rewrite_query", "web_search")
-#     agentic_rag.add_edge("web_search", "generate_answer")
-#     agentic_rag.add_edge("query_sql", "generate_answer")
-#     agentic_rag.add_edge("generate_answer", END)
-
-#     return agentic_rag.compile()
-
 def create_rag_graph():
     agentic_rag = StateGraph(GraphState)
 
     # Nodes
     agentic_rag.add_node("retrieve", retrieve)
     agentic_rag.add_node("grade_documents", grade_documents)
+    agentic_rag.add_node("rewrite_query", rewrite_query)
+    agentic_rag.add_node("web_search", web_search)
+    agentic_rag.add_node("query_sql", query_sql)
+    agentic_rag.add_node("generate_answer", generate_answer)
+
 
     # ✅ Entry point
     agentic_rag.set_entry_point("retrieve")
 
     # Edges
     agentic_rag.add_edge("retrieve", "grade_documents")
-    agentic_rag.add_edge("grade_documents", END)  # ⛔ Stop tại đây, không tiếp tục
+    agentic_rag.add_conditional_edges(
+        "grade_documents",
+        decide_to_generate,
+        {
+            "rewrite_query": "rewrite_query",
+            "generate_answer": "generate_answer",
+            "query_sql": "query_sql"
+        }
+    )
+    agentic_rag.add_edge("rewrite_query", "web_search")
+    agentic_rag.add_edge("web_search", "generate_answer")
+    agentic_rag.add_edge("query_sql", "generate_answer")
+    agentic_rag.add_edge("generate_answer", END)
 
     return agentic_rag.compile()
 
-
-# def process_query(query: str) -> Dict[str, Any]:
-#     """
-#     Gọi pipeline Agentic RAG để xử lý câu hỏi và trả về kết quả.
-#     """
-#     print(f"📥 Processing query: {query}")
-#     rag_graph = create_rag_graph()
-#     result = rag_graph.invoke({"question": query})
-#     print(f"📤 Done. Generation: {result.get('generation', '')[:100]}")
-#     return result
-
 def process_query(query: str) -> Dict[str, Any]:
     """
-    Gọi pipeline Agentic RAG để xử lý câu hỏi và TRẢ VỀ CÁC DOCUMENTS đã được đánh giá phù hợp.
-    Không sinh câu trả lời, chỉ test retrieve + grading.
+    Gọi pipeline Agentic RAG để xử lý câu hỏi và trả về kết quả.
     """
     print(f"📥 Processing query: {query}")
     rag_graph = create_rag_graph()
     result = rag_graph.invoke({"question": query})
-
-    # ✅ In tài liệu đã lọc sau grade_documents
-    print("\n📚 Filtered Relevant Documents:\n")
-    for i, doc in enumerate(result.get("documents", [])):
-        print(f"--- Document #{i+1} ---")
-        print(doc.page_content[:1000])  # In tối đa 1000 ký tự mỗi document
-        print("-" * 80)
-
+    print(f"📤 Done. Generation: {result.get('generation', '')[:100]}")
     return result
