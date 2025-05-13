@@ -12,6 +12,8 @@ const DEFAULT_USERS = [
   { username: '333', password: '2' }
 ];
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('isLoggedIn') === 'true';
@@ -274,7 +276,7 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
     let formattedResponse;
     if (active) {
       // Call API if active is true
-      const data = await fetch('http://localhost:8000/api/ask', {
+      const data = await fetch(`${API_URL}/api/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -434,7 +436,7 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
 
-        const response = await fetch('http://localhost:8000/api/ask', {
+        const response = await fetch(`${API_URL}/api/ask`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
