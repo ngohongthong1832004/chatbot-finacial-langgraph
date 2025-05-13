@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import router
+from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI(
     title="LangGraph RAG API",
@@ -18,6 +19,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.add_middleware(SessionMiddleware, secret_key="MtC2GDjKPiUqOWFhuYnHFkRx3bW6UBVzDOebLJjDSIY")
 app.include_router(router, prefix="/api")
 
 if __name__ == "__main__":
