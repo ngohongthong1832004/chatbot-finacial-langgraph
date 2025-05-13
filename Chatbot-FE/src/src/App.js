@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import remarkGfm from 'remark-gfm';
 
 // Default users
 const DEFAULT_USERS = [
@@ -23,6 +27,26 @@ function App() {
   const [editingSessionId, setEditingSessionId] = useState(null);
   const [editingSessionTitle, setEditingSessionTitle] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load sessions when component mounts or username changes
+  useEffect(() => {
+    if (isLoggedIn && username) {
+      const userSessions = localStorage.getItem(`sessions_${username}`);
+      if (userSessions) {
+        const sessions = JSON.parse(userSessions);
+        setChatSessions(sessions);
+        if (sessions.length > 0) {
+          setCurrentSessionId(sessions[sessions.length - 1].id);
+          setMessages(sessions[sessions.length - 1].messages);
+        } else {
+          createNewSession();
+        }
+      } else {
+        createNewSession();
+      }
+    }
+  }, [isLoggedIn, username]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -38,22 +62,7 @@ function App() {
       localStorage.setItem('username', username);
       localStorage.setItem('lastLogin', new Date().toISOString());
       
-      // Load user sessions
-      const userSessions = localStorage.getItem(`sessions_${username}`);
-      if (userSessions) {
-        const sessions = JSON.parse(userSessions);
-        setChatSessions(sessions);
-        if (sessions.length > 0) {
-          setCurrentSessionId(sessions[sessions.length - 1].id);
-          setMessages(sessions[sessions.length - 1].messages);
-        } else {
-          // Create new session if user has no sessions
-          createNewSession();
-        }
-      } else {
-        // Create new session for new user
-        createNewSession();
-      }
+      // Sessions will be loaded by useEffect
     } else {
       setError('Invalid username or password');
     }
@@ -107,23 +116,133 @@ function App() {
     localStorage.setItem(`sessions_${username}`, JSON.stringify(updatedSessions));
   };
 
-  const handleOptionClick = (option) => {
+  const handleOptionClick = async (option) => {
     let message = '';
+    let botResponse = '';
+    const active = true; // Set this to false to use predefined responses
+    
     switch(option) {
       case 1:
         message = "Tôi muốn được tư vấn về đầu tư";
+        botResponse = `# Tư vấn đầu tư
+
+Tôi có thể giúp bạn phân tích và đưa ra các gợi ý đầu tư phù hợp. Dưới đây là một số lĩnh vực đầu tư phổ biến:
+
+## 1. Chứng khoán
+- Cổ phiếu
+- Trái phiếu
+- ETF
+
+## 2. Bất động sản
+- Nhà ở
+- Đất nền
+- Căn hộ cho thuê
+
+## 3. Tiền điện tử
+\`\`\`javascript
+// Ví dụ về phân tích xu hướng
+const analyzeTrend = (data) => {
+  const sma = calculateSMA(data, 20);
+  const ema = calculateEMA(data, 20);
+  return { sma, ema };
+};
+\`\`\`
+
+Bạn muốn tìm hiểu thêm về lĩnh vực nào?`;
         break;
       case 2:
         message = "Tôi cần tư vấn về quản lý tài chính";
+        botResponse = `# Quản lý tài chính cá nhân
+
+## Các nguyên tắc cơ bản:
+1. **Chi tiêu thông minh**
+2. **Tiết kiệm đều đặn**
+3. **Đầu tư dài hạn**
+
+## Công thức tính lãi kép:
+\`\`\`python
+def compound_interest(principal, rate, time):
+    amount = principal * (1 + rate/100) ** time
+    return amount
+
+# Ví dụ
+principal = 1000000  # 1 triệu
+rate = 8  # 8% mỗi năm
+time = 10  # 10 năm
+\`\`\`
+
+Bạn cần tư vấn cụ thể về vấn đề nào?`;
         break;
       case 3:
         message = "Tôi muốn phân tích thị trường";
+        botResponse = `# 📊 Phân tích thị trường
+
+Phân tích thị trường là quá trình đánh giá tình hình kinh doanh của các doanh nghiệp niêm yết thông qua **dữ liệu tài chính** và **các chỉ số định lượng**. Dưới đây là một số chỉ số quan trọng:
+
+## 🔍 Chỉ số phổ biến
+
+- **P/E Ratio**: Tỷ lệ giá trên lợi nhuận
+- **ROE**: Tỷ suất sinh lời trên vốn chủ sở hữu
+- **EPS**: Lợi nhuận trên mỗi cổ phiếu
+- **Market Cap**: Vốn hóa thị trường
+
+## 🧮 Ví dụ về công thức tính:
+
+\`\`\`python
+def pe_ratio(price, eps):
+    return price / eps if eps != 0 else None
+
+def roe(net_income, equity):
+    return (net_income / equity) * 100
+\`\`\`
+
+## 📋 Dữ liệu thị trường mẫu:
+
+| Symbol | Company             | Sector       | Market Cap (Tỷ USD) | P/E Ratio | EPS  | ROE (%) |
+|--------|---------------------|--------------|---------------------:|-----------:|------:|--------:|
+| AAPL   | Apple Inc.          | Technology   |             3143.8  |      33.22 |  5.0 |    28.7 |
+| MSFT   | Microsoft Corp.     | Technology   |             2800.5  |      34.10 |  7.5 |    43.1 |
+| NVDA   | NVIDIA Corporation  | Semiconduct. |             1200.4  |      72.00 | 12.5 |    58.2 |
+| JPM    | JPMorgan Chase      | Finance      |              490.0  |      10.50 | 11.3 |    16.4 |
+| XOM    | Exxon Mobil Corp    | Energy       |              420.3  |       9.40 | 10.1 |    24.6 |
+
+## 📈 Biểu đồ xu hướng (ý tưởng):
+- Bạn có thể vẽ biểu đồ P/E theo thời gian
+- Hoặc dùng kỹ thuật RSI để đánh giá điểm mua-bán
+
+\`\`\`typescript
+function calculateRSI(data: number[]): number {
+  const gains = data.filter(d => d > 0).length;
+  const losses = data.filter(d => d < 0).length;
+  const rs = gains / (losses || 1);
+  return 100 - (100 / (1 + rs));
+}
+\`\`\`
+
+Bạn muốn phân tích thêm công ty hoặc ngành nào cụ thể?`;
         break;
       case 4:
         message = "Tôi cần lập kế hoạch tài chính";
+        botResponse = `# Lập kế hoạch tài chính
+
+## Các bước cơ bản:
+1. Xác định mục tiêu
+2. Đánh giá tình hình hiện tại
+3. Lập kế hoạch chi tiết
+4. Theo dõi và điều chỉnh
+
+## Công cụ tính toán:
+\`\`\`excel
+=PMT(rate/12, nper, pv, [fv], [type])
+\`\`\`
+
+> Lưu ý: Kế hoạch tài chính cần được điều chỉnh theo tình hình thực tế và mục tiêu cá nhân.
+
+Bạn muốn lập kế hoạch cho mục tiêu nào?`;
         break;
       default:
         message = "Xin lỗi, tôi không hiểu lựa chọn của bạn";
+        botResponse = "Vui lòng chọn một trong các tùy chọn trên.";
     }
     
     const newMessage = {
@@ -134,6 +253,7 @@ function App() {
     
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
+    setIsLoading(true);
     
     const updatedSessions = chatSessions.map(session => {
       if (session.id === currentSessionId) {
@@ -147,6 +267,83 @@ function App() {
     
     setChatSessions(updatedSessions);
     localStorage.setItem(`sessions_${username}`, JSON.stringify(updatedSessions));
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    let formattedResponse;
+    if (active) {
+      // Call API if active is true
+      const data = await fetch('http://localhost:8000/api/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: message }),
+      });
+
+      if (!data.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const responseData = await data.json();
+      formattedResponse = responseData.answer;
+    } else {
+      // Use predefined response if active is false
+      formattedResponse = botResponse;
+    }
+    
+    // Format the response with markdown
+    // Split the response into sections
+    const sections = formattedResponse.split('\n\n');
+    
+    // Process each section
+    formattedResponse = sections.map(section => {
+      // If section contains a table
+      if (section.includes('|') && section.includes('---')) {
+        // Split into lines
+        const lines = section.split('\n');
+        // Process each line
+        return lines.map(line => {
+          // If it's a table header separator line, keep it as is
+          if (line.includes('|:---|')) {
+            return line;
+          }
+          // If it's a table line, ensure proper spacing
+          if (line.includes('|')) {
+            return line.trim();
+          }
+          return line;
+        }).join('\n');
+      }
+      // For non-table sections, add extra newlines
+      return section + '\n\n';
+    }).join('\n');
+
+    // Add bot response
+    const botMessage = {
+      text: formattedResponse,
+      sender: 'bot',
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    const finalMessages = [...updatedMessages, botMessage];
+    setMessages(finalMessages);
+    
+    // Update sessions with bot response
+    const finalSessions = chatSessions.map(session => {
+      if (session.id === currentSessionId) {
+        return {
+          ...session,
+          messages: finalMessages
+        };
+      }
+      return session;
+    });
+    
+    setChatSessions(finalSessions);
+    localStorage.setItem(`sessions_${username}`, JSON.stringify(finalSessions));
+    setIsLoading(false);
   };
 
   const deleteSession = (sessionId, e) => {
@@ -204,7 +401,7 @@ function App() {
     }
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (inputMessage.trim()) {
       const newMessage = {
@@ -215,6 +412,8 @@ function App() {
       
       const updatedMessages = [...messages, newMessage];
       setMessages(updatedMessages);
+      setInputMessage('');
+      setIsLoading(true);
       
       // Update the current session in chatSessions
       const updatedSessions = chatSessions.map(session => {
@@ -228,11 +427,146 @@ function App() {
       });
       
       setChatSessions(updatedSessions);
-      // Save updated sessions for current user
       localStorage.setItem(`sessions_${username}`, JSON.stringify(updatedSessions));
       
-      setInputMessage('');
+      try {
+        // Call API with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+
+        const response = await fetch('http://localhost:8000/api/ask', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: inputMessage }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId); // Clear timeout if request completes
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        
+        // Format the response with markdown
+        let formattedResponse = data.answer;
+        
+        // Split the response into sections
+        const sections = formattedResponse.split('\n\n');
+        
+        // Process each section
+        formattedResponse = sections.map(section => {
+          // If section contains a table
+          if (section.includes('|') && section.includes('---')) {
+            // Split into lines
+            const lines = section.split('\n');
+            // Process each line
+            return lines.map(line => {
+              // If it's a table header separator line, keep it as is
+              if (line.includes('|:---|')) {
+                return line;
+              }
+              // If it's a table line, ensure proper spacing
+              if (line.includes('|')) {
+                return line.trim();
+              }
+              return line;
+            }).join('\n');
+          }
+          // For non-table sections, add extra newlines
+          return section + '\n\n';
+        }).join('\n');
+
+        // Add bot response
+        const botMessage = {
+          text: formattedResponse,
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString()
+        };
+        
+        const finalMessages = [...updatedMessages, botMessage];
+        setMessages(finalMessages);
+        
+        // Update sessions with bot response
+        const finalSessions = chatSessions.map(session => {
+          if (session.id === currentSessionId) {
+            return {
+              ...session,
+              messages: finalMessages
+            };
+          }
+          return session;
+        });
+        
+        setChatSessions(finalSessions);
+        localStorage.setItem(`sessions_${username}`, JSON.stringify(finalSessions));
+      } catch (error) {
+        console.error('Error:', error);
+        // Add error message
+        const errorMessage = {
+          text: error.name === 'AbortError' 
+            ? "Yêu cầu của bạn đã hết thời gian chờ (30 giây). Vui lòng thử lại sau."
+            : "Xin lỗi, đã có lỗi xảy ra khi xử lý yêu cầu của bạn.",
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString()
+        };
+        
+        const finalMessages = [...updatedMessages, errorMessage];
+        setMessages(finalMessages);
+        
+        // Update sessions with error message
+        const finalSessions = chatSessions.map(session => {
+          if (session.id === currentSessionId) {
+            return {
+              ...session,
+              messages: finalMessages
+            };
+          }
+          return session;
+        });
+        
+        setChatSessions(finalSessions);
+        localStorage.setItem(`sessions_${username}`, JSON.stringify(finalSessions));
+      } finally {
+        setIsLoading(false);
+      }
     }
+  };
+
+  const renderMessage = (message) => {
+    if (message.sender === 'bot') {
+      return (
+
+<ReactMarkdown
+  remarkPlugins={[remarkGfm]}
+  components={{
+    code({node, inline, className, children, ...props}) {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <SyntaxHighlighter
+          style={vscDarkPlus}
+          language={match[1]}
+          PreTag="div"
+          {...props}
+        >
+          {String(children).replace(/\n$/, '')}
+        </SyntaxHighlighter>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    }
+  }}
+>
+  {message.text}
+</ReactMarkdown>
+      );
+    }
+    return <p>{message.text}</p>;
   };
 
   if (!isLoggedIn) {
@@ -381,7 +715,7 @@ function App() {
         </div>
         <div className="user-info">
           <div className="user-profile">
-            <h3>BIA TƯƠI 3000 Welcome</h3>
+            <h3> Welcome BIA TƯƠI 3000</h3>
           </div>
           <div className='user-info-text-wrap'>
             <div className="user-info-text"> 
@@ -404,13 +738,25 @@ function App() {
               className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}
             >
               <div className="message-content">
-                <p>{message.text}</p>
+                {renderMessage(message)}
                 <span className="timestamp">{message.timestamp}</span>
               </div>
             </div>
           ))}
           
-          {messages.length === 0 && (
+          {isLoading && (
+            <div className="message bot-message">
+              <div className="message-content">
+                <div className="loading-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {messages.length === 0 && !isLoading && (
             <div className="welcome-container">
               <div className="welcome-content">
                 <div className="welcome-header">
@@ -451,8 +797,9 @@ function App() {
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Type your message..."
               className="message-input"
+              disabled={isLoading}
             />
-            <button type="submit" className="send-button">
+            <button type="submit" className="send-button" disabled={isLoading}>
               <i className="fas fa-paper-plane"></i>
             </button>
           </form>
