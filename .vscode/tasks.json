@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Create React App",
+			"type": "shell",
+			"command": "npx",
+			"args": [
+				"create-react-app",
+				"src"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}
