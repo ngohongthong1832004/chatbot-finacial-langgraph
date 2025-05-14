@@ -20,11 +20,9 @@ from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple
 import google.generativeai as genai
 
-
-import os
+import requests
 from dotenv import load_dotenv
 
-# Load biến môi trường từ file .env
 load_dotenv()
 
 # Dùng os.environ để truy cập
@@ -43,7 +41,6 @@ DB_CONFIG = {
     "sslmode": os.getenv("SSL_MODE", "require")
 }
 
-
 chroma_db = None
 similarity_threshold_retriever = None
 ENABLE_WEB_SEARCH = False
@@ -51,6 +48,27 @@ ENABLE_GPT_GRADING = True
 
 
 chunks, index, embedding_model = None, None, None
+def call_openrouter(prompt_obj) -> str:
+    prompt = prompt_obj.to_string()  
+
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are an expert grader assessing relevance of a retrieved document to a user question. Answer only 'yes' or 'no'."},
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+
+    if res.status_code == 200:
+        return res.json()["choices"][0]["message"]["content"].strip()
+    else:
+        raise RuntimeError(f"OpenRouter API error: {res.status_code} - {res.text}")
 
 
 # Data model for graph state
@@ -108,7 +126,8 @@ grade_prompt = ChatPromptTemplate.from_messages([
                "If the document explains a term or field name explicitly mentioned in the question, answer 'yes'."),
     ("human", "Document:\n{document}\n\nMetadata:\n{metadata}\n\nQuestion:\n{question}")
 ])
-doc_grader = grade_prompt | llm | StrOutputParser()
+# doc_grader = grade_prompt | llm | StrOutputParser()
+doc_grader = grade_prompt | RunnableLambda(call_openrouter) | StrOutputParser()
 
 # Create QA chain
 prompt_template = ChatPromptTemplate.from_template(
@@ -155,7 +174,10 @@ re_write_prompt = ChatPromptTemplate.from_template(
     Original question: {question}
     Search query:"""
 )
-question_rewriter = (re_write_prompt|llm|StrOutputParser())
+# question_rewriter = (re_write_prompt|llm|StrOutputParser())
+question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter)|StrOutputParser())
+
+
 
 def retrieve(state):
     print("---RETRIEVAL FROM VECTOR DB---")

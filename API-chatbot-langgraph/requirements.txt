@@ -15,4 +15,7 @@ tavily-python
 python-dotenv
 faiss-cpu
 sentence-transformers
+authlib 
+httpx
+itsdangerous    
 google-generativeai

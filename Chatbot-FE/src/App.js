@@ -50,6 +50,25 @@ function App() {
       }
     }
   }, [isLoggedIn, username]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const usernameFromGoogle = params.get("username");
+    const emailFromGoogle = params.get("email");
+
+    if (usernameFromGoogle && emailFromGoogle) {
+      // Lưu thông tin login
+      setUsername(usernameFromGoogle);
+      setIsLoggedIn(true);
+      localStorage.setItem("username", usernameFromGoogle);
+      localStorage.setItem("userEmail", emailFromGoogle);
+      localStorage.setItem("isLoggedIn", "true");
+
+      // ✅ Không gọi createNewSession ở đây nữa
+
+      // Xoá query khỏi URL
+      window.history.replaceState({}, document.title, "/");
+    }
+  }, []);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -71,21 +90,23 @@ function App() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  // const handleGoogleLogin = async () => {
+  const handleGoogleLogin =  () => {
     try {
-      // Initialize Google Sign-In
-      const auth2 = await window.gapi.auth2.getAuthInstance();
-      const googleUser = await auth2.signIn();
-      const profile = googleUser.getBasicProfile();
+    //   // Initialize Google Sign-In
+    //   const auth2 = await window.gapi.auth2.getAuthInstance();
+    //   const googleUser = await auth2.signIn();
+    //   const profile = googleUser.getBasicProfile();
       
-      // Set user info
-      setIsLoggedIn(true);
-      setUsername(profile.getName());
-      localStorage.setItem('username', profile.getName());
-      localStorage.setItem('userEmail', profile.getEmail());
+    //   // Set user info
+    //   setIsLoggedIn(true);
+    //   setUsername(profile.getName());
+    //   localStorage.setItem('username', profile.getName());
+    //   localStorage.setItem('userEmail', profile.getEmail());
       
-      // Create a new session
-      createNewSession();
+    //   // Create a new session
+    //   createNewSession();
+      window.location.href = "http://localhost:8000/api/login";
     } catch (error) {
       console.error('Google login error:', error);
     }
@@ -105,7 +126,21 @@ function App() {
     localStorage.removeItem('userEmail');
   };
 
-  const createNewSession = () => {
+  // const createNewSession = () => {
+  //   const newSession = {
+  //     id: Date.now(),
+  //     title: `Chat ${chatSessions.length + 1}`,
+  //     messages: [],
+  //     createdAt: new Date().toISOString()
+  //   };
+  //   const updatedSessions = [...chatSessions, newSession];
+  //   setChatSessions(updatedSessions);
+  //   setCurrentSessionId(newSession.id);
+  //   setMessages([]);
+  //   localStorage.setItem(`sessions_${username}`, JSON.stringify(updatedSessions));
+  // };
+  const createNewSession = (customUsername) => {
+    const finalUsername = customUsername || username;
     const newSession = {
       id: Date.now(),
       title: `Chat ${chatSessions.length + 1}`,
@@ -116,8 +151,9 @@ function App() {
     setChatSessions(updatedSessions);
     setCurrentSessionId(newSession.id);
     setMessages([]);
-    localStorage.setItem(`sessions_${username}`, JSON.stringify(updatedSessions));
+    localStorage.setItem(`sessions_${finalUsername}`, JSON.stringify(updatedSessions));
   };
+
 
   const handleOptionClick = async (option) => {
     let message = '';
