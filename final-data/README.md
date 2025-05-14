@@ -1,129 +1,94 @@
-# DJIA Stock Price Downloader
+# Downloader Giá Cổ Phiếu DJIA & Pipeline Dữ Liệu
 
-This script downloads historical stock prices for all companies in the Dow Jones Industrial Average (DJIA) index from January 1, 2022, up to the most recent date available.
+Script này dùng để tải dữ liệu giá cổ phiếu lịch sử cho tất cả các công ty thuộc chỉ số Dow Jones Industrial Average (DJIA) từ 01/01/2022 đến ngày hiện tại.
 
-## Features
+## Tính năng
 
-- Downloads daily stock price data (Open, High, Low, Close, Adj Close, Volume) for all 30 DJIA companies
-- Implements retry logic with exponential backoff to handle API rate limits
-- Saves individual CSV files for each company
-- Creates a combined CSV file with all companies' data
-- Provides detailed progress and summary information
+- Tải dữ liệu giá cổ phiếu hàng ngày (Open, High, Low, Close, Adj Close, Volume) cho 30 công ty DJIA
+- Tự động retry khi bị giới hạn API
+- Lưu file CSV riêng cho từng công ty
+- Tạo file CSV tổng hợp cho toàn bộ DJIA
+- Hiển thị tiến trình và tổng kết chi tiết
 
-## Requirements
+## Yêu cầu
 
-- Python 3.7 or higher
-- Required packages: yfinance, pandas, requests
+- Python 3.7 trở lên
+- Thư viện: yfinance, pandas, requests
 
-## Installation
+## Cài đặt
 
-1. Clone or download this repository
-2. Install the required packages:
+1. Clone hoặc tải repo này
+2. Cài đặt thư viện:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Usage
+## Sử dụng
 
-Run the script with Python:
+Chạy script bằng Python:
 
 ```bash
 python download_djia_stock_prices.py
 ```
 
-## Output
+## Kết quả đầu ra
 
-The script creates a `stock_prices` directory containing:
+Script tạo thư mục `stock_prices` chứa:
 
-1. Individual CSV files for each company (e.g., `AAPL_prices.csv`)
-2. A combined file with all companies' data (e.g., `djia_prices_20240501.csv`)
+1. File CSV riêng cho từng công ty (vd: `AAPL_prices.csv`)
+2. File tổng hợp toàn bộ DJIA (vd: `djia_prices_20240501.csv`)
 
-Each file contains the following columns:
-- Date: Trading date
-- Open: Opening price
-- High: Highest price during the day
-- Low: Lowest price during the day
-- Close: Closing price
-- Adj Close: Adjusted closing price
-- Volume: Trading volume
-- Ticker: Stock symbol
+Mỗi file gồm các cột:
+- Date: Ngày giao dịch
+- Open: Giá mở cửa
+- High: Giá cao nhất
+- Low: Giá thấp nhất
+- Close: Giá đóng cửa
+- Adj Close: Giá điều chỉnh
+- Volume: Khối lượng giao dịch
+- Ticker: Mã cổ phiếu
 
-## Notes
+## Lưu ý
 
-- The script uses the Yahoo Finance API via the yfinance package
-- The default date range is from January 1, 2022, to the current date
-- To modify the date range, edit the `start_date` and `end_date` variables in the `main()` function 
+- Script sử dụng Yahoo Finance API qua package yfinance
+- Mặc định lấy dữ liệu từ 01/01/2022 đến hiện tại
+- Muốn đổi khoảng thời gian, sửa biến `start_date` và `end_date` trong hàm `main()`
 
-## SEC Central Index Key (CIK) Mapping
+## Mapping CIK của SEC
 
-The repository includes a mapping between SEC Central Index Key (CIK) numbers and DJIA companies. This is useful for relating SEC financial filings to specific DJIA companies.
+Repo này có mapping giữa mã CIK (Central Index Key) của SEC và các công ty DJIA, giúp liên kết báo cáo tài chính SEC với từng công ty.
 
-### What are CIK Numbers?
+### CIK là gì?
 
-A Central Index Key (CIK) is a unique identifier assigned by the SEC to companies and individuals who file reports with the SEC. Each company that files with the SEC has at least one CIK number. Some companies may have multiple CIK numbers due to mergers, acquisitions, or other corporate events.
+CIK là mã định danh duy nhất do SEC cấp cho các công ty/cá nhân nộp báo cáo tài chính. Một công ty có thể có nhiều CIK do sáp nhập, mua lại...
 
-### Mapping Files
+### File mapping
 
-The repository includes the following mapping files in the `references` directory:
+- **cik_to_company_mapping.csv** – Bảng mapping chi tiết (CIK, tên công ty, ticker, ngành, phương pháp mapping...)
+- **cik_to_company_mapping.json** – Mapping dạng JSON
+- **cik_lookup.json** – Lookup đơn giản cho tra cứu nhanh
 
-1. **cik_to_company_mapping.csv** - A comprehensive CSV file with the following columns:
-   - CIK: The SEC Central Index Key
-   - SEC_Company_Name: The official company name as registered with the SEC
-   - DJIA_Ticker: The ticker symbol for matched DJIA companies
-   - DJIA_Company_Name: The full name of the matched DJIA company
-   - Industry: The industry classification
-   - Sector: The sector classification
-   - Matched: Whether the CIK was successfully matched to a DJIA company
-   - Match_Score: The confidence score of the match (1.0 = perfect match)
-   - Method: How the match was determined (manual_mapping, automated_matching, not_matched)
-
-2. **cik_to_company_mapping.json** - The same mapping in JSON format for programmatic use
-
-3. **cik_lookup.json** - A simplified lookup table for quick reference
-
-### Key DJIA Company CIK Numbers
-
-Here are the primary CIK numbers for select DJIA companies:
-
-| Company | Ticker | CIK |
-|---------|--------|-----|
-| Apple Inc. | AAPL | 0000320193 |
-| Microsoft Corp | MSFT | 0000789019 |
-| JPMorgan Chase & Co | JPM | 0001090727, 0000927089 |
-| Johnson & Johnson | JNJ | 0000019617 |
-| Coca-Cola Co | KO | 0000021344 |
-| Intel Corp | INTC | 0000066382 |
-| Visa Inc | V | 0000732717 |
-| Walmart Inc | WMT | 0000104169 |
-| Boeing Co | BA | 0000070318 |
-| Chevron Corp | CVX | 0000200406 |
-
-### Usage
-
-To map a CIK number to a company in Python:
+### Ví dụ tra cứu CIK bằng Python
 
 ```python
 import json
 
-# Load the lookup table
 with open('references/cik_lookup.json', 'r') as f:
     cik_lookup = json.load(f)
 
-# Look up a CIK
 cik = '0000320193'  # Apple Inc.
 if cik in cik_lookup:
     company_info = cik_lookup[cik]
-    print(f"CIK {cik} maps to {company_info['name']} ({company_info['ticker']})")
+    print(f"CIK {cik} thuộc về {company_info['name']} ({company_info['ticker']})")
 else:
-    print(f"CIK {cik} not found in mapping")
+    print(f"Không tìm thấy CIK {cik} trong mapping")
 ```
 
-### Generating the Mapping
+### Sinh mapping
 
-The mapping files were generated using the `map_cik_to_companies_fixed.py` script, which:
-
-1. Scans all text files in the DJIA financial reports
-2. Extracts unique CIK numbers
-3. Uses a combination of SEC API lookups and manual mapping
-4. Generates the reference files in CSV and JSON formats
+Mapping được tạo bằng script `map_cik_to_companies_fixed.py`:
+1. Quét toàn bộ báo cáo tài chính DJIA
+2. Trích xuất CIK
+3. Mapping tự động + thủ công
+4. Sinh file mapping CSV/JSON
