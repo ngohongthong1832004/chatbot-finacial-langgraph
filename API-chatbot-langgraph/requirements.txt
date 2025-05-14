@@ -15,3 +15,4 @@ tavily-python
 python-dotenv
 faiss-cpu
 sentence-transformers
+google-generativeai
