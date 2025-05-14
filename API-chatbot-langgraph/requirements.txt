@@ -19,3 +19,4 @@ authlib
 httpx
 itsdangerous    
 google-generativeai
+tabulate

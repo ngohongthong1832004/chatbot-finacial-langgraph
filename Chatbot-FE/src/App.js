@@ -32,6 +32,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // console.log('chatSessions:', chatSessions.reverse());
+
   // Load sessions when component mounts or username changes
   useEffect(() => {
     if (isLoggedIn && username) {
@@ -106,7 +108,7 @@ function App() {
       
     //   // Create a new session
     //   createNewSession();
-      window.location.href = "http://localhost:8000/api/login";
+      window.location.href = `${API_URL}/api/login`;
     } catch (error) {
       console.error('Google login error:', error);
     }
@@ -471,7 +473,7 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
       try {
         // Call API with timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+        const timeoutId = setTimeout(() => controller.abort(), 300000); // 300 seconds timeout
 
         const response = await fetch(`${API_URL}/api/ask`, {
           method: 'POST',
@@ -689,75 +691,73 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
             </button>
           </div>
           <div className="sessions-list">
-          {chatSessions.map((session) => {
-  const isEditing = editingSessionId === session.id;
-
-  return (
-    <div
-      key={session.id}
-      className={`session-item ${session.id === currentSessionId ? 'active' : ''}`}
-      onClick={() => switchSession(session.id)}
-    >
-      {isEditing ? (
-        <form onSubmit={saveSessionTitle} className="session-edit-form">
-          <input
-            type="text"
-            value={editingSessionTitle}
-            onChange={(e) => setEditingSessionTitle(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-            className="session-title-input"
-            autoFocus
-          />
-          <div className="session-actions">
-            <button type="submit" className="save-title-button" title="Save">
-              <i className="fas  fa-check"></i>
-            </button>
-            <button
-              type="button"
-              className="cancel-title-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingSessionId(null);
-                setEditingSessionTitle('');
-              }}
-              title="Cancel"
-            >
-              <i className="fas fa-times"></i>
-            </button>
-          </div>
-        </form>
-      ) : (
-        <>
-          <div className="session-content">
-            <div className="session-info">
-              <span className="session-title">{session.title}</span>
-              <span className="session-time">
-                {new Date(session.createdAt).toLocaleDateString()}
-              </span>
-            </div>
-          </div>
-          <div className="session-actions">
-            <button
-              className="rename-session-button"
-              onClick={(e) => handleRenameSession(session.id, e)}
-              title="Rename session"
-            >
-              <i className="fas fa-pen"></i>
-            </button>
-            <button
-              className="delete-session-button"
-              onClick={(e) => deleteSession(session.id, e)}
-              title="Delete session"
-            >
-              <i className="fas fa-trash"></i>
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-})}
-
+            {chatSessions.slice().reverse().map((session) => {
+              const isEditing = editingSessionId === session.id;
+              return (
+                <div
+                  key={session.id}
+                  className={`session-item ${session.id === currentSessionId ? 'active' : ''}`}
+                  onClick={() => switchSession(session.id)}
+                >
+                  {isEditing ? (
+                    <form onSubmit={saveSessionTitle} className="session-edit-form">
+                      <input
+                        type="text"
+                        value={editingSessionTitle}
+                        onChange={(e) => setEditingSessionTitle(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="session-title-input"
+                        autoFocus
+                      />
+                      <div className="session-actions">
+                        <button type="submit" className="save-title-button" title="Save">
+                          <i className="fas  fa-check"></i>
+                        </button>
+                        <button
+                          type="button"
+                          className="cancel-title-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingSessionId(null);
+                            setEditingSessionTitle('');
+                          }}
+                          title="Cancel"
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="session-content">
+                        <div className="session-info">
+                          <span className="session-title">{session.title}</span>
+                          <span className="session-time">
+                            {new Date(session.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="session-actions">
+                        <button
+                          className="rename-session-button"
+                          onClick={(e) => handleRenameSession(session.id, e)}
+                          title="Rename session"
+                        >
+                          <i className="fas fa-pen"></i>
+                        </button>
+                        <button
+                          className="delete-session-button"
+                          onClick={(e) => deleteSession(session.id, e)}
+                          title="Delete session"
+                        >
+                          <i className="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
         <div className="user-info">

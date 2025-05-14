@@ -65,7 +65,7 @@ def get_schema_and_samples(conn=None):
             "Low" (FLOAT): Giá thấp nhất.
             "Close" (FLOAT): Giá đóng cửa.
             "Volume" (INTEGER): Khối lượng giao dịch.
-            "Dividends" (FLOAT): Cổ tức.
+            "Dividends" (FLOAT hoặc TEXT, nên ép kiểu FLOAT khi dùng với AVG/SUM): Cổ tức.
             "Stock Splits" (FLOAT): Tỷ lệ chia tách cổ phiếu.
             "Ticker" (VARCHAR): Mã cổ phiếu (Khóa ngoại tham chiếu djia_companies.symbol).
 
@@ -78,6 +78,56 @@ def get_schema_and_samples(conn=None):
             Tên các cột trong bảng djia_prices là phân biệt chữ hoa/thường.
             Luôn sử dụng dấu ngoặc kép cho các cột này trong truy vấn: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits", "Ticker".
             Tên các cột trong bảng djia_companies không cần dấu ngoặc kép.
+            
+            Ví dụ truy vấn SQL:
+
+            1. Lấy 10 công ty có P/E ratio cao nhất:
+            SELECT name, pe_ratio
+            FROM djia_companies
+            ORDER BY pe_ratio DESC
+            LIMIT 10;
+
+            2. Lấy giá đóng cửa cao nhất của mỗi công ty trong ngày gần nhất:
+            SELECT c.name, MAX(p."Close") AS max_close
+            FROM djia_companies c
+            JOIN djia_prices p ON c.symbol = p."Ticker"
+            WHERE p."Date" = (SELECT MAX("Date") FROM djia_prices)
+            GROUP BY c.name;
+
+            3. Lấy giá đóng cửa của Apple trong tháng 3 năm 2024:
+            SELECT c.name, p."Date", p."Close"
+            FROM djia_companies c
+            JOIN djia_prices p ON c.symbol = p."Ticker"
+            WHERE p."Date" = (
+                SELECT MAX("Date") FROM djia_prices p2 WHERE p2."Ticker" = p."Ticker"
+            )
+            ORDER BY p."Close" DESC;
+
+            4. Lấy giá đóng cửa trung bình của Apple trong tháng 3 năm 2024:
+            SELECT AVG("Close") AS avg_close
+            FROM djia_prices
+            WHERE "Ticker" = 'AAPL'
+            AND "Date" BETWEEN '2024-03-01' AND '2024-03-31';
+
+            5. Lấy danh sách các công ty trong lĩnh vực công nghệ:
+            SELECT name, sector, industry, market_cap
+            FROM djia_companies
+            WHERE sector = 'Technology';
+
+            6. Lấy danh sách các công ty có cổ tức cao nhất:
+            SELECT c.name, p."Open", p."Close"
+            FROM djia_companies c
+            JOIN djia_prices p ON c.symbol = p."Ticker"
+            WHERE DATE_TRUNC('day', p."Date") = '2024-05-01'::DATE
+
+            7. Lấy danh sách 5 công ty có cổ tức trung bình cao nhất:
+            SELECT c.name, AVG(p."Dividends"::FLOAT) AS avg_dividend
+            FROM djia_companies c
+            JOIN djia_prices p ON c.symbol = p."Ticker"
+            GROUP BY c.name
+            ORDER BY avg_dividend DESC
+            LIMIT 5;
+
         """
         return {"metadata_text": metadata_text.strip()}
     except Exception as e:

@@ -10,6 +10,8 @@ from operator import itemgetter
 from langgraph.graph import StateGraph, END
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from src.database.connection import connect_to_database, execute_sql_query, get_schema_and_samples, generate_sql_query
+from langchain_core.messages import HumanMessage
+# from vertexai.generative_models import GenerativeModel
 
 import os
 import json
@@ -43,7 +45,7 @@ DB_CONFIG = {
 
 chroma_db = None
 similarity_threshold_retriever = None
-ENABLE_WEB_SEARCH = False
+ENABLE_WEB_SEARCH = True
 ENABLE_GPT_GRADING = True
 
 
@@ -126,23 +128,9 @@ grade_prompt = ChatPromptTemplate.from_messages([
                "If the document explains a term or field name explicitly mentioned in the question, answer 'yes'."),
     ("human", "Document:\n{document}\n\nMetadata:\n{metadata}\n\nQuestion:\n{question}")
 ])
-# doc_grader = grade_prompt | llm | StrOutputParser()
-doc_grader = grade_prompt | RunnableLambda(call_openrouter) | StrOutputParser()
+doc_grader = grade_prompt | llm | StrOutputParser()
+# doc_grader = grade_prompt | RunnableLambda(call_openrouter) | StrOutputParser()
 
-# Create QA chain
-prompt_template = ChatPromptTemplate.from_template(
-    """You are an assistant for question-answering tasks.
-    Use the following pieces of retrieved context to answer the question.
-    If no context is present or if you don't know the answer, just say that you don't know the answer.
-    Do not make up the answer unless it is there in the provided context.
-    Give a detailed answer and to the point answer with regard to the question.
-    Question:
-    {question}
-    Context:
-    {context}
-    Answer:
-    """
-)
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content if isinstance(doc, Document) else str(doc) for doc in docs)
@@ -150,32 +138,36 @@ def format_docs(docs):
 
 def call_gemini_rag(question: str, context: str) -> str:
     prompt = f"""
-You are an assistant for question-answering tasks.
-Use the following pieces of retrieved context to answer the question.
-If no context is present or if you don't know the answer, just say that you don't know the answer.
-Do not make up the answer unless it is there in the provided context.
+        Bạn là một trợ lý thông minh có nhiệm vụ trả lời câu hỏi của người dùng.
+        Hãy sử dụng những đoạn thông tin dưới đây (được truy xuất từ tài liệu) để trả lời.
+        Nếu không có thông tin phù hợp trong đoạn văn, hãy nói rằng bạn không biết câu trả lời.
+        Tuyệt đối không tự bịa ra thông tin nếu nó không có trong phần ngữ cảnh.
 
-Question: {question}
+        Câu hỏi: {question}
 
-Context:
-{context}
+        Ngữ cảnh:
+        {context}
 
-Answer:
-"""
-    model = genai.GenerativeModel("gemini-1.5-flash")
+        Trả lời:
+    """
+    model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
     return response.text.strip()
 
 
 
+
 # Query rewriter for web search
 re_write_prompt = ChatPromptTemplate.from_template(
-    """Given a user question, rewrite it to be a more effective web search query.
-    Original question: {question}
-    Search query:"""
+    """Hãy viết lại câu hỏi dưới đây sao cho ngắn gọn, rõ ràng và phù hợp để tìm kiếm trên Google.
+    
+Yêu cầu: Câu hỏi phải hướng tới thông tin mới nhất, cập nhật tại thời điểm hiện tại (không sử dụng năm cũ hoặc dữ liệu đã lỗi thời) chẳng hạn trong năm 2025.
+
+Câu hỏi gốc: {question}
+Câu hỏi để tìm kiếm trên web:"""
 )
-# question_rewriter = (re_write_prompt|llm|StrOutputParser())
-question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter)|StrOutputParser())
+question_rewriter = (re_write_prompt|llm|StrOutputParser())
+# question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter)|StrOutputParser())
 
 
 
@@ -211,35 +203,34 @@ def retrieve(state):
 
     return {"documents": documents, "question": question}
 
+def is_sql_question(question: str) -> bool:
+    response = llm.invoke([
+        HumanMessage(content=f"""Bạn là chuyên gia phân loại truy vấn. 
+Hãy xác định xem câu hỏi sau đây có yêu cầu truy vấn dữ liệu từ cơ sở dữ liệu SQL hay không. 
+Trả lời chỉ 'yes' hoặc 'no'.
+
+Câu hỏi: {question}""")
+    ])
+    return response.content.strip().lower() == "yes"
+
 def grade_documents(state):
     print("---CHECK DOCUMENT RELEVANCE TO QUESTION---")
     question = state.question
     documents = state.documents
-    
+
     filtered_docs = []
     web_search_needed = "No"
     use_sql = "No"
-    
-    # Define database related keywords
+
+    # Check SQL query keywords
     database_keywords = [
-        "database", 
-        "sql",
-        "select",
-        "from table",
-        "stocks", # specific table name
-        "query",
-        "table",
-        "dữ liệu",
-        "cơ sở dữ liệu",
-        "truy vấn",
-        "truy vấn sql",
-        "Lấy dữ liệu",
-        "sinh sql",
-        "câu lệnh",
+        "lấy dữ liệu", "database", "sql", "select", "from table", "stocks", "query", "table", 
+        "dữ liệu", "cơ sở dữ liệu", "truy vấn", "truy vấn sql", "lấy dữ liệu", "sinh sql", "câu lệnh"
     ]
 
-    # Check if question is related to database first
-    if any(keyword in question.lower() for keyword in database_keywords):
+    # if any(keyword in question.lower() for keyword in database_keywords):
+    #     use_sql = "Yes"
+    if is_sql_question(question):
         use_sql = "Yes"
         print("---GRADE: DETECTED DATABASE QUERY---")
         return {
@@ -248,31 +239,32 @@ def grade_documents(state):
             "web_search_needed": "No",
             "use_sql": "Yes"
         }
-    
+
+    # Grade retrieved documents
     if documents:
         for i, d in enumerate(documents):
-            
             print(f"\n📝 Grading document #{i+1}")
             print(f"📌 Question:\n{question}")
-            print(f"📄 Document Content (preview):\n{d.page_content[:1000]}")  # Giới hạn 1000 ký tự
+            print(f"📄 Document Content (preview):\n{d.page_content[:1000]}")
             print("-" * 60)
-            
-            
+
             score = doc_grader.invoke({
                 "question": question,
                 "document": d.page_content,
-                "metadata": json.dumps(d.metadata, indent=2)  # hoặc chỉ select key metadata fields
+                "metadata": json.dumps(d.metadata, indent=2)
             })
+
             if score.strip().lower() == "yes":
                 print("---GRADE: DOCUMENT RELEVANT---")
                 filtered_docs.append(d)
-            else:
-                print("---GRADE: DOCUMENT NOT RELEVANT, SUGGEST WEB SEARCH---")
-                web_search_needed = "Yes"
+
+        if not filtered_docs:
+            print("---GRADE: NO RELEVANT DOCUMENTS, WEB SEARCH NEEDED---")
+            web_search_needed = "Yes"
     else:
         print("---NO DOCUMENTS RETRIEVED---")
         web_search_needed = "Yes"
-    
+
     return {
         "documents": filtered_docs,
         "question": question,
@@ -290,25 +282,66 @@ def rewrite_query(state):
     
     return {"documents": documents, "question": rewritten_question, "original_question": question}
 
+# def call_openai_rag(question: str) -> str:
+#     prompt = f"""
+#     Bạn là trợ lý AI chuyên trả lời các câu hỏi tổng hợp kiến thức. Hãy cố gắng trả lời ngắn gọn, chính xác và súc tích.
+
+#     Câu hỏi: {question}
+
+#     Trả lời:
+#     """
+#     response = llm.invoke([
+#         HumanMessage(content=prompt)
+#     ])
+#     return response.content.strip()
+
+def call_gemini_free_search(question: str) -> str:
+    model = genai.GenerativeModel("gemini-2.0-flash")
+
+    try:
+        prompt = f"""Hãy trả lời ngắn gọn và chính xác câu hỏi sau, nếu có thể hãy trích dẫn nguồn web:
+
+Câu hỏi: {question}
+"""
+        response = model.generate_content(prompt)
+
+        if response.candidates and response.candidates[0].content.parts:
+            return response.candidates[0].content.parts[0].text.strip()
+        else:
+            return "Không thể nhận được câu trả lời."
+
+    except Exception as e:
+        return f"Lỗi khi gọi API Gemini: {e}"
+
 def web_search(state):
     print("---WEB SEARCH---")
     question = getattr(state, "question")
     original_question = getattr(state, "original_question", question)
     documents = state.documents
-    
+
     try:
         search_results = tv_search.invoke(question)
-        web_content = "\n\n".join([f"Source: {res['url']}\n{res['content']}" for res in search_results])
-        
-        print(f"Web search results: {len(search_results)} sources")
-        print(f"Web search content: {web_content[:]}...")
-        
-        web_doc = Document(page_content=web_content)
-        documents.append(web_doc)
-        print(f"Added web search results ({len(search_results)} sources)")
+        valid_results = [res for res in search_results if res.get("content") and len(res["content"].strip()) > 30]
+
+        if valid_results:
+            web_content = "\n\n".join([f"Source: {res['url']}\n{res['content']}" for res in valid_results])
+            print(f"✅ Web search lấy được {len(valid_results)} nguồn dữ liệu.")
+            web_doc = Document(page_content=web_content)
+            documents.append(web_doc)
+        else:
+            print("⚠️ Không có dữ liệu web phù hợp. Chuyển sang LLM fallback.")
+            fallback_answer = call_gemini_free_search(question)
+            print(f"✅ LLM Fallback: {fallback_answer}")
+            fallback_doc = Document(page_content=f"[LLM Answer Fallback]\n{fallback_answer}")
+            documents.append(fallback_doc)
+
     except Exception as e:
-        print(f"Error during web search: {e}")
-    
+        print(f"❌ Web search error: {e} – fallback sang OpenAI.")
+        fallback_answer = call_gemini_free_search(question)
+        print(f"✅ LLM Fallback: {fallback_answer}")
+        fallback_doc = Document(page_content=f"[LLM Answer Fallback]\n{fallback_answer}")
+        documents.append(fallback_doc)
+
     return {"documents": documents, "question": original_question}
 
 def query_sql(state):
@@ -396,18 +429,31 @@ def generate_answer(state):
     use_sql = state.use_sql
 
     if not documents:
-        generation = "I don't have enough information to answer this question."
+        generation = "Tôi không tìm thấy thông tin nào liên quan đến câu hỏi của bạn."
     elif use_sql == "Yes":
         sql_doc = next((doc for doc in documents if doc.page_content.startswith("SQL used:")), None)
         result_doc = next((doc for doc in documents if doc.page_content.startswith("SQL Query Results:")), None)
 
-        generation_parts = []
-        if sql_doc:
-            generation_parts.append(sql_doc.page_content)
-        if result_doc:
-            generation_parts.append(result_doc.page_content)
+        sql_code = ""
+        result_table = ""
 
-        generation = "\n\n".join(generation_parts) if generation_parts else "No SQL content found."
+        if sql_doc:
+            sql_code = sql_doc.page_content.replace("SQL used:", "").strip()
+
+        if result_doc:
+            result_table = result_doc.page_content.replace("SQL Query Results:", "").strip()
+
+        generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
+
+#### Câu lệnh SQL được sử dụng:
+```sql
+{sql_code}
+```
+
+#### Kết quả truy vấn:
+
+{result_table}
+"""
     else:
         unique_docs = list({doc.page_content: doc for doc in documents}.values())
         formatted_context = format_docs(unique_docs)

@@ -11,6 +11,7 @@ node_modules
 API-chatbot-langgraph/src/__pycache__/*
 API-chatbot-langgraph/src/api/__pycache__/*
 __pycache__/
+*.pyc
 *.py[cod]
 *.pyo
 *.pyc
