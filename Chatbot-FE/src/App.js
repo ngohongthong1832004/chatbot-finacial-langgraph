@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -30,6 +30,7 @@ function App() {
   const [editingSessionTitle, setEditingSessionTitle] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
 
   // Load sessions when component mounts or username changes
   useEffect(() => {
@@ -607,6 +608,14 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
     return <p>{message.text}</p>;
   };
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   if (!isLoggedIn) {
     return (
       <div className="login-container">
@@ -825,6 +834,7 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
         
         <div className="input-container">

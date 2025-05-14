@@ -18,4 +18,4 @@ sentence-transformers
 authlib 
 httpx
 itsdangerous    
-
+google-generativeai
