@@ -87,7 +87,7 @@ class GraphState(BaseModel):
 
 # Initialize models and tools
 openai_embed_model = OpenAIEmbeddings(model='text-embedding-3-small', api_key=OPENAI_API_KEY)
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=OPENAI_API_KEY) if ENABLE_GPT_GRADING else None
+# llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, api_key=OPENAI_API_KEY) if ENABLE_GPT_GRADING else None
 tv_search = TavilySearchResults(max_results=3, search_depth='advanced', max_tokens=10000, api_key=TAVILY_API_KEY)
 
 
@@ -128,8 +128,8 @@ grade_prompt = ChatPromptTemplate.from_messages([
                "If the document explains a term or field name explicitly mentioned in the question, answer 'yes'."),
     ("human", "Document:\n{document}\n\nMetadata:\n{metadata}\n\nQuestion:\n{question}")
 ])
-doc_grader = grade_prompt | llm | StrOutputParser()
-# doc_grader = grade_prompt | RunnableLambda(call_openrouter) | StrOutputParser()
+# doc_grader = grade_prompt | llm | StrOutputParser()
+doc_grader = grade_prompt | RunnableLambda(call_openrouter) | StrOutputParser()
 
 
 def format_docs(docs):
@@ -166,8 +166,8 @@ Yêu cầu: Câu hỏi phải hướng tới thông tin mới nhất, cập nh�
 Câu hỏi gốc: {question}
 Câu hỏi để tìm kiếm trên web:"""
 )
-question_rewriter = (re_write_prompt|llm|StrOutputParser())
-# question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter)|StrOutputParser())
+# question_rewriter = (re_write_prompt|llm|StrOutputParser())
+question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter)|StrOutputParser())
 
 
 
@@ -203,15 +203,26 @@ def retrieve(state):
 
     return {"documents": documents, "question": question}
 
-def is_sql_question(question: str) -> bool:
-    response = llm.invoke([
-        HumanMessage(content=f"""Bạn là chuyên gia phân loại truy vấn. 
-Hãy xác định xem câu hỏi sau đây có yêu cầu truy vấn dữ liệu từ cơ sở dữ liệu SQL hay không. 
-Trả lời chỉ 'yes' hoặc 'no'.
+# def is_sql_question(question: str) -> bool:
+#     response = llm.invoke([
+#         HumanMessage(content=f"""Bạn là chuyên gia phân loại truy vấn. 
+# Hãy xác định xem câu hỏi sau đây có yêu cầu truy vấn dữ liệu từ cơ sở dữ liệu SQL hay không. 
+# Trả lời chỉ 'yes' hoặc 'no'.
 
-Câu hỏi: {question}""")
-    ])
-    return response.content.strip().lower() == "yes"
+# Câu hỏi: {question}""")
+#     ])
+#     return response.content.strip().lower() == "yes"
+
+prompt_template = ChatPromptTemplate.from_messages([
+    ("system", "Bạn là chuyên gia phân loại truy vấn. Hãy xác định xem câu hỏi sau đây có yêu cầu truy vấn dữ liệu từ cơ sở dữ liệu SQL hay không. Trả lời chỉ 'yes' hoặc 'no'."),
+    ("human", "Câu hỏi: {question}")
+])
+
+def is_sql_question(question: str) -> bool:
+    filled_prompt = prompt_template.format(question=question)
+    response = call_openrouter(prompt_template.format_prompt(question=question))
+    return response.strip().lower() == "yes"
+
 
 def grade_documents(state):
     print("---CHECK DOCUMENT RELEVANCE TO QUESTION---")
@@ -243,10 +254,10 @@ def grade_documents(state):
     # Grade retrieved documents
     if documents:
         for i, d in enumerate(documents):
-            print(f"\n📝 Grading document #{i+1}")
-            print(f"📌 Question:\n{question}")
-            print(f"📄 Document Content (preview):\n{d.page_content[:1000]}")
-            print("-" * 60)
+            # print(f"\n📝 Grading document #{i+1}")
+            # print(f"📌 Question:\n{question}")
+            # print(f"📄 Document Content (preview):\n{d.page_content[:1000]}")
+            # print("-" * 60)
 
             score = doc_grader.invoke({
                 "question": question,

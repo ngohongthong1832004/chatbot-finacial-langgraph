@@ -2,11 +2,34 @@ import psycopg2
 import pandas as pd
 
 import os
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from dotenv import load_dotenv
+import requests
 
 # Load biến môi trường từ file .env
 load_dotenv()
 
+def call_openrouter(prompt_obj) -> str:
+    prompt = prompt_obj.to_string()  
+
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are an expert grader assessing relevance of a retrieved document to a user question. Answer only 'yes' or 'no'."},
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+
+    if res.status_code == 200:
+        return res.json()["choices"][0]["message"]["content"].strip()
+    else:
+        raise RuntimeError(f"OpenRouter API error: {res.status_code} - {res.text}")
 
 # Dùng os.environ để truy cập
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -150,7 +173,7 @@ def generate_sql_query(question, schema_info=None):
     from langchain_core.prompts import ChatPromptTemplate
     from langchain_core.output_parsers import StrOutputParser
 
-    llm = ChatOpenAI(model="gpt-4", temperature=0, api_key=OPENAI_API_KEY)
+    # llm = ChatOpenAI(model="gpt-4", temperature=0, api_key=OPENAI_API_KEY)
 
     # Nếu có metadata text => dùng luôn
     if schema_info and "metadata_text" in schema_info:
@@ -182,7 +205,8 @@ Return ONLY the SQL query without any explanation or markdown formatting.
 Make sure the query is correct PostgreSQL syntax.
 """)
     
-    chain = prompt | llm | StrOutputParser()
+    # chain = prompt | llm | StrOutputParser()
+    chain = prompt | RunnableLambda(call_openrouter) | StrOutputParser()
 
     try:
         sql_query = chain.invoke({

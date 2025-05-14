@@ -40,7 +40,7 @@ async def auth(request: Request):
     token = await oauth.google.authorize_access_token(request)
     user_info = await oauth.google.userinfo(token=token) 
     print("✅ User Info:", user_info)
-    frontend_url = f"http://localhost:3000?username={user_info['name']}&email={user_info['email']}"
+    frontend_url = f"https://chatbot-finacial-langgraph.vercel.app/?username={user_info['name']}&email={user_info['email']}"
     return RedirectResponse(url=frontend_url)
 
 # RAG API
