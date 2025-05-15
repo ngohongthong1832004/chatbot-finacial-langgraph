@@ -16,22 +16,22 @@
 
 1. **Tạo file `.env` trong `API-chatbot-langgraph/`** với nội dung:
    ```env
-   # API Keys
-   OPENAI_API_KEY=your_openai_key
-   GEMINI_API_KEY=your_gemini_key
-   TAVILY_API_KEY=your_tavily_key
-   
-   # Cấu hình cơ sở dữ liệu
-   DBNAME=your_database_name
-   DBUSER=your_database_user
-   DBPASSWORD=your_database_password
-   DBHOST=your_database_host
-   DBPORT=5432
-   SSL_MODE=require
-   
-   # OAuth (nếu dùng đăng nhập Google)
-   CLIENT_ID=your_google_client_id
-   CLIENT_SECRET=your_google_client_secret
+   # Key LLM và key Tavily
+   OPENAI_API_KEY=your-openai-api-key-here
+   TAVILY_API_KEY=your-tavily-api-key-here
+   GEMINI_API_KEY=your-gemini-api-key-here
+
+   # Database Configuration
+   DBUSER=your-db-username-here
+   DBPASSWORD=your-db-password-here
+   DBHOST=your-db-host-here
+   DBPORT=your-db-port-here
+   DBNAME=your-db-name-here
+   DBDATABASE=your-db-database-here
+
+   # GGoogle OAuth Configuration
+   CLIENT_ID=your-client-id-here
+   CLIENT_SECRET=your-client-secret-here
    SERVICE_AUTH=google
    SERVICE_AUTH_URL=https://accounts.google.com/.well-known/openid-configuration
    ```
@@ -94,19 +94,21 @@ http://localhost:8000/docs
 ## Cấu trúc thư mục
 
 ```
-API-chatbot-langgraph/
+API-chatbot-langgraph/               # Backend FastAPI (RAG agentic)
 ├── src/
-│   ├── api/            # Định nghĩa endpoint API
-│   ├── database/       # Kết nối và truy vấn DB
-│   ├── services/       # Logic RAG, vector search
-│   │   └── sec_embeddings/  # Vector DB: faiss_index.bin, embeddings.pkl, chunks.json
-│   ├── vector_db/      # Script tạo embedding
-│   ├── main.py         # Entrypoint FastAPI
-│   └── metadata/       # Metadata mẫu
-├── requirements.txt    # Thư viện Python
-├── Dockerfile          # Dockerfile backend
-├── .env                # Biến môi trường (tự tạo)
-├── README.md           # File hướng dẫn này
+│   ├── api/                         # API routes
+│   ├── database/                    # Kết nối và truy vấn DB
+│   │   └── connection.py            # Kết nối DB Supabase
+│   ├── metadata/                    # Giới thiệu metadata của database
+│   ├── services/                    # Logic RAG, vector search
+│   │   └── sec_embeddings/          # Dữ liệu vector hóa (faiss_index.bin, embeddings.pkl, chunks.json)
+│   │   └── langgraph.py             # Core LangGraph, agentic
+│   └── main.py                      # Entrypoint FastAPI
+├── .env.example                     # File mẫu .env
+├── requirements.txt                 # Thư viện Python
+├── Dockerfile                       # Dockerfile backend
+├── run.py                           # Chạy FastAPI
+└── README.md
 ```
 
 ## Quy trình xử lý

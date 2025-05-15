@@ -2,14 +2,13 @@
 
 Giao diện người dùng cho hệ thống Chatbot Agentic RAG, xây dựng bằng React.
 
-## 🚀 Tính năng
+## Tính năng
 
 - Giao diện chat hiện đại, hỗ trợ markdown và highlight code
 - Kết nối API backend để hỏi đáp thông minh
 - Hỗ trợ đăng nhập Google (nếu backend bật OAuth)
-- Responsive trên nhiều thiết bị
 
-## ⚡️ Khởi động nhanh
+## Khởi động nhanh
 
 ### 1. Chạy bằng Docker (Khuyên dùng)
 
@@ -38,12 +37,12 @@ npm start
 ```
 - Ứng dụng sẽ chạy tại: [http://localhost:3000](http://localhost:3000)
 
-## ⚙️ Cấu hình
+## Cấu hình
 
 - Để đổi địa chỉ backend API, sửa biến trong file `.env` hoặc trực tiếp trong code (thường là `src/App.js`).
 - Nếu dùng OAuth, đảm bảo backend đã cấu hình đúng Google OAuth và CORS.
 
-## 🗂️ Cấu trúc thư mục
+## Cấu trúc thư mục
 
 ```
 Chatbot-FE/
@@ -66,12 +65,12 @@ Chatbot-FE/
 └── .gitignore
 ```
 
-## 📝 Scripts npm
+## Scripts npm
 
 - `npm start` – Chạy server phát triển
 - `npm run build` – Build bản production
 
-## 💡 Lưu ý
+## Lưu ý
 
 - Đảm bảo backend đã chạy và cho phép CORS từ frontend.
 - Nếu đổi port hoặc domain backend, cần sửa lại endpoint API trong FE.
