@@ -1,0 +1,811 @@
+[
+  {
+    "id": "document_title",
+    "content": "Financial Statement Data Sets",
+    "metadata": {
+      "type": "title"
+    }
+  },
+  {
+    "id": "section_1",
+    "content": "Section 1: Overview\n\nThe following data sets provide information extracted from XBRL\nsubmissions filed with the Commission in a flattened data format to assist\nusers in more easily consuming the data for analysis. The data is sourced from\nselected information found in the XBRL tagged financial statements submitted by\nfilers to the Commission.  These data sets currently include quarterly and\nannual numeric data rendered by the Commission in the primary financial\nstatements submitted by filers. Certain additional fields (e.g. Standard\nIndustrial Classification (SIC)) used in the Commissions EDGAR system are also\nincluded to help in supporting the use of the data.  The information has\nbeen taken directly from submissions created by each registrant, and the data\nis as filed by the registrant.  The information will be updated\nquarterly. Data contained in documents filed after the last business day of the\nquarter will be included in the next quarterly posting.\n\nDISCLAIMER: The Financial Statement Data Sets contain\ninformation derived from structured data filed with the Commission by\nindividual registrants as well as Commission-generated filing identifiers.\nBecause the data sets are derived from information provided by individual\nregistrants, we cannot guarantee the accuracy of the data sets. In addition, it\nis possible inaccuracies or other errors were introduced into the data sets\nduring the process of extracting the data and compiling the data sets. Finally,\nthe data sets do not reflect all available information, including certain\nmetadata associated with Commission filings. The data sets are intended to\nassist the public in analyzing data contained in Commission filings; however,\nthey are not a substitute for such filings. Investors should review the full\nCommission filings before making any investment decision.\n\nThe data extracted from the XBRL submissions is organized\ninto four data sets containing information about submissions, numbers, taxonomy\ntags, and presentation.  Each data set consists of rows and columns and is\nprovided as a tab-delimited TXT format file.  The data sets are as\nfollows:\n\n·SUB Submission data set; this includes one record for each XBRL\nsubmission with amounts rendered by the Commission in the primary financial\nstatements. The set includes fields of information pertinent to the submission\nand the filing entity. Information is extracted from the SECs EDGAR system and\nthe filings submitted to the SEC by registrants.\n\n·NUM Number data set; this includes one row for each distinct\namount appearing on the primary financial statements rendered by the Commission\nfrom each submission included in the SUB data set.\n\n·TAG Tag data set; includes defining information about each numerical\ntag.  Information includes tag descriptions (documentation labels),\ntaxonomy version information and other tag attributes.\n\n·PRE Presentation data set; this provides information about how\nthe tags and numbers were presented in the primary financial statements as\nrendered by the Commission.",
+    "metadata": {
+      "type": "section",
+      "section_number": "1",
+      "section_title": "Overview",
+      "level": 1
+    }
+  },
+  {
+    "id": "section_2",
+    "content": "Section 2: Scope\n\nThe scope of the data in the financial statement data sets\nconsists of:\n\n·Numeric data on the primary financial statements as rendered by the\nCommission (Balance Sheet, Income Statement, Cash Flows, Changes in Equity, and\nComprehensive Income) and page footnotes on those statements;\n\n·From XBRL  submissions which include financial statements rendered by\nthe Commission  (e.g., 10-K, 10-Q, 20-F, 40-F);\n\n·Submitted from 4/15/2009 through the Data Cutoff Date inclusive (there\nis a file named 2009q1.zip on the SEC website that contains data sets with\ncolumn headings only and no rows, merely so that all years prior to this year\nwill consist of four zip files).\n\nAll numeric data is as filed.",
+    "metadata": {
+      "type": "section",
+      "section_number": "2",
+      "section_title": "Scope",
+      "level": 1
+    }
+  },
+  {
+    "id": "section_3",
+    "content": "Section 3: Organization\n\nNote that this data set represents quarterly and annual\nuncorrected and as filed EDGAR document submissions containing multiple\nreporting periods (including amendments of prior submissions). Data in this\nsubmitted form may contain redundancies, inconsistencies, and discrepancies\nrelative to other publication formats. There are four data sets.\n\n1.SUB\nidentifies all the EDGAR submissions with amounts rendered by the Commission on\nthe primary financial statements in the data set, with each row having the\nunique (primary) keyadsh,a 20 character EDGAR Accession Number with\ndashes in positions 11 and 14.\n\n2.TAG\nis a data set of all numerical tags used in the submissions, both standard and\ncustom.  A unique key of each row is a combination of these fields:\n\n1)tag tag used by the filer\n\n2)version if a standard tag, the taxonomy of origin, otherwise\nequal to adsh.\n\n3.NUM\nis a data set of all numeric XBRL facts presented on the primary financial\nstatements as rendered by the Comission. A unique key of each row is a\ncombination of the following fields:\n\n1)adsh- EDGAR accession number\n\n2)tag tag used by the filer\n\n3)version if a standard tag, the taxonomy of origin, otherwise\nequal to adsh.\n\n4)ddate- period end date\n\n5)qtrs- duration in number of quarters\n\n6)uom -unit of measure\n\n7)segments XBRL tags used to represent axis and member reporting\n\n8)coreg -coregistrant of the parent company registrant (if\napplicable)\n\n4.PRE\nis a data set that provides the text assigned by the filer to each line item in\nthe primary financial statements, the order in which the line item appeared,\nand the tag assigned to it.  A unique key of each row is a combination of\nthe following fields:\n\n1)adsh EDGAR accession number\n\n2)report sequential number of report within the statements\n\n3)line sequential number of line within a report.\n\nThe relationship of the data sets is as shown in Figure 1.\nThe Accession Number(adsh)found in the NUM data set can be used to\nretrieve information about the submission in SUB.  Each row of data in NUM\nwas tagged by the filer using a tag. Information about the tag used can be\nfound in  TAG.  Each row of data in NUM appears on one or more lines\nof reports detailed in PRE.\n\nDataset\n\nColumns referencing other datasets\n\nReferenced dataset\n\nReferenced columns\n\nNUM\n\nadsh\n\nSUB\n\nadsh\n\ntag, version\n\nTAG\n\ntag, version\n\nPRE\n\nadsh\n\nSUB\n\nadsh\n\ntag, version\n\nTAG\n\ntag, version\n\nadsh, tag, version\n\nNUM\n\nadsh, tag, version\n\nNote: The SEC website folder http://www.sec.gov/Archives/edgar/data/{cik}/{accession}/\nwill always contain all the files for a given submission, where {accession}\nis theadshwith the -characters removed.",
+    "metadata": {
+      "type": "section",
+      "section_number": "3",
+      "section_title": "Organization",
+      "level": 1
+    }
+  },
+  {
+    "id": "section_4",
+    "content": "Section 4: File Formats\n\nEach of the four data sets is\nprovided in a single encoding, as follows:\n\nTab Delimited Value (.txt): utf-8,\ntab-delimited, \\n- terminated lines, with the first line containing the column\nnames in lowercase.",
+    "metadata": {
+      "type": "section",
+      "section_number": "4",
+      "section_title": "File Formats",
+      "level": 1
+    }
+  },
+  {
+    "id": "section_5",
+    "content": "Section 5: Table Definitions\n\nThe columns in the figures below (figures 2  5) provide the\nfollowing information: field name, description, source (SUB file only), data\nformat, maximum field size, an indication of whether or not the field may be\nNULL (yes or no), and key.\n\nThe Source column in the SUB file has two possible values:\n\n·EDGAR indicates that the source of the data is the filers EDGAR\nsubmission header.\n\n·XBRL indicates that the source of the data is the filers XBRL\nsubmission.\n\nThe Key column indicates whether the field is part of a\nunique index on the data.  There are two possible values for this column:\n\n·* Indicates\nthe field is part of a unique key for the row.\n\n·Empty (nothing in column)  the column is a function of all or some of a\nunique key.\n\nThe submissions data set contains summary information about\nan entire EDGAR submission. Some fields were sourced directly from EDGAR\nsubmission information, while other columns of data were sourced from the XBRL\nsubmission. Note: EDGAR derived fields represent the most recent EDGAR\nassignment as of a given filings submission date and do not necessarily\nrepresent the most current assignments.\n\nField Name\n\nField Description\n\nSource\n\nFormat\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\n\nEDGAR\n\nALPHANUMERIC (nnnnnnnnnn-nn-nnnnnn)\n\n20\n\nNo\n\n*\n\ncik\n\nCentral Index Key (CIK). Ten digit number assigned by\n  the SEC to each registrant that submits filings.\n\nEDGAR\n\nNUMERIC\n\n10\n\nNo\n\nname\n\nName of registrant. This corresponds to the name of the\n  legal entity as recorded in EDGAR as of the filing date.\n\nEDGAR\n\nALPHANUMERIC\n\n150\n\nNo\n\nsic\n\nStandard Industrial Classification (SIC). Four digit\n  code assigned by the SEC as of the filing date, indicating the registrants\n  type of business.\n\nEDGAR\n\nNUMERIC\n\n4\n\nYes\n\ncountryba\n\nThe ISO 3166-1 country of the registrant's business\n  address.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nstprba\n\nThe state or province of the registrants business\n  address, if field countryba is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\ncityba\n\nThe city of the registrant's business address.\n\nEDGAR\n\nALPHANUMERIC\n\n30\n\nYes\n\nzipba\n\nThe zip code of the registrants business address.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nYes\n\nbas1\n\nThe first line of the street of the registrants\n  business address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nbas2\n\nThe second line of the street of the registrants\n  business address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nbaph\n\nThe phone number of the registrants business address.\n\nEDGAR\n\nALPHANUMERIC\n\n20\n\nYes\n\ncountryma\n\nThe ISO 3166-1 country of the registrant's mailing\n  address.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nstprma\n\nThe state or province of the registrants mailing\n  address, if field countryma is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\ncityma\n\nThe city of the registrant's mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n30\n\nYes\n\nzipma\n\nThe zip code of the registrants mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nYes\n\nmas1\n\nThe first line of the street of the registrants\n  mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nmas2\n\nThe second line of the street of the registrants\n  mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\ncountryinc\n\nThe ISO 3166-1 country of incorporation for the\n  registrant.\n\nEDGAR\n\nALPHANUMERIC\n\n3\n\nYes\n\nstprinc\n\nThe state or province of incorporation for the\n  registrant, if countryinc is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nein\n\nEmployee Identification Number, 9 digit identification\n  number assigned by the Internal Revenue Service to business entities\n  operating in the United States.\n\nEDGAR\n\nNUMERIC\n\n10\n\nYes\n\nformer\n\nMost recent former name of the registrant, if any.\n\nEDGAR\n\nALPHANUMERIC\n\n150\n\nYes\n\nchanged\n\nDate of change from the former name, if any.\n\nEDGAR\n\nALPHANUMERIC\n\n8\n\nYes\n\nafs\n\nFiler status with the SEC at the time of submission:\n\n1-LAF=Large Accelerated,\n\n2-ACC=Accelerated,\n\n3-SRA=Smaller Reporting Accelerated,\n\n4-NON=Non-Accelerated,\n\n5-SML=Smaller Reporting Filer,\n\nNULL=not assigned.\n\nXBRL\n\nALPHANUMERIC\n\n5\n\nYes\n\nwksi\n\nWell Known Seasoned Issuer (WKSI). An issuer that meets\n  specific SEC requirements at some point during a 60-day period preceding the\n  date the issuer satisfies its obligation to update its shelf registration\n  statement.\n\nXBRL\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nfye\n\nFiscal Year End Date, rounded to nearest month-end.\n\nXBRL\n\nALPHANUMERIC (mmdd)\n\n4\n\nYes\n\nform\n\nThe submission type of the registrants filing.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nNo\n\nperiod\n\nBalance Sheet Date, rounded to nearest month-end.\n\nXBRL\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\nfy\n\nFiscal Year Focus (as defined in the EDGAR XBRL Guide Ch.\n  3.1.8).\n\nXBRL\n\nYEAR (yyyy)\n\n4\n\nYes\n\nfp\n\nFiscal Period Focus (as defined in the EDGAR XBRL Guide\n  Ch. 3.1.8) within Fiscal Year.\n\nXBRL\n\nALPHANUMERIC (FY, Q1, Q2, Q3, Q4)\n\n2\n\nYes\n\nfiled\n\nThe date of the registrants filing with the\n  Commission.\n\nEDGAR\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\naccepted\n\nThe acceptance date and time of the registrants filing\n  with the Commission.\n\nEDGAR\n\nDATETIME (yyyy‑mm‑dd hh:mm:ss)\n\n19\n\nNo\n\nprevrpt\n\nPrevious Report TRUE indicates that the submission\n  information was subsequently amended.\n\nEDGAR\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ndetail\n\nTRUE indicates that the XBRL submission contains\n  quantitative disclosures within the footnotes and schedules at the required\n  detail level (e.g., each amount).\n\nXBRL\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ninstance\n\nThe name of the submitted XBRL Instance Document. The\n  name often begins with the company ticker symbol.\n\nEDGAR\n\nALPHANUMERIC (e.g. abcd‑yyyymmdd.xml)\n\n40\n\nNo\n\nnciks\n\nNumber of Central Index Keys (CIK) of registrants\n  (i.e., business units) included in the consolidating entitys submitted\n  filing.\n\nEDGAR\n\nNUMERIC\n\n4\n\nNo\n\naciks\n\nAdditional CIKs of co-registrants included in a\n  consolidating entitys EDGAR submission, separated by spaces. If there are no\n  other co-registrants (i.e., nciks=1), the value of aciks is NULL.  For a\n  very small number of filers, the entire list of co-registrants is too long to\n  fit in the field.  Where this is the case, users should refer to the\n  complete submission file for all CIK information.\n\nEDGAR\n\nALPHANUMERIC (space delimited)\n\n120\n\nYes\n\nNote: To access the complete submission files for a given\nfiling, please see theSEC EDGAR website. \nThe SEC website folder http://www.sec.gov/Archives/edgar/data/{cik}/{accession}/\nwill always contain all the files for a given submission.  To assemble the\nfolder address to any filing referenced in the SUB data set, simply substitute\n{cik} with thecikfield and replace {accession} with theadshfield (after removing the dash character).  The following sample SQL Query\nprovides an example of how to generate a list of addresses for filings\ncontained in the SUB data set:\n\n·select name,form,period,\n'http://www.sec.gov/Archives/edgar/data/' + ltrim(str(cik,10))+'/' +\nreplace(adsh,'-','')+'/'+instanceas url from SUB sub order by\nperiod desc, name\n\nThe TAG data set contains the standard taxonomy tags and the\ncustom taxonomy tags defined in the submissions.  The source is the as\nfiled XBRL filer submissions.  The standard tags are derived from\ntaxonomies inhttps://www.sec.gov/data-research/standard-taxonomies.\n\nField Name\n\nField Description\n\nField Type\n\nMax Size\n\nMay be NULL\n\nKey\n\ntag\n\nThe unique identifier (name) for a tag in a specific\n  taxonomy release.\n\nALPHANUMERIC\n\n256\n\nNo\n\n*\n\nversion\n\nFor a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\ncustom\n\n1 if tag is custom (version=adsh), 0 if it is standard.Note: This flag is technically redundant with the  version and adsh\n  columns.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nabstract\n\n1 if the tag is not used to represent a numeric fact.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ndatatype\n\nIf abstract=1, then NULL, otherwise the data type\n  (e.g., monetary) for the tag.\n\nALPHANUMERIC\n\n20\n\nYes\n\niord\n\nIf abstract=1, then NULL; otherwise, I if the value\n  is a point-in time, or D if the value is a duration.\n\nALPHANUMERIC\n\n1\n\nNo\n\ncrdr\n\nIf datatype = monetary, then the tags natural\n  accounting balance (debit or credit); if not defined, then NULL.\n\nALPHANUMERIC (C or D)\n\n1\n\nYes\n\ntlabel\n\nIf a standard tag, then the label text provided by the\n  taxonomy, otherwise the text provided by the filer.  A tag which had\n  neither would have a NULL value here.\n\nALPHANUMERIC\n\n512\n\nYes\n\ndoc\n\nThe detailed definition for the tag. If a standard tag,\n  then the text provided by the taxonomy, otherwise the text assigned by the\n  filer.  Some tags have neither, and this field is NULL.\n\nALPHANUMERIC\n\nYes\n\nThe NUM data set contains numeric data, one row per data\npoint as rendered by the Commission on the primary financial statements. The\nsource for the table is the as filed XBRL filer submissions.\n\nField Name\n\nField Description\n\nField Type (format)\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\ntag\n\nThe unique identifier (name) for a tag in a specific\n  taxonomy release.\n\nALPHANUMERIC\n\n256\n\nNo\n\n*\n\nversion\n\nFor a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nddate\n\nThe end date for the data value, rounded to the nearest\n  month end.\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\n*\n\nqtrs\n\nThe count of the number of quarters represented by the\n  data value, rounded to the nearest whole number. 0 indicates it is a\n  point-in-time value.\n\nNUMERIC\n\n8\n\nNo\n\n*\n\nuom\n\nThe unit of measure for the value.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nsegments\n\nTags used to represent axis and member reporting.\n\nALPHANUMERIC\n\n1024\n\nYes\n\n*\n\ncoreg\n\nIf specified, indicates a specific co-registrant, the\n  parent company, or other entity (e.g., guarantor).  NULL indicates the consolidated\n  entity.\n\nALPHANUMERIC\n\n256\n\nYes\n\n*\n\nvalue\n\nThe value. This is not scaled, it is as found in the\n  Interactive Data file, but is limited to four digits to the right of the\n  decimal point.\n\nNUMERIC(28,4)\n\n16\n\nYes\n\nfootnote\n\nThe text of any superscripted footnotes on the value,\n  as shown on the statement page, truncated to 512 characters, or if there is\n  no footnote, then this field will be blank.\n\nALPHANUMERIC\n\n512\n\nYes\n\nThe PRE data set contains one row for each line of the\nfinancial statements tagged by the filer.  The source for the data set is\nthe as filed XBRL filer submissions.   Note that there may be more\nthan one row per entry in NUM because the same tag can appear in more than one\nstatement (the tag NetIncome, for example can appear in both the Income\nStatement and Cash Flows in a single financial statement, and the tag Cash may\nappear in both the Balance Sheet and Cash Flows).\n\nField Name\n\nField Description\n\nField Type (format)\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The\n  20-character string formed from the 18-digit number assigned by the SEC to\n  each EDGAR submission.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nreport\n\nRepresents the report grouping. This field corresponds\n  to the statement (stmt) field, which indicates the type of statement. The\n  numeric value refers to the R file as posted on the EDGAR Web site.\n\nNUMERIC\n\n6\n\nNo\n\n*\n\nline\n\nRepresents the tags presentation line order for a\n  given report. Together with the statement and report field, presentation\n  location, order and grouping can be derived.\n\nNUMERIC\n\n6\n\nNo\n\n*\n\nstmt\n\nThe financial statement location to which the value of\n  the report field pertains.\n\nALPHANUMERIC (BS = Balance Sheet, IS = Income\n  Statement, CF = Cash Flow, EQ = Equity, CI = Comprehensive Income, SI =\n  Schedule of Investments, UN = Unclassifiable Statement).\n\n2\n\nNo\n\ninpth\n\nValue was presented parenthetically instead of in\n  columns within the financial statements. For example:\n\nReceivables (net of\n  allowance for bad debts of $200 in 2012) $700.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nrfile\n\nThe type of interactive data file rendered on the EDGAR\n  web site, H = .htm file, X = .xml file.\n\nALPHANUMERIC\n\n1\n\nNo\n\ntag\n\nThe tag chosen by the filer for this line item.\n\nALPHANUMERIC\n\n256\n\nNo\n\nversion\n\nThe taxonomy identifier if the tag is a standard tag,\n  otherwise adsh.\n\nALPHANUMERIC\n\n20\n\nNo\n\nplabel\n\nThe text presented on the line item, also known as a preferred\n  label.\n\nALPHANUMERIC\n\n512\n\nNo\n\nnegating\n\nFlag to indicate whether the plabel is negating.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo",
+    "metadata": {
+      "type": "section",
+      "section_number": "5",
+      "section_title": "Table Definitions",
+      "level": 1
+    }
+  },
+  {
+    "id": "section_5_1",
+    "content": "Section 5.1: SUB\n(Submissions)\n\nThe submissions data set contains summary information about\nan entire EDGAR submission. Some fields were sourced directly from EDGAR\nsubmission information, while other columns of data were sourced from the XBRL\nsubmission. Note: EDGAR derived fields represent the most recent EDGAR\nassignment as of a given filings submission date and do not necessarily\nrepresent the most current assignments.\n\nField Name\n\nField Description\n\nSource\n\nFormat\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\n\nEDGAR\n\nALPHANUMERIC (nnnnnnnnnn-nn-nnnnnn)\n\n20\n\nNo\n\n*\n\ncik\n\nCentral Index Key (CIK). Ten digit number assigned by\n  the SEC to each registrant that submits filings.\n\nEDGAR\n\nNUMERIC\n\n10\n\nNo\n\nname\n\nName of registrant. This corresponds to the name of the\n  legal entity as recorded in EDGAR as of the filing date.\n\nEDGAR\n\nALPHANUMERIC\n\n150\n\nNo\n\nsic\n\nStandard Industrial Classification (SIC). Four digit\n  code assigned by the SEC as of the filing date, indicating the registrants\n  type of business.\n\nEDGAR\n\nNUMERIC\n\n4\n\nYes\n\ncountryba\n\nThe ISO 3166-1 country of the registrant's business\n  address.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nstprba\n\nThe state or province of the registrants business\n  address, if field countryba is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\ncityba\n\nThe city of the registrant's business address.\n\nEDGAR\n\nALPHANUMERIC\n\n30\n\nYes\n\nzipba\n\nThe zip code of the registrants business address.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nYes\n\nbas1\n\nThe first line of the street of the registrants\n  business address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nbas2\n\nThe second line of the street of the registrants\n  business address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nbaph\n\nThe phone number of the registrants business address.\n\nEDGAR\n\nALPHANUMERIC\n\n20\n\nYes\n\ncountryma\n\nThe ISO 3166-1 country of the registrant's mailing\n  address.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nstprma\n\nThe state or province of the registrants mailing\n  address, if field countryma is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\ncityma\n\nThe city of the registrant's mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n30\n\nYes\n\nzipma\n\nThe zip code of the registrants mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nYes\n\nmas1\n\nThe first line of the street of the registrants\n  mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nmas2\n\nThe second line of the street of the registrants\n  mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\ncountryinc\n\nThe ISO 3166-1 country of incorporation for the\n  registrant.\n\nEDGAR\n\nALPHANUMERIC\n\n3\n\nYes\n\nstprinc\n\nThe state or province of incorporation for the\n  registrant, if countryinc is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nein\n\nEmployee Identification Number, 9 digit identification\n  number assigned by the Internal Revenue Service to business entities\n  operating in the United States.\n\nEDGAR\n\nNUMERIC\n\n10\n\nYes\n\nformer\n\nMost recent former name of the registrant, if any.\n\nEDGAR\n\nALPHANUMERIC\n\n150\n\nYes\n\nchanged\n\nDate of change from the former name, if any.\n\nEDGAR\n\nALPHANUMERIC\n\n8\n\nYes\n\nafs\n\nFiler status with the SEC at the time of submission:\n\n1-LAF=Large Accelerated,\n\n2-ACC=Accelerated,\n\n3-SRA=Smaller Reporting Accelerated,\n\n4-NON=Non-Accelerated,\n\n5-SML=Smaller Reporting Filer,\n\nNULL=not assigned.\n\nXBRL\n\nALPHANUMERIC\n\n5\n\nYes\n\nwksi\n\nWell Known Seasoned Issuer (WKSI). An issuer that meets\n  specific SEC requirements at some point during a 60-day period preceding the\n  date the issuer satisfies its obligation to update its shelf registration\n  statement.\n\nXBRL\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nfye\n\nFiscal Year End Date, rounded to nearest month-end.\n\nXBRL\n\nALPHANUMERIC (mmdd)\n\n4\n\nYes\n\nform\n\nThe submission type of the registrants filing.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nNo\n\nperiod\n\nBalance Sheet Date, rounded to nearest month-end.\n\nXBRL\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\nfy\n\nFiscal Year Focus (as defined in the EDGAR XBRL Guide Ch.\n  3.1.8).\n\nXBRL\n\nYEAR (yyyy)\n\n4\n\nYes\n\nfp\n\nFiscal Period Focus (as defined in the EDGAR XBRL Guide\n  Ch. 3.1.8) within Fiscal Year.\n\nXBRL\n\nALPHANUMERIC (FY, Q1, Q2, Q3, Q4)\n\n2\n\nYes\n\nfiled\n\nThe date of the registrants filing with the\n  Commission.\n\nEDGAR\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\naccepted\n\nThe acceptance date and time of the registrants filing\n  with the Commission.\n\nEDGAR\n\nDATETIME (yyyy‑mm‑dd hh:mm:ss)\n\n19\n\nNo\n\nprevrpt\n\nPrevious Report TRUE indicates that the submission\n  information was subsequently amended.\n\nEDGAR\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ndetail\n\nTRUE indicates that the XBRL submission contains\n  quantitative disclosures within the footnotes and schedules at the required\n  detail level (e.g., each amount).\n\nXBRL\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ninstance\n\nThe name of the submitted XBRL Instance Document. The\n  name often begins with the company ticker symbol.\n\nEDGAR\n\nALPHANUMERIC (e.g. abcd‑yyyymmdd.xml)\n\n40\n\nNo\n\nnciks\n\nNumber of Central Index Keys (CIK) of registrants\n  (i.e., business units) included in the consolidating entitys submitted\n  filing.\n\nEDGAR\n\nNUMERIC\n\n4\n\nNo\n\naciks\n\nAdditional CIKs of co-registrants included in a\n  consolidating entitys EDGAR submission, separated by spaces. If there are no\n  other co-registrants (i.e., nciks=1), the value of aciks is NULL.  For a\n  very small number of filers, the entire list of co-registrants is too long to\n  fit in the field.  Where this is the case, users should refer to the\n  complete submission file for all CIK information.\n\nEDGAR\n\nALPHANUMERIC (space delimited)\n\n120\n\nYes\n\nNote: To access the complete submission files for a given\nfiling, please see theSEC EDGAR website. \nThe SEC website folder http://www.sec.gov/Archives/edgar/data/{cik}/{accession}/\nwill always contain all the files for a given submission.  To assemble the\nfolder address to any filing referenced in the SUB data set, simply substitute\n{cik} with thecikfield and replace {accession} with theadshfield (after removing the dash character).  The following sample SQL Query\nprovides an example of how to generate a list of addresses for filings\ncontained in the SUB data set:\n\n·select name,form,period,\n'http://www.sec.gov/Archives/edgar/data/' + ltrim(str(cik,10))+'/' +\nreplace(adsh,'-','')+'/'+instanceas url from SUB sub order by\nperiod desc, name",
+    "metadata": {
+      "type": "section",
+      "section_number": "5.1",
+      "section_title": "SUB\n(Submissions)",
+      "level": 2
+    }
+  },
+  {
+    "id": "section_5_2",
+    "content": "Section 5.2: TAG (Tags)\n\nThe TAG data set contains the standard taxonomy tags and the\ncustom taxonomy tags defined in the submissions.  The source is the as\nfiled XBRL filer submissions.  The standard tags are derived from\ntaxonomies inhttps://www.sec.gov/data-research/standard-taxonomies.\n\nField Name\n\nField Description\n\nField Type\n\nMax Size\n\nMay be NULL\n\nKey\n\ntag\n\nThe unique identifier (name) for a tag in a specific\n  taxonomy release.\n\nALPHANUMERIC\n\n256\n\nNo\n\n*\n\nversion\n\nFor a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\ncustom\n\n1 if tag is custom (version=adsh), 0 if it is standard.Note: This flag is technically redundant with the  version and adsh\n  columns.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nabstract\n\n1 if the tag is not used to represent a numeric fact.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ndatatype\n\nIf abstract=1, then NULL, otherwise the data type\n  (e.g., monetary) for the tag.\n\nALPHANUMERIC\n\n20\n\nYes\n\niord\n\nIf abstract=1, then NULL; otherwise, I if the value\n  is a point-in time, or D if the value is a duration.\n\nALPHANUMERIC\n\n1\n\nNo\n\ncrdr\n\nIf datatype = monetary, then the tags natural\n  accounting balance (debit or credit); if not defined, then NULL.\n\nALPHANUMERIC (C or D)\n\n1\n\nYes\n\ntlabel\n\nIf a standard tag, then the label text provided by the\n  taxonomy, otherwise the text provided by the filer.  A tag which had\n  neither would have a NULL value here.\n\nALPHANUMERIC\n\n512\n\nYes\n\ndoc\n\nThe detailed definition for the tag. If a standard tag,\n  then the text provided by the taxonomy, otherwise the text assigned by the\n  filer.  Some tags have neither, and this field is NULL.\n\nALPHANUMERIC\n\nYes",
+    "metadata": {
+      "type": "section",
+      "section_number": "5.2",
+      "section_title": "TAG (Tags)",
+      "level": 2
+    }
+  },
+  {
+    "id": "section_5_3",
+    "content": "Section 5.3: NUM (Numbers)\n\nThe NUM data set contains numeric data, one row per data\npoint as rendered by the Commission on the primary financial statements. The\nsource for the table is the as filed XBRL filer submissions.\n\nField Name\n\nField Description\n\nField Type (format)\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\ntag\n\nThe unique identifier (name) for a tag in a specific\n  taxonomy release.\n\nALPHANUMERIC\n\n256\n\nNo\n\n*\n\nversion\n\nFor a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nddate\n\nThe end date for the data value, rounded to the nearest\n  month end.\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\n*\n\nqtrs\n\nThe count of the number of quarters represented by the\n  data value, rounded to the nearest whole number. 0 indicates it is a\n  point-in-time value.\n\nNUMERIC\n\n8\n\nNo\n\n*\n\nuom\n\nThe unit of measure for the value.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nsegments\n\nTags used to represent axis and member reporting.\n\nALPHANUMERIC\n\n1024\n\nYes\n\n*\n\ncoreg\n\nIf specified, indicates a specific co-registrant, the\n  parent company, or other entity (e.g., guarantor).  NULL indicates the consolidated\n  entity.\n\nALPHANUMERIC\n\n256\n\nYes\n\n*\n\nvalue\n\nThe value. This is not scaled, it is as found in the\n  Interactive Data file, but is limited to four digits to the right of the\n  decimal point.\n\nNUMERIC(28,4)\n\n16\n\nYes\n\nfootnote\n\nThe text of any superscripted footnotes on the value,\n  as shown on the statement page, truncated to 512 characters, or if there is\n  no footnote, then this field will be blank.\n\nALPHANUMERIC\n\n512\n\nYes",
+    "metadata": {
+      "type": "section",
+      "section_number": "5.3",
+      "section_title": "NUM (Numbers)",
+      "level": 2
+    }
+  },
+  {
+    "id": "section_5_4",
+    "content": "Section 5.4: PRE\n(Presentation of Statements)\n\nThe PRE data set contains one row for each line of the\nfinancial statements tagged by the filer.  The source for the data set is\nthe as filed XBRL filer submissions.   Note that there may be more\nthan one row per entry in NUM because the same tag can appear in more than one\nstatement (the tag NetIncome, for example can appear in both the Income\nStatement and Cash Flows in a single financial statement, and the tag Cash may\nappear in both the Balance Sheet and Cash Flows).\n\nField Name\n\nField Description\n\nField Type (format)\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The\n  20-character string formed from the 18-digit number assigned by the SEC to\n  each EDGAR submission.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nreport\n\nRepresents the report grouping. This field corresponds\n  to the statement (stmt) field, which indicates the type of statement. The\n  numeric value refers to the R file as posted on the EDGAR Web site.\n\nNUMERIC\n\n6\n\nNo\n\n*\n\nline\n\nRepresents the tags presentation line order for a\n  given report. Together with the statement and report field, presentation\n  location, order and grouping can be derived.\n\nNUMERIC\n\n6\n\nNo\n\n*\n\nstmt\n\nThe financial statement location to which the value of\n  the report field pertains.\n\nALPHANUMERIC (BS = Balance Sheet, IS = Income\n  Statement, CF = Cash Flow, EQ = Equity, CI = Comprehensive Income, SI =\n  Schedule of Investments, UN = Unclassifiable Statement).\n\n2\n\nNo\n\ninpth\n\nValue was presented parenthetically instead of in\n  columns within the financial statements. For example:\n\nReceivables (net of\n  allowance for bad debts of $200 in 2012) $700.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nrfile\n\nThe type of interactive data file rendered on the EDGAR\n  web site, H = .htm file, X = .xml file.\n\nALPHANUMERIC\n\n1\n\nNo\n\ntag\n\nThe tag chosen by the filer for this line item.\n\nALPHANUMERIC\n\n256\n\nNo\n\nversion\n\nThe taxonomy identifier if the tag is a standard tag,\n  otherwise adsh.\n\nALPHANUMERIC\n\n20\n\nNo\n\nplabel\n\nThe text presented on the line item, also known as a preferred\n  label.\n\nALPHANUMERIC\n\n512\n\nNo\n\nnegating\n\nFlag to indicate whether the plabel is negating.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo",
+    "metadata": {
+      "type": "section",
+      "section_number": "5.4",
+      "section_title": "PRE\n(Presentation of Statements)",
+      "level": 2
+    }
+  },
+  {
+    "id": "table_table_1",
+    "content": "Table: table_1\nCaption: Figure 1. Data relationships\n\nDataset | Columns referencing other datasets | Referenced dataset | Referenced columns\n--------------------------------------------------------------------------------------\nNUM | adsh | SUB | adsh\ntag, version | TAG | tag, version | \nPRE | adsh | SUB | adsh\ntag, version | TAG | tag, version | \nadsh, tag, version | NUM | adsh, tag, version | \n",
+    "metadata": {
+      "type": "table",
+      "table_name": "table_1",
+      "table_type": "relationship",
+      "caption": "Figure 1. Data relationships"
+    }
+  },
+  {
+    "id": "relationship_NUM_SUB_0",
+    "content": "Relationship: NUM → SUB\nColumns in NUM: adsh\nReferenced columns in SUB: adsh\n",
+    "metadata": {
+      "type": "relationship",
+      "source_table": "NUM",
+      "target_table": "SUB"
+    }
+  },
+  {
+    "id": "relationship_tag, version_tag, version_1",
+    "content": "Relationship: tag, version → tag, version\nColumns in tag, version: TAG\n",
+    "metadata": {
+      "type": "relationship",
+      "source_table": "tag, version",
+      "target_table": "tag, version"
+    }
+  },
+  {
+    "id": "relationship_PRE_SUB_2",
+    "content": "Relationship: PRE → SUB\nColumns in PRE: adsh\nReferenced columns in SUB: adsh\n",
+    "metadata": {
+      "type": "relationship",
+      "source_table": "PRE",
+      "target_table": "SUB"
+    }
+  },
+  {
+    "id": "relationship_tag, version_tag, version_3",
+    "content": "Relationship: tag, version → tag, version\nColumns in tag, version: TAG\n",
+    "metadata": {
+      "type": "relationship",
+      "source_table": "tag, version",
+      "target_table": "tag, version"
+    }
+  },
+  {
+    "id": "relationship_adsh, tag, version_adsh, tag, version_4",
+    "content": "Relationship: adsh, tag, version → adsh, tag, version\nColumns in adsh, tag, version: NUM\n",
+    "metadata": {
+      "type": "relationship",
+      "source_table": "adsh, tag, version",
+      "target_table": "adsh, tag, version"
+    }
+  },
+  {
+    "id": "table_SUB",
+    "content": "Table: SUB\nCaption: Figure\n2. Fields in the SUB data set\n\nField Name | Field Description | Source | Format | Max Size | May be NULL | Key\n-------------------------------------------------------------------------------\nadsh | Accession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission. | EDGAR | ALPHANUMERIC (nnnnnnnnnn-nn-nnnnnn) | 20 | No | *\ncik | Central Index Key (CIK). Ten digit number assigned by\n  the SEC to each registrant that submits filings. | EDGAR | NUMERIC | 10 | No | \nname | Name of registrant. This corresponds to the name of the\n  legal entity as recorded in EDGAR as of the filing date. | EDGAR | ALPHANUMERIC | 150 | No | \nsic | Standard Industrial Classification (SIC). Four digit\n  code assigned by the SEC as of the filing date, indicating the registrants\n  type of business. | EDGAR | NUMERIC | 4 | Yes | \ncountryba | The ISO 3166-1 country of the registrant's business\n  address. | EDGAR | ALPHANUMERIC | 2 | Yes | \nstprba | The state or province of the registrants business\n  address, if field countryba is US or CA. | EDGAR | ALPHANUMERIC | 2 | Yes | \ncityba | The city of the registrant's business address. | EDGAR | ALPHANUMERIC | 30 | Yes | \nzipba | The zip code of the registrants business address. | EDGAR | ALPHANUMERIC | 10 | Yes | \nbas1 | The first line of the street of the registrants\n  business address. | EDGAR | ALPHANUMERIC | 40 | Yes | \nbas2 | The second line of the street of the registrants\n  business address. | EDGAR | ALPHANUMERIC | 40 | Yes | \nbaph | The phone number of the registrants business address. | EDGAR | ALPHANUMERIC | 20 | Yes | \ncountryma | The ISO 3166-1 country of the registrant's mailing\n  address. | EDGAR | ALPHANUMERIC | 2 | Yes | \nstprma | The state or province of the registrants mailing\n  address, if field countryma is US or CA. | EDGAR | ALPHANUMERIC | 2 | Yes | \ncityma | The city of the registrant's mailing address. | EDGAR | ALPHANUMERIC | 30 | Yes | \nzipma | The zip code of the registrants mailing address. | EDGAR | ALPHANUMERIC | 10 | Yes | \nmas1 | The first line of the street of the registrants\n  mailing address. | EDGAR | ALPHANUMERIC | 40 | Yes | \nmas2 | The second line of the street of the registrants\n  mailing address. | EDGAR | ALPHANUMERIC | 40 | Yes | \ncountryinc | The ISO 3166-1 country of incorporation for the\n  registrant. | EDGAR | ALPHANUMERIC | 3 | Yes | \nstprinc | The state or province of incorporation for the\n  registrant, if countryinc is US or CA. | EDGAR | ALPHANUMERIC | 2 | Yes | \nein | Employee Identification Number, 9 digit identification\n  number assigned by the Internal Revenue Service to business entities\n  operating in the United States. | EDGAR | NUMERIC | 10 | Yes | \nformer | Most recent former name of the registrant, if any. | EDGAR | ALPHANUMERIC | 150 | Yes | \nchanged | Date of change from the former name, if any. | EDGAR | ALPHANUMERIC | 8 | Yes | \nafs | Filer status with the SEC at the time of submission:1-LAF=Large Accelerated,2-ACC=Accelerated,3-SRA=Smaller Reporting Accelerated,4-NON=Non-Accelerated,5-SML=Smaller Reporting Filer,NULL=not assigned. | XBRL | ALPHANUMERIC | 5 | Yes | \nwksi | Well Known Seasoned Issuer (WKSI). An issuer that meets\n  specific SEC requirements at some point during a 60-day period preceding the\n  date the issuer satisfies its obligation to update its shelf registration\n  statement. | XBRL | BOOLEAN (1 if true and 0 if false) | 1 | No | \nfye | Fiscal Year End Date, rounded to nearest month-end. | XBRL | ALPHANUMERIC (mmdd) | 4 | Yes | \nform | The submission type of the registrants filing. | EDGAR | ALPHANUMERIC | 10 | No | \nperiod | Balance Sheet Date, rounded to nearest month-end. | XBRL | DATE (yyyymmdd) | 8 | No | \nfy | Fiscal Year Focus (as defined in the EDGAR XBRL Guide Ch.\n  3.1.8). | XBRL | YEAR (yyyy) | 4 | Yes | \nfp | Fiscal Period Focus (as defined in the EDGAR XBRL Guide\n  Ch. 3.1.8) within Fiscal Year. | XBRL | ALPHANUMERIC (FY, Q1, Q2, Q3, Q4) | 2 | Yes | \nfiled | The date of the registrants filing with the\n  Commission. | EDGAR | DATE (yyyymmdd) | 8 | No | \naccepted | The acceptance date and time of the registrants filing\n  with the Commission. | EDGAR | DATETIME (yyyy‑mm‑dd hh:mm:ss) | 19 | No | \nprevrpt | Previous Report TRUE indicates that the submission\n  information was subsequently amended. | EDGAR | BOOLEAN (1 if true and 0 if false) | 1 | No | \ndetail | TRUE indicates that the XBRL submission contains\n  quantitative disclosures within the footnotes and schedules at the required\n  detail level (e.g., each amount). | XBRL | BOOLEAN (1 if true and 0 if false) | 1 | No | \ninstance | The name of the submitted XBRL Instance Document. The\n  name often begins with the company ticker symbol. | EDGAR | ALPHANUMERIC (e.g. abcd‑yyyymmdd.xml) | 40 | No | \nnciks | Number of Central Index Keys (CIK) of registrants\n  (i.e., business units) included in the consolidating entitys submitted\n  filing. | EDGAR | NUMERIC | 4 | No | \naciks | Additional CIKs of co-registrants included in a\n  consolidating entitys EDGAR submission, separated by spaces. If there are no\n  other co-registrants (i.e., nciks=1), the value of aciks is NULL.  For a\n  very small number of filers, the entire list of co-registrants is too long to\n  fit in the field.  Where this is the case, users should refer to the\n  complete submission file for all CIK information. | EDGAR | ALPHANUMERIC (space delimited) | 120 | Yes | \n",
+    "metadata": {
+      "type": "table",
+      "table_name": "SUB",
+      "table_type": "field_definition",
+      "caption": "Figure\n2. Fields in the SUB data set"
+    }
+  },
+  {
+    "id": "field_SUB_adsh",
+    "content": "Table: SUB\nField: adsh\n\nField Name: adsh\nField Description: Accession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\nSource: EDGAR\nFormat: ALPHANUMERIC (nnnnnnnnnn-nn-nnnnnn)\nMax Size: 20\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "adsh"
+    }
+  },
+  {
+    "id": "field_SUB_cik",
+    "content": "Table: SUB\nField: cik\n\nField Name: cik\nField Description: Central Index Key (CIK). Ten digit number assigned by\n  the SEC to each registrant that submits filings.\nSource: EDGAR\nFormat: NUMERIC\nMax Size: 10\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "cik"
+    }
+  },
+  {
+    "id": "field_SUB_name",
+    "content": "Table: SUB\nField: name\n\nField Name: name\nField Description: Name of registrant. This corresponds to the name of the\n  legal entity as recorded in EDGAR as of the filing date.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 150\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "name"
+    }
+  },
+  {
+    "id": "field_SUB_sic",
+    "content": "Table: SUB\nField: sic\n\nField Name: sic\nField Description: Standard Industrial Classification (SIC). Four digit\n  code assigned by the SEC as of the filing date, indicating the registrants\n  type of business.\nSource: EDGAR\nFormat: NUMERIC\nMax Size: 4\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "sic"
+    }
+  },
+  {
+    "id": "field_SUB_countryba",
+    "content": "Table: SUB\nField: countryba\n\nField Name: countryba\nField Description: The ISO 3166-1 country of the registrant's business\n  address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 2\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "countryba"
+    }
+  },
+  {
+    "id": "field_SUB_stprba",
+    "content": "Table: SUB\nField: stprba\n\nField Name: stprba\nField Description: The state or province of the registrants business\n  address, if field countryba is US or CA.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 2\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "stprba"
+    }
+  },
+  {
+    "id": "field_SUB_cityba",
+    "content": "Table: SUB\nField: cityba\n\nField Name: cityba\nField Description: The city of the registrant's business address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 30\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "cityba"
+    }
+  },
+  {
+    "id": "field_SUB_zipba",
+    "content": "Table: SUB\nField: zipba\n\nField Name: zipba\nField Description: The zip code of the registrants business address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 10\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "zipba"
+    }
+  },
+  {
+    "id": "field_SUB_bas1",
+    "content": "Table: SUB\nField: bas1\n\nField Name: bas1\nField Description: The first line of the street of the registrants\n  business address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 40\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "bas1"
+    }
+  },
+  {
+    "id": "field_SUB_bas2",
+    "content": "Table: SUB\nField: bas2\n\nField Name: bas2\nField Description: The second line of the street of the registrants\n  business address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 40\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "bas2"
+    }
+  },
+  {
+    "id": "field_SUB_baph",
+    "content": "Table: SUB\nField: baph\n\nField Name: baph\nField Description: The phone number of the registrants business address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 20\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "baph"
+    }
+  },
+  {
+    "id": "field_SUB_countryma",
+    "content": "Table: SUB\nField: countryma\n\nField Name: countryma\nField Description: The ISO 3166-1 country of the registrant's mailing\n  address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 2\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "countryma"
+    }
+  },
+  {
+    "id": "field_SUB_stprma",
+    "content": "Table: SUB\nField: stprma\n\nField Name: stprma\nField Description: The state or province of the registrants mailing\n  address, if field countryma is US or CA.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 2\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "stprma"
+    }
+  },
+  {
+    "id": "field_SUB_cityma",
+    "content": "Table: SUB\nField: cityma\n\nField Name: cityma\nField Description: The city of the registrant's mailing address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 30\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "cityma"
+    }
+  },
+  {
+    "id": "field_SUB_zipma",
+    "content": "Table: SUB\nField: zipma\n\nField Name: zipma\nField Description: The zip code of the registrants mailing address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 10\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "zipma"
+    }
+  },
+  {
+    "id": "field_SUB_mas1",
+    "content": "Table: SUB\nField: mas1\n\nField Name: mas1\nField Description: The first line of the street of the registrants\n  mailing address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 40\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "mas1"
+    }
+  },
+  {
+    "id": "field_SUB_mas2",
+    "content": "Table: SUB\nField: mas2\n\nField Name: mas2\nField Description: The second line of the street of the registrants\n  mailing address.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 40\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "mas2"
+    }
+  },
+  {
+    "id": "field_SUB_countryinc",
+    "content": "Table: SUB\nField: countryinc\n\nField Name: countryinc\nField Description: The ISO 3166-1 country of incorporation for the\n  registrant.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 3\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "countryinc"
+    }
+  },
+  {
+    "id": "field_SUB_stprinc",
+    "content": "Table: SUB\nField: stprinc\n\nField Name: stprinc\nField Description: The state or province of incorporation for the\n  registrant, if countryinc is US or CA.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 2\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "stprinc"
+    }
+  },
+  {
+    "id": "field_SUB_ein",
+    "content": "Table: SUB\nField: ein\n\nField Name: ein\nField Description: Employee Identification Number, 9 digit identification\n  number assigned by the Internal Revenue Service to business entities\n  operating in the United States.\nSource: EDGAR\nFormat: NUMERIC\nMax Size: 10\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "ein"
+    }
+  },
+  {
+    "id": "field_SUB_former",
+    "content": "Table: SUB\nField: former\n\nField Name: former\nField Description: Most recent former name of the registrant, if any.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 150\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "former"
+    }
+  },
+  {
+    "id": "field_SUB_changed",
+    "content": "Table: SUB\nField: changed\n\nField Name: changed\nField Description: Date of change from the former name, if any.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 8\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "changed"
+    }
+  },
+  {
+    "id": "field_SUB_afs",
+    "content": "Table: SUB\nField: afs\n\nField Name: afs\nField Description: Filer status with the SEC at the time of submission:1-LAF=Large Accelerated,2-ACC=Accelerated,3-SRA=Smaller Reporting Accelerated,4-NON=Non-Accelerated,5-SML=Smaller Reporting Filer,NULL=not assigned.\nSource: XBRL\nFormat: ALPHANUMERIC\nMax Size: 5\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "afs"
+    }
+  },
+  {
+    "id": "field_SUB_wksi",
+    "content": "Table: SUB\nField: wksi\n\nField Name: wksi\nField Description: Well Known Seasoned Issuer (WKSI). An issuer that meets\n  specific SEC requirements at some point during a 60-day period preceding the\n  date the issuer satisfies its obligation to update its shelf registration\n  statement.\nSource: XBRL\nFormat: BOOLEAN (1 if true and 0 if false)\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "wksi"
+    }
+  },
+  {
+    "id": "field_SUB_fye",
+    "content": "Table: SUB\nField: fye\n\nField Name: fye\nField Description: Fiscal Year End Date, rounded to nearest month-end.\nSource: XBRL\nFormat: ALPHANUMERIC (mmdd)\nMax Size: 4\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "fye"
+    }
+  },
+  {
+    "id": "field_SUB_form",
+    "content": "Table: SUB\nField: form\n\nField Name: form\nField Description: The submission type of the registrants filing.\nSource: EDGAR\nFormat: ALPHANUMERIC\nMax Size: 10\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "form"
+    }
+  },
+  {
+    "id": "field_SUB_period",
+    "content": "Table: SUB\nField: period\n\nField Name: period\nField Description: Balance Sheet Date, rounded to nearest month-end.\nSource: XBRL\nFormat: DATE (yyyymmdd)\nMax Size: 8\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "period"
+    }
+  },
+  {
+    "id": "field_SUB_fy",
+    "content": "Table: SUB\nField: fy\n\nField Name: fy\nField Description: Fiscal Year Focus (as defined in the EDGAR XBRL Guide Ch.\n  3.1.8).\nSource: XBRL\nFormat: YEAR (yyyy)\nMax Size: 4\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "fy"
+    }
+  },
+  {
+    "id": "field_SUB_fp",
+    "content": "Table: SUB\nField: fp\n\nField Name: fp\nField Description: Fiscal Period Focus (as defined in the EDGAR XBRL Guide\n  Ch. 3.1.8) within Fiscal Year.\nSource: XBRL\nFormat: ALPHANUMERIC (FY, Q1, Q2, Q3, Q4)\nMax Size: 2\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "fp"
+    }
+  },
+  {
+    "id": "field_SUB_filed",
+    "content": "Table: SUB\nField: filed\n\nField Name: filed\nField Description: The date of the registrants filing with the\n  Commission.\nSource: EDGAR\nFormat: DATE (yyyymmdd)\nMax Size: 8\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "filed"
+    }
+  },
+  {
+    "id": "field_SUB_accepted",
+    "content": "Table: SUB\nField: accepted\n\nField Name: accepted\nField Description: The acceptance date and time of the registrants filing\n  with the Commission.\nSource: EDGAR\nFormat: DATETIME (yyyy‑mm‑dd hh:mm:ss)\nMax Size: 19\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "accepted"
+    }
+  },
+  {
+    "id": "field_SUB_prevrpt",
+    "content": "Table: SUB\nField: prevrpt\n\nField Name: prevrpt\nField Description: Previous Report TRUE indicates that the submission\n  information was subsequently amended.\nSource: EDGAR\nFormat: BOOLEAN (1 if true and 0 if false)\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "prevrpt"
+    }
+  },
+  {
+    "id": "field_SUB_detail",
+    "content": "Table: SUB\nField: detail\n\nField Name: detail\nField Description: TRUE indicates that the XBRL submission contains\n  quantitative disclosures within the footnotes and schedules at the required\n  detail level (e.g., each amount).\nSource: XBRL\nFormat: BOOLEAN (1 if true and 0 if false)\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "detail"
+    }
+  },
+  {
+    "id": "field_SUB_instance",
+    "content": "Table: SUB\nField: instance\n\nField Name: instance\nField Description: The name of the submitted XBRL Instance Document. The\n  name often begins with the company ticker symbol.\nSource: EDGAR\nFormat: ALPHANUMERIC (e.g. abcd‑yyyymmdd.xml)\nMax Size: 40\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "instance"
+    }
+  },
+  {
+    "id": "field_SUB_nciks",
+    "content": "Table: SUB\nField: nciks\n\nField Name: nciks\nField Description: Number of Central Index Keys (CIK) of registrants\n  (i.e., business units) included in the consolidating entitys submitted\n  filing.\nSource: EDGAR\nFormat: NUMERIC\nMax Size: 4\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "nciks"
+    }
+  },
+  {
+    "id": "field_SUB_aciks",
+    "content": "Table: SUB\nField: aciks\n\nField Name: aciks\nField Description: Additional CIKs of co-registrants included in a\n  consolidating entitys EDGAR submission, separated by spaces. If there are no\n  other co-registrants (i.e., nciks=1), the value of aciks is NULL.  For a\n  very small number of filers, the entire list of co-registrants is too long to\n  fit in the field.  Where this is the case, users should refer to the\n  complete submission file for all CIK information.\nSource: EDGAR\nFormat: ALPHANUMERIC (space delimited)\nMax Size: 120\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "SUB",
+      "field_name": "aciks"
+    }
+  },
+  {
+    "id": "table_TAG",
+    "content": "Table: TAG\nCaption: Figure\n3. Fields in the TAG data set\n\nField Name | Field Description | Field Type | Max Size | May be NULL | Key\n--------------------------------------------------------------------------\ntag | The unique identifier (name) for a tag in a specific\n  taxonomy release. | ALPHANUMERIC | 256 | No | *\nversion | For a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined. | ALPHANUMERIC | 20 | No | *\ncustom | 1 if tag is custom (version=adsh), 0 if it is standard.Note: This flag is technically redundant with the  version and adsh\n  columns. | BOOLEAN (1 if true and 0 if false) | 1 | No | \nabstract | 1 if the tag is not used to represent a numeric fact. | BOOLEAN (1 if true and 0 if false) | 1 | No | \ndatatype | If abstract=1, then NULL, otherwise the data type\n  (e.g., monetary) for the tag. | ALPHANUMERIC | 20 | Yes | \niord | If abstract=1, then NULL; otherwise, I if the value\n  is a point-in time, or D if the value is a duration. | ALPHANUMERIC | 1 | No | \ncrdr | If datatype = monetary, then the tags natural\n  accounting balance (debit or credit); if not defined, then NULL. | ALPHANUMERIC (C or D) | 1 | Yes | \ntlabel | If a standard tag, then the label text provided by the\n  taxonomy, otherwise the text provided by the filer.  A tag which had\n  neither would have a NULL value here. | ALPHANUMERIC | 512 | Yes | \ndoc | The detailed definition for the tag. If a standard tag,\n  then the text provided by the taxonomy, otherwise the text assigned by the\n  filer.  Some tags have neither, and this field is NULL. | ALPHANUMERIC |  | Yes | \n",
+    "metadata": {
+      "type": "table",
+      "table_name": "TAG",
+      "table_type": "field_definition",
+      "caption": "Figure\n3. Fields in the TAG data set"
+    }
+  },
+  {
+    "id": "field_TAG_tag",
+    "content": "Table: TAG\nField: tag\n\nField Name: tag\nField Description: The unique identifier (name) for a tag in a specific\n  taxonomy release.\nField Type: ALPHANUMERIC\nMax Size: 256\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "tag"
+    }
+  },
+  {
+    "id": "field_TAG_version",
+    "content": "Table: TAG\nField: version\n\nField Name: version\nField Description: For a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\nField Type: ALPHANUMERIC\nMax Size: 20\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "version"
+    }
+  },
+  {
+    "id": "field_TAG_custom",
+    "content": "Table: TAG\nField: custom\n\nField Name: custom\nField Description: 1 if tag is custom (version=adsh), 0 if it is standard.Note: This flag is technically redundant with the  version and adsh\n  columns.\nField Type: BOOLEAN (1 if true and 0 if false)\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "custom"
+    }
+  },
+  {
+    "id": "field_TAG_abstract",
+    "content": "Table: TAG\nField: abstract\n\nField Name: abstract\nField Description: 1 if the tag is not used to represent a numeric fact.\nField Type: BOOLEAN (1 if true and 0 if false)\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "abstract"
+    }
+  },
+  {
+    "id": "field_TAG_datatype",
+    "content": "Table: TAG\nField: datatype\n\nField Name: datatype\nField Description: If abstract=1, then NULL, otherwise the data type\n  (e.g., monetary) for the tag.\nField Type: ALPHANUMERIC\nMax Size: 20\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "datatype"
+    }
+  },
+  {
+    "id": "field_TAG_iord",
+    "content": "Table: TAG\nField: iord\n\nField Name: iord\nField Description: If abstract=1, then NULL; otherwise, I if the value\n  is a point-in time, or D if the value is a duration.\nField Type: ALPHANUMERIC\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "iord"
+    }
+  },
+  {
+    "id": "field_TAG_crdr",
+    "content": "Table: TAG\nField: crdr\n\nField Name: crdr\nField Description: If datatype = monetary, then the tags natural\n  accounting balance (debit or credit); if not defined, then NULL.\nField Type: ALPHANUMERIC (C or D)\nMax Size: 1\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "crdr"
+    }
+  },
+  {
+    "id": "field_TAG_tlabel",
+    "content": "Table: TAG\nField: tlabel\n\nField Name: tlabel\nField Description: If a standard tag, then the label text provided by the\n  taxonomy, otherwise the text provided by the filer.  A tag which had\n  neither would have a NULL value here.\nField Type: ALPHANUMERIC\nMax Size: 512\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "tlabel"
+    }
+  },
+  {
+    "id": "field_TAG_doc",
+    "content": "Table: TAG\nField: doc\n\nField Name: doc\nField Description: The detailed definition for the tag. If a standard tag,\n  then the text provided by the taxonomy, otherwise the text assigned by the\n  filer.  Some tags have neither, and this field is NULL.\nField Type: ALPHANUMERIC\nMax Size: \nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "TAG",
+      "field_name": "doc"
+    }
+  },
+  {
+    "id": "table_NUM",
+    "content": "Table: NUM\nCaption: Figure 4. Fields in the NUM data set\n\nField Name | Field Description | Field Type (format) | Max Size | May be NULL | Key\n-----------------------------------------------------------------------------------\nadsh | Accession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission. | ALPHANUMERIC | 20 | No | *\ntag | The unique identifier (name) for a tag in a specific\n  taxonomy release. | ALPHANUMERIC | 256 | No | *\nversion | For a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined. | ALPHANUMERIC | 20 | No | *\nddate | The end date for the data value, rounded to the nearest\n  month end. | DATE (yyyymmdd) | 8 | No | *\nqtrs | The count of the number of quarters represented by the\n  data value, rounded to the nearest whole number. 0 indicates it is a\n  point-in-time value. | NUMERIC | 8 | No | *\nuom | The unit of measure for the value. | ALPHANUMERIC | 20 | No | *\nsegments | Tags used to represent axis and member reporting. | ALPHANUMERIC | 1024 | Yes | *\ncoreg | If specified, indicates a specific co-registrant, the\n  parent company, or other entity (e.g., guarantor).  NULL indicates the consolidated\n  entity. | ALPHANUMERIC | 256 | Yes | *\nvalue | The value. This is not scaled, it is as found in the\n  Interactive Data file, but is limited to four digits to the right of the\n  decimal point. | NUMERIC(28,4) | 16 | Yes | \nfootnote | The text of any superscripted footnotes on the value,\n  as shown on the statement page, truncated to 512 characters, or if there is\n  no footnote, then this field will be blank. | ALPHANUMERIC | 512 | Yes | \n",
+    "metadata": {
+      "type": "table",
+      "table_name": "NUM",
+      "table_type": "field_definition",
+      "caption": "Figure 4. Fields in the NUM data set"
+    }
+  },
+  {
+    "id": "field_NUM_adsh",
+    "content": "Table: NUM\nField: adsh\n\nField Name: adsh\nField Description: Accession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\nField Type (format): ALPHANUMERIC\nMax Size: 20\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "adsh"
+    }
+  },
+  {
+    "id": "field_NUM_tag",
+    "content": "Table: NUM\nField: tag\n\nField Name: tag\nField Description: The unique identifier (name) for a tag in a specific\n  taxonomy release.\nField Type (format): ALPHANUMERIC\nMax Size: 256\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "tag"
+    }
+  },
+  {
+    "id": "field_NUM_version",
+    "content": "Table: NUM\nField: version\n\nField Name: version\nField Description: For a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\nField Type (format): ALPHANUMERIC\nMax Size: 20\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "version"
+    }
+  },
+  {
+    "id": "field_NUM_ddate",
+    "content": "Table: NUM\nField: ddate\n\nField Name: ddate\nField Description: The end date for the data value, rounded to the nearest\n  month end.\nField Type (format): DATE (yyyymmdd)\nMax Size: 8\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "ddate"
+    }
+  },
+  {
+    "id": "field_NUM_qtrs",
+    "content": "Table: NUM\nField: qtrs\n\nField Name: qtrs\nField Description: The count of the number of quarters represented by the\n  data value, rounded to the nearest whole number. 0 indicates it is a\n  point-in-time value.\nField Type (format): NUMERIC\nMax Size: 8\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "qtrs"
+    }
+  },
+  {
+    "id": "field_NUM_uom",
+    "content": "Table: NUM\nField: uom\n\nField Name: uom\nField Description: The unit of measure for the value.\nField Type (format): ALPHANUMERIC\nMax Size: 20\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "uom"
+    }
+  },
+  {
+    "id": "field_NUM_segments",
+    "content": "Table: NUM\nField: segments\n\nField Name: segments\nField Description: Tags used to represent axis and member reporting.\nField Type (format): ALPHANUMERIC\nMax Size: 1024\nMay be NULL: Yes\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "segments"
+    }
+  },
+  {
+    "id": "field_NUM_coreg",
+    "content": "Table: NUM\nField: coreg\n\nField Name: coreg\nField Description: If specified, indicates a specific co-registrant, the\n  parent company, or other entity (e.g., guarantor).  NULL indicates the consolidated\n  entity.\nField Type (format): ALPHANUMERIC\nMax Size: 256\nMay be NULL: Yes\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "coreg"
+    }
+  },
+  {
+    "id": "field_NUM_value",
+    "content": "Table: NUM\nField: value\n\nField Name: value\nField Description: The value. This is not scaled, it is as found in the\n  Interactive Data file, but is limited to four digits to the right of the\n  decimal point.\nField Type (format): NUMERIC(28,4)\nMax Size: 16\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "value"
+    }
+  },
+  {
+    "id": "field_NUM_footnote",
+    "content": "Table: NUM\nField: footnote\n\nField Name: footnote\nField Description: The text of any superscripted footnotes on the value,\n  as shown on the statement page, truncated to 512 characters, or if there is\n  no footnote, then this field will be blank.\nField Type (format): ALPHANUMERIC\nMax Size: 512\nMay be NULL: Yes\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "NUM",
+      "field_name": "footnote"
+    }
+  },
+  {
+    "id": "table_PRE",
+    "content": "Table: PRE\nCaption: Figure 5. Fields in the PRE data set\n\nField Name | Field Description | Field Type (format) | Max Size | May be NULL | Key\n-----------------------------------------------------------------------------------\nadsh | Accession Number. The\n  20-character string formed from the 18-digit number assigned by the SEC to\n  each EDGAR submission. | ALPHANUMERIC | 20 | No | *\nreport | Represents the report grouping. This field corresponds\n  to the statement (stmt) field, which indicates the type of statement. The\n  numeric value refers to the R file as posted on the EDGAR Web site. | NUMERIC | 6 | No | *\nline | Represents the tags presentation line order for a\n  given report. Together with the statement and report field, presentation\n  location, order and grouping can be derived. | NUMERIC | 6 | No | *\nstmt | The financial statement location to which the value of\n  the report field pertains. | ALPHANUMERIC (BS = Balance Sheet, IS = Income\n  Statement, CF = Cash Flow, EQ = Equity, CI = Comprehensive Income, SI =\n  Schedule of Investments, UN = Unclassifiable Statement). | 2 | No | \ninpth | Value was presented parenthetically instead of in\n  columns within the financial statements. For example:Receivables (net of\n  allowance for bad debts of $200 in 2012) $700. | BOOLEAN (1 if true and 0 if false) | 1 | No | \nrfile | The type of interactive data file rendered on the EDGAR\n  web site, H = .htm file, X = .xml file. | ALPHANUMERIC | 1 | No | \ntag | The tag chosen by the filer for this line item. | ALPHANUMERIC | 256 | No | \nversion | The taxonomy identifier if the tag is a standard tag,\n  otherwise adsh. | ALPHANUMERIC | 20 | No | \nplabel | The text presented on the line item, also known as a preferred\n  label. | ALPHANUMERIC | 512 | No | \nnegating | Flag to indicate whether the plabel is negating. | BOOLEAN (1 if true and 0 if false) | 1 | No | \n",
+    "metadata": {
+      "type": "table",
+      "table_name": "PRE",
+      "table_type": "field_definition",
+      "caption": "Figure 5. Fields in the PRE data set"
+    }
+  },
+  {
+    "id": "field_PRE_adsh",
+    "content": "Table: PRE\nField: adsh\n\nField Name: adsh\nField Description: Accession Number. The\n  20-character string formed from the 18-digit number assigned by the SEC to\n  each EDGAR submission.\nField Type (format): ALPHANUMERIC\nMax Size: 20\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "adsh"
+    }
+  },
+  {
+    "id": "field_PRE_report",
+    "content": "Table: PRE\nField: report\n\nField Name: report\nField Description: Represents the report grouping. This field corresponds\n  to the statement (stmt) field, which indicates the type of statement. The\n  numeric value refers to the R file as posted on the EDGAR Web site.\nField Type (format): NUMERIC\nMax Size: 6\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "report"
+    }
+  },
+  {
+    "id": "field_PRE_line",
+    "content": "Table: PRE\nField: line\n\nField Name: line\nField Description: Represents the tags presentation line order for a\n  given report. Together with the statement and report field, presentation\n  location, order and grouping can be derived.\nField Type (format): NUMERIC\nMax Size: 6\nMay be NULL: No\nKey: *\n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "line"
+    }
+  },
+  {
+    "id": "field_PRE_stmt",
+    "content": "Table: PRE\nField: stmt\n\nField Name: stmt\nField Description: The financial statement location to which the value of\n  the report field pertains.\nField Type (format): ALPHANUMERIC (BS = Balance Sheet, IS = Income\n  Statement, CF = Cash Flow, EQ = Equity, CI = Comprehensive Income, SI =\n  Schedule of Investments, UN = Unclassifiable Statement).\nMax Size: 2\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "stmt"
+    }
+  },
+  {
+    "id": "field_PRE_inpth",
+    "content": "Table: PRE\nField: inpth\n\nField Name: inpth\nField Description: Value was presented parenthetically instead of in\n  columns within the financial statements. For example:Receivables (net of\n  allowance for bad debts of $200 in 2012) $700.\nField Type (format): BOOLEAN (1 if true and 0 if false)\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "inpth"
+    }
+  },
+  {
+    "id": "field_PRE_rfile",
+    "content": "Table: PRE\nField: rfile\n\nField Name: rfile\nField Description: The type of interactive data file rendered on the EDGAR\n  web site, H = .htm file, X = .xml file.\nField Type (format): ALPHANUMERIC\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "rfile"
+    }
+  },
+  {
+    "id": "field_PRE_tag",
+    "content": "Table: PRE\nField: tag\n\nField Name: tag\nField Description: The tag chosen by the filer for this line item.\nField Type (format): ALPHANUMERIC\nMax Size: 256\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "tag"
+    }
+  },
+  {
+    "id": "field_PRE_version",
+    "content": "Table: PRE\nField: version\n\nField Name: version\nField Description: The taxonomy identifier if the tag is a standard tag,\n  otherwise adsh.\nField Type (format): ALPHANUMERIC\nMax Size: 20\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "version"
+    }
+  },
+  {
+    "id": "field_PRE_plabel",
+    "content": "Table: PRE\nField: plabel\n\nField Name: plabel\nField Description: The text presented on the line item, also known as a preferred\n  label.\nField Type (format): ALPHANUMERIC\nMax Size: 512\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "plabel"
+    }
+  },
+  {
+    "id": "field_PRE_negating",
+    "content": "Table: PRE\nField: negating\n\nField Name: negating\nField Description: Flag to indicate whether the plabel is negating.\nField Type (format): BOOLEAN (1 if true and 0 if false)\nMax Size: 1\nMay be NULL: No\nKey: \n",
+    "metadata": {
+      "type": "field",
+      "table_name": "PRE",
+      "field_name": "negating"
+    }
+  },
+  {
+    "id": "combined_SUB",
+    "content": "Table: SUB\n\nThe submissions data set contains summary information about\nan entire EDGAR submission. Some fields were sourced directly from EDGAR\nsubmission information, while other columns of data were sourced from the XBRL\nsubmission. Note: EDGAR derived fields represent the most recent EDGAR\nassignment as of a given filings submission date and do not necessarily\nrepresent the most current assignments.\n\nField Name\n\nField Description\n\nSource\n\nFormat\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\n\nEDGAR\n\nALPHANUMERIC (nnnnnnnnnn-nn-nnnnnn)\n\n20\n\nNo\n\n*\n\ncik\n\nCentral Index Key (CIK). Ten digit number assigned by\n  the SEC to each registrant that submits filings.\n\nEDGAR\n\nNUMERIC\n\n10\n\nNo\n\nname\n\nName of registrant. This corresponds to the name of the\n  legal entity as recorded in EDGAR as of the filing date.\n\nEDGAR\n\nALPHANUMERIC\n\n150\n\nNo\n\nsic\n\nStandard Industrial Classification (SIC). Four digit\n  code assigned by the SEC as of the filing date, indicating the registrants\n  type of business.\n\nEDGAR\n\nNUMERIC\n\n4\n\nYes\n\ncountryba\n\nThe ISO 3166-1 country of the registrant's business\n  address.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nstprba\n\nThe state or province of the registrants business\n  address, if field countryba is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\ncityba\n\nThe city of the registrant's business address.\n\nEDGAR\n\nALPHANUMERIC\n\n30\n\nYes\n\nzipba\n\nThe zip code of the registrants business address.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nYes\n\nbas1\n\nThe first line of the street of the registrants\n  business address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nbas2\n\nThe second line of the street of the registrants\n  business address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nbaph\n\nThe phone number of the registrants business address.\n\nEDGAR\n\nALPHANUMERIC\n\n20\n\nYes\n\ncountryma\n\nThe ISO 3166-1 country of the registrant's mailing\n  address.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nstprma\n\nThe state or province of the registrants mailing\n  address, if field countryma is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\ncityma\n\nThe city of the registrant's mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n30\n\nYes\n\nzipma\n\nThe zip code of the registrants mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nYes\n\nmas1\n\nThe first line of the street of the registrants\n  mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\nmas2\n\nThe second line of the street of the registrants\n  mailing address.\n\nEDGAR\n\nALPHANUMERIC\n\n40\n\nYes\n\ncountryinc\n\nThe ISO 3166-1 country of incorporation for the\n  registrant.\n\nEDGAR\n\nALPHANUMERIC\n\n3\n\nYes\n\nstprinc\n\nThe state or province of incorporation for the\n  registrant, if countryinc is US or CA.\n\nEDGAR\n\nALPHANUMERIC\n\n2\n\nYes\n\nein\n\nEmployee Identification Number, 9 digit identification\n  number assigned by the Internal Revenue Service to business entities\n  operating in the United States.\n\nEDGAR\n\nNUMERIC\n\n10\n\nYes\n\nformer\n\nMost recent former name of the registrant, if any.\n\nEDGAR\n\nALPHANUMERIC\n\n150\n\nYes\n\nchanged\n\nDate of change from the former name, if any.\n\nEDGAR\n\nALPHANUMERIC\n\n8\n\nYes\n\nafs\n\nFiler status with the SEC at the time of submission:\n\n1-LAF=Large Accelerated,\n\n2-ACC=Accelerated,\n\n3-SRA=Smaller Reporting Accelerated,\n\n4-NON=Non-Accelerated,\n\n5-SML=Smaller Reporting Filer,\n\nNULL=not assigned.\n\nXBRL\n\nALPHANUMERIC\n\n5\n\nYes\n\nwksi\n\nWell Known Seasoned Issuer (WKSI). An issuer that meets\n  specific SEC requirements at some point during a 60-day period preceding the\n  date the issuer satisfies its obligation to update its shelf registration\n  statement.\n\nXBRL\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nfye\n\nFiscal Year End Date, rounded to nearest month-end.\n\nXBRL\n\nALPHANUMERIC (mmdd)\n\n4\n\nYes\n\nform\n\nThe submission type of the registrants filing.\n\nEDGAR\n\nALPHANUMERIC\n\n10\n\nNo\n\nperiod\n\nBalance Sheet Date, rounded to nearest month-end.\n\nXBRL\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\nfy\n\nFiscal Year Focus (as defined in the EDGAR XBRL Guide Ch.\n  3.1.8).\n\nXBRL\n\nYEAR (yyyy)\n\n4\n\nYes\n\nfp\n\nFiscal Period Focus (as defined in the EDGAR XBRL Guide\n  Ch. 3.1.8) within Fiscal Year.\n\nXBRL\n\nALPHANUMERIC (FY, Q1, Q2, Q3, Q4)\n\n2\n\nYes\n\nfiled\n\nThe date of the registrants filing with the\n  Commission.\n\nEDGAR\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\naccepted\n\nThe acceptance date and time of the registrants filing\n  with the Commission.\n\nEDGAR\n\nDATETIME (yyyy‑mm‑dd hh:mm:ss)\n\n19\n\nNo\n\nprevrpt\n\nPrevious Report TRUE indicates that the submission\n  information was subsequently amended.\n\nEDGAR\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ndetail\n\nTRUE indicates that the XBRL submission contains\n  quantitative disclosures within the footnotes and schedules at the required\n  detail level (e.g., each amount).\n\nXBRL\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ninstance\n\nThe name of the submitted XBRL Instance Document. The\n  name often begins with the company ticker symbol.\n\nEDGAR\n\nALPHANUMERIC (e.g. abcd‑yyyymmdd.xml)\n\n40\n\nNo\n\nnciks\n\nNumber of Central Index Keys (CIK) of registrants\n  (i.e., business units) included in the consolidating entitys submitted\n  filing.\n\nEDGAR\n\nNUMERIC\n\n4\n\nNo\n\naciks\n\nAdditional CIKs of co-registrants included in a\n  consolidating entitys EDGAR submission, separated by spaces. If there are no\n  other co-registrants (i.e., nciks=1), the value of aciks is NULL.  For a\n  very small number of filers, the entire list of co-registrants is too long to\n  fit in the field.  Where this is the case, users should refer to the\n  complete submission file for all CIK information.\n\nEDGAR\n\nALPHANUMERIC (space delimited)\n\n120\n\nYes\n\nNote: To access the complete submission files for a given\nfiling, please see theSEC EDGAR website. \nThe SEC website folder http://www.sec.gov/Archives/edgar/data/{cik}/{accession}/\nwill always contain all the files for a given submission.  To assemble the\nfolder address to any filing referenced in the SUB data set, simply substitute\n{cik} with thecikfield and replace {accession} with theadshfield (after removing the dash character).  The following sample SQL Query\nprovides an example of how to generate a list of addresses for filings\ncontained in the SUB data set:\n\n·select name,form,period,\n'http://www.sec.gov/Archives/edgar/data/' + ltrim(str(cik,10))+'/' +\nreplace(adsh,'-','')+'/'+instanceas url from SUB sub order by\nperiod desc, name\n\nFields in the SUB data set:\n\n- adsh: Accession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\n- cik: Central Index Key (CIK). Ten digit number assigned by\n  the SEC to each registrant that submits filings.\n- name: Name of registrant. This corresponds to the name of the\n  legal entity as recorded in EDGAR as of the filing date.\n- sic: Standard Industrial Classification (SIC). Four digit\n  code assigned by the SEC as of the filing date, indicating the registrants\n  type of business.\n- countryba: The ISO 3166-1 country of the registrant's business\n  address.\n- stprba: The state or province of the registrants business\n  address, if field countryba is US or CA.\n- cityba: The city of the registrant's business address.\n- zipba: The zip code of the registrants business address.\n- bas1: The first line of the street of the registrants\n  business address.\n- bas2: The second line of the street of the registrants\n  business address.\n- baph: The phone number of the registrants business address.\n- countryma: The ISO 3166-1 country of the registrant's mailing\n  address.\n- stprma: The state or province of the registrants mailing\n  address, if field countryma is US or CA.\n- cityma: The city of the registrant's mailing address.\n- zipma: The zip code of the registrants mailing address.\n- mas1: The first line of the street of the registrants\n  mailing address.\n- mas2: The second line of the street of the registrants\n  mailing address.\n- countryinc: The ISO 3166-1 country of incorporation for the\n  registrant.\n- stprinc: The state or province of incorporation for the\n  registrant, if countryinc is US or CA.\n- ein: Employee Identification Number, 9 digit identification\n  number assigned by the Internal Revenue Service to business entities\n  operating in the United States.\n- former: Most recent former name of the registrant, if any.\n- changed: Date of change from the former name, if any.\n- afs: Filer status with the SEC at the time of submission:1-LAF=Large Accelerated,2-ACC=Accelerated,3-SRA=Smaller Reporting Accelerated,4-NON=Non-Accelerated,5-SML=Smaller Reporting Filer,NULL=not assigned.\n- wksi: Well Known Seasoned Issuer (WKSI). An issuer that meets\n  specific SEC requirements at some point during a 60-day period preceding the\n  date the issuer satisfies its obligation to update its shelf registration\n  statement.\n- fye: Fiscal Year End Date, rounded to nearest month-end.\n- form: The submission type of the registrants filing.\n- period: Balance Sheet Date, rounded to nearest month-end.\n- fy: Fiscal Year Focus (as defined in the EDGAR XBRL Guide Ch.\n  3.1.8).\n- fp: Fiscal Period Focus (as defined in the EDGAR XBRL Guide\n  Ch. 3.1.8) within Fiscal Year.\n- filed: The date of the registrants filing with the\n  Commission.\n- accepted: The acceptance date and time of the registrants filing\n  with the Commission.\n- prevrpt: Previous Report TRUE indicates that the submission\n  information was subsequently amended.\n- detail: TRUE indicates that the XBRL submission contains\n  quantitative disclosures within the footnotes and schedules at the required\n  detail level (e.g., each amount).\n- instance: The name of the submitted XBRL Instance Document. The\n  name often begins with the company ticker symbol.\n- nciks: Number of Central Index Keys (CIK) of registrants\n  (i.e., business units) included in the consolidating entitys submitted\n  filing.\n- aciks: Additional CIKs of co-registrants included in a\n  consolidating entitys EDGAR submission, separated by spaces. If there are no\n  other co-registrants (i.e., nciks=1), the value of aciks is NULL.  For a\n  very small number of filers, the entire list of co-registrants is too long to\n  fit in the field.  Where this is the case, users should refer to the\n  complete submission file for all CIK information.\n\nThe SUB table is referenced by the following tables:\n- NUM\n- PRE\n",
+    "metadata": {
+      "type": "combined",
+      "table_name": "SUB"
+    }
+  },
+  {
+    "id": "combined_TAG",
+    "content": "Table: TAG\n\nThe TAG data set contains the standard taxonomy tags and the\ncustom taxonomy tags defined in the submissions.  The source is the as\nfiled XBRL filer submissions.  The standard tags are derived from\ntaxonomies inhttps://www.sec.gov/data-research/standard-taxonomies.\n\nField Name\n\nField Description\n\nField Type\n\nMax Size\n\nMay be NULL\n\nKey\n\ntag\n\nThe unique identifier (name) for a tag in a specific\n  taxonomy release.\n\nALPHANUMERIC\n\n256\n\nNo\n\n*\n\nversion\n\nFor a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\ncustom\n\n1 if tag is custom (version=adsh), 0 if it is standard.Note: This flag is technically redundant with the  version and adsh\n  columns.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nabstract\n\n1 if the tag is not used to represent a numeric fact.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\ndatatype\n\nIf abstract=1, then NULL, otherwise the data type\n  (e.g., monetary) for the tag.\n\nALPHANUMERIC\n\n20\n\nYes\n\niord\n\nIf abstract=1, then NULL; otherwise, I if the value\n  is a point-in time, or D if the value is a duration.\n\nALPHANUMERIC\n\n1\n\nNo\n\ncrdr\n\nIf datatype = monetary, then the tags natural\n  accounting balance (debit or credit); if not defined, then NULL.\n\nALPHANUMERIC (C or D)\n\n1\n\nYes\n\ntlabel\n\nIf a standard tag, then the label text provided by the\n  taxonomy, otherwise the text provided by the filer.  A tag which had\n  neither would have a NULL value here.\n\nALPHANUMERIC\n\n512\n\nYes\n\ndoc\n\nThe detailed definition for the tag. If a standard tag,\n  then the text provided by the taxonomy, otherwise the text assigned by the\n  filer.  Some tags have neither, and this field is NULL.\n\nALPHANUMERIC\n\nYes\n\nFields in the TAG data set:\n\n- tag: The unique identifier (name) for a tag in a specific\n  taxonomy release.\n- version: For a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\n- custom: 1 if tag is custom (version=adsh), 0 if it is standard.Note: This flag is technically redundant with the  version and adsh\n  columns.\n- abstract: 1 if the tag is not used to represent a numeric fact.\n- datatype: If abstract=1, then NULL, otherwise the data type\n  (e.g., monetary) for the tag.\n- iord: If abstract=1, then NULL; otherwise, I if the value\n  is a point-in time, or D if the value is a duration.\n- crdr: If datatype = monetary, then the tags natural\n  accounting balance (debit or credit); if not defined, then NULL.\n- tlabel: If a standard tag, then the label text provided by the\n  taxonomy, otherwise the text provided by the filer.  A tag which had\n  neither would have a NULL value here.\n- doc: The detailed definition for the tag. If a standard tag,\n  then the text provided by the taxonomy, otherwise the text assigned by the\n  filer.  Some tags have neither, and this field is NULL.\n",
+    "metadata": {
+      "type": "combined",
+      "table_name": "TAG"
+    }
+  },
+  {
+    "id": "combined_NUM",
+    "content": "Table: NUM\n\nThe NUM data set contains numeric data, one row per data\npoint as rendered by the Commission on the primary financial statements. The\nsource for the table is the as filed XBRL filer submissions.\n\nField Name\n\nField Description\n\nField Type (format)\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\ntag\n\nThe unique identifier (name) for a tag in a specific\n  taxonomy release.\n\nALPHANUMERIC\n\n256\n\nNo\n\n*\n\nversion\n\nFor a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nddate\n\nThe end date for the data value, rounded to the nearest\n  month end.\n\nDATE (yyyymmdd)\n\n8\n\nNo\n\n*\n\nqtrs\n\nThe count of the number of quarters represented by the\n  data value, rounded to the nearest whole number. 0 indicates it is a\n  point-in-time value.\n\nNUMERIC\n\n8\n\nNo\n\n*\n\nuom\n\nThe unit of measure for the value.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nsegments\n\nTags used to represent axis and member reporting.\n\nALPHANUMERIC\n\n1024\n\nYes\n\n*\n\ncoreg\n\nIf specified, indicates a specific co-registrant, the\n  parent company, or other entity (e.g., guarantor).  NULL indicates the consolidated\n  entity.\n\nALPHANUMERIC\n\n256\n\nYes\n\n*\n\nvalue\n\nThe value. This is not scaled, it is as found in the\n  Interactive Data file, but is limited to four digits to the right of the\n  decimal point.\n\nNUMERIC(28,4)\n\n16\n\nYes\n\nfootnote\n\nThe text of any superscripted footnotes on the value,\n  as shown on the statement page, truncated to 512 characters, or if there is\n  no footnote, then this field will be blank.\n\nALPHANUMERIC\n\n512\n\nYes\n\nFields in the NUM data set:\n\n- adsh: Accession Number. The 20-character string formed from\n  the 18-digit number assigned by the SEC to each EDGAR submission.\n- tag: The unique identifier (name) for a tag in a specific\n  taxonomy release.\n- version: For a standard tag, an identifier for the taxonomy;\n  otherwise the accession number where the tag was defined.\n- ddate: The end date for the data value, rounded to the nearest\n  month end.\n- qtrs: The count of the number of quarters represented by the\n  data value, rounded to the nearest whole number. 0 indicates it is a\n  point-in-time value.\n- uom: The unit of measure for the value.\n- segments: Tags used to represent axis and member reporting.\n- coreg: If specified, indicates a specific co-registrant, the\n  parent company, or other entity (e.g., guarantor).  NULL indicates the consolidated\n  entity.\n- value: The value. This is not scaled, it is as found in the\n  Interactive Data file, but is limited to four digits to the right of the\n  decimal point.\n- footnote: The text of any superscripted footnotes on the value,\n  as shown on the statement page, truncated to 512 characters, or if there is\n  no footnote, then this field will be blank.\n\nThe NUM table references the following tables:\n- SUB\n",
+    "metadata": {
+      "type": "combined",
+      "table_name": "NUM"
+    }
+  },
+  {
+    "id": "combined_PRE",
+    "content": "Table: PRE\n\nThe PRE data set contains one row for each line of the\nfinancial statements tagged by the filer.  The source for the data set is\nthe as filed XBRL filer submissions.   Note that there may be more\nthan one row per entry in NUM because the same tag can appear in more than one\nstatement (the tag NetIncome, for example can appear in both the Income\nStatement and Cash Flows in a single financial statement, and the tag Cash may\nappear in both the Balance Sheet and Cash Flows).\n\nField Name\n\nField Description\n\nField Type (format)\n\nMax Size\n\nMay be NULL\n\nKey\n\nadsh\n\nAccession Number. The\n  20-character string formed from the 18-digit number assigned by the SEC to\n  each EDGAR submission.\n\nALPHANUMERIC\n\n20\n\nNo\n\n*\n\nreport\n\nRepresents the report grouping. This field corresponds\n  to the statement (stmt) field, which indicates the type of statement. The\n  numeric value refers to the R file as posted on the EDGAR Web site.\n\nNUMERIC\n\n6\n\nNo\n\n*\n\nline\n\nRepresents the tags presentation line order for a\n  given report. Together with the statement and report field, presentation\n  location, order and grouping can be derived.\n\nNUMERIC\n\n6\n\nNo\n\n*\n\nstmt\n\nThe financial statement location to which the value of\n  the report field pertains.\n\nALPHANUMERIC (BS = Balance Sheet, IS = Income\n  Statement, CF = Cash Flow, EQ = Equity, CI = Comprehensive Income, SI =\n  Schedule of Investments, UN = Unclassifiable Statement).\n\n2\n\nNo\n\ninpth\n\nValue was presented parenthetically instead of in\n  columns within the financial statements. For example:\n\nReceivables (net of\n  allowance for bad debts of $200 in 2012) $700.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nrfile\n\nThe type of interactive data file rendered on the EDGAR\n  web site, H = .htm file, X = .xml file.\n\nALPHANUMERIC\n\n1\n\nNo\n\ntag\n\nThe tag chosen by the filer for this line item.\n\nALPHANUMERIC\n\n256\n\nNo\n\nversion\n\nThe taxonomy identifier if the tag is a standard tag,\n  otherwise adsh.\n\nALPHANUMERIC\n\n20\n\nNo\n\nplabel\n\nThe text presented on the line item, also known as a preferred\n  label.\n\nALPHANUMERIC\n\n512\n\nNo\n\nnegating\n\nFlag to indicate whether the plabel is negating.\n\nBOOLEAN (1 if true and 0 if false)\n\n1\n\nNo\n\nFields in the PRE data set:\n\n- adsh: Accession Number. The\n  20-character string formed from the 18-digit number assigned by the SEC to\n  each EDGAR submission.\n- report: Represents the report grouping. This field corresponds\n  to the statement (stmt) field, which indicates the type of statement. The\n  numeric value refers to the R file as posted on the EDGAR Web site.\n- line: Represents the tags presentation line order for a\n  given report. Together with the statement and report field, presentation\n  location, order and grouping can be derived.\n- stmt: The financial statement location to which the value of\n  the report field pertains.\n- inpth: Value was presented parenthetically instead of in\n  columns within the financial statements. For example:Receivables (net of\n  allowance for bad debts of $200 in 2012) $700.\n- rfile: The type of interactive data file rendered on the EDGAR\n  web site, H = .htm file, X = .xml file.\n- tag: The tag chosen by the filer for this line item.\n- version: The taxonomy identifier if the tag is a standard tag,\n  otherwise adsh.\n- plabel: The text presented on the line item, also known as a preferred\n  label.\n- negating: Flag to indicate whether the plabel is negating.\n\nThe PRE table references the following tables:\n- SUB\n",
+    "metadata": {
+      "type": "combined",
+      "table_name": "PRE"
+    }
+  }
+]

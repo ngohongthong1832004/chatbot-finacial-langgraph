@@ -1,0 +1,72 @@
+Field Name,Field Description,Source,Format,Max Size,May be NULL,Key
+adsh,"Accession Number. The 20-character string formed from
+  the 18-digit number assigned by the SEC to each EDGAR submission.",EDGAR,ALPHANUMERIC (nnnnnnnnnn-nn-nnnnnn),20,No,*
+cik,"Central Index Key (CIK). Ten digit number assigned by
+  the SEC to each registrant that submits filings.",EDGAR,NUMERIC,10,No,
+name,"Name of registrant. This corresponds to the name of the
+  legal entity as recorded in EDGAR as of the filing date.",EDGAR,ALPHANUMERIC,150,No,
+sic,"Standard Industrial Classification (SIC). Four digit
+  code assigned by the SEC as of the filing date, indicating the registrants
+  type of business.",EDGAR,NUMERIC,4,Yes,
+countryba,"The ISO 3166-1 country of the registrant's business
+  address.",EDGAR,ALPHANUMERIC,2,Yes,
+stprba,"The state or province of the registrants business
+  address, if field countryba is US or CA.",EDGAR,ALPHANUMERIC,2,Yes,
+cityba,The city of the registrant's business address.,EDGAR,ALPHANUMERIC,30,Yes,
+zipba,The zip code of the registrants business address.,EDGAR,ALPHANUMERIC,10,Yes,
+bas1,"The first line of the street of the registrants
+  business address.",EDGAR,ALPHANUMERIC,40,Yes,
+bas2,"The second line of the street of the registrants
+  business address.",EDGAR,ALPHANUMERIC,40,Yes,
+baph,The phone number of the registrants business address.,EDGAR,ALPHANUMERIC,20,Yes,
+countryma,"The ISO 3166-1 country of the registrant's mailing
+  address.",EDGAR,ALPHANUMERIC,2,Yes,
+stprma,"The state or province of the registrants mailing
+  address, if field countryma is US or CA.",EDGAR,ALPHANUMERIC,2,Yes,
+cityma,The city of the registrant's mailing address.,EDGAR,ALPHANUMERIC,30,Yes,
+zipma,The zip code of the registrants mailing address.,EDGAR,ALPHANUMERIC,10,Yes,
+mas1,"The first line of the street of the registrants
+  mailing address.",EDGAR,ALPHANUMERIC,40,Yes,
+mas2,"The second line of the street of the registrants
+  mailing address.",EDGAR,ALPHANUMERIC,40,Yes,
+countryinc,"The ISO 3166-1 country of incorporation for the
+  registrant.",EDGAR,ALPHANUMERIC,3,Yes,
+stprinc,"The state or province of incorporation for the
+  registrant, if countryinc is US or CA.",EDGAR,ALPHANUMERIC,2,Yes,
+ein,"Employee Identification Number, 9 digit identification
+  number assigned by the Internal Revenue Service to business entities
+  operating in the United States.",EDGAR,NUMERIC,10,Yes,
+former,"Most recent former name of the registrant, if any.",EDGAR,ALPHANUMERIC,150,Yes,
+changed,"Date of change from the former name, if any.",EDGAR,ALPHANUMERIC,8,Yes,
+afs,"Filer status with the SEC at the time of submission:1-LAF=Large Accelerated,2-ACC=Accelerated,3-SRA=Smaller Reporting Accelerated,4-NON=Non-Accelerated,5-SML=Smaller Reporting Filer,NULL=not assigned.",XBRL,ALPHANUMERIC,5,Yes,
+wksi,"Well Known Seasoned Issuer (WKSI). An issuer that meets
+  specific SEC requirements at some point during a 60-day period preceding the
+  date the issuer satisfies its obligation to update its shelf registration
+  statement.",XBRL,BOOLEAN (1 if true and 0 if false),1,No,
+fye,"Fiscal Year End Date, rounded to nearest month-end.",XBRL,ALPHANUMERIC (mmdd),4,Yes,
+form,The submission type of the registrants filing.,EDGAR,ALPHANUMERIC,10,No,
+period,"Balance Sheet Date, rounded to nearest month-end.",XBRL,DATE (yyyymmdd),8,No,
+fy,"Fiscal Year Focus (as defined in the EDGAR XBRL Guide Ch.
+  3.1.8).",XBRL,YEAR (yyyy),4,Yes,
+fp,"Fiscal Period Focus (as defined in the EDGAR XBRL Guide
+  Ch. 3.1.8) within Fiscal Year.",XBRL,"ALPHANUMERIC (FY, Q1, Q2, Q3, Q4)",2,Yes,
+filed,"The date of the registrants filing with the
+  Commission.",EDGAR,DATE (yyyymmdd),8,No,
+accepted,"The acceptance date and time of the registrants filing
+  with the Commission.",EDGAR,DATETIME (yyyy‑mm‑dd hh:mm:ss),19,No,
+prevrpt,"Previous Report TRUE indicates that the submission
+  information was subsequently amended.",EDGAR,BOOLEAN (1 if true and 0 if false),1,No,
+detail,"TRUE indicates that the XBRL submission contains
+  quantitative disclosures within the footnotes and schedules at the required
+  detail level (e.g., each amount).",XBRL,BOOLEAN (1 if true and 0 if false),1,No,
+instance,"The name of the submitted XBRL Instance Document. The
+  name often begins with the company ticker symbol.",EDGAR,ALPHANUMERIC (e.g. abcd‑yyyymmdd.xml),40,No,
+nciks,"Number of Central Index Keys (CIK) of registrants
+  (i.e., business units) included in the consolidating entitys submitted
+  filing.",EDGAR,NUMERIC,4,No,
+aciks,"Additional CIKs of co-registrants included in a
+  consolidating entitys EDGAR submission, separated by spaces. If there are no
+  other co-registrants (i.e., nciks=1), the value of aciks is NULL.  For a
+  very small number of filers, the entire list of co-registrants is too long to
+  fit in the field.  Where this is the case, users should refer to the
+  complete submission file for all CIK information.",EDGAR,ALPHANUMERIC (space delimited),120,Yes,

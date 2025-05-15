@@ -1,0 +1,23 @@
+Field Name,Field Description,Field Type (format),Max Size,May be NULL,Key
+adsh,"Accession Number. The 20-character string formed from
+  the 18-digit number assigned by the SEC to each EDGAR submission.",ALPHANUMERIC,20,No,*
+tag,"The unique identifier (name) for a tag in a specific
+  taxonomy release.",ALPHANUMERIC,256,No,*
+version,"For a standard tag, an identifier for the taxonomy;
+  otherwise the accession number where the tag was defined.",ALPHANUMERIC,20,No,*
+ddate,"The end date for the data value, rounded to the nearest
+  month end.",DATE (yyyymmdd),8,No,*
+qtrs,"The count of the number of quarters represented by the
+  data value, rounded to the nearest whole number. 0 indicates it is a
+  point-in-time value.",NUMERIC,8,No,*
+uom,The unit of measure for the value.,ALPHANUMERIC,20,No,*
+segments,Tags used to represent axis and member reporting.,ALPHANUMERIC,1024,Yes,*
+coreg,"If specified, indicates a specific co-registrant, the
+  parent company, or other entity (e.g., guarantor).  NULL indicates the consolidated
+  entity.",ALPHANUMERIC,256,Yes,*
+value,"The value. This is not scaled, it is as found in the
+  Interactive Data file, but is limited to four digits to the right of the
+  decimal point.","NUMERIC(28,4)",16,Yes,
+footnote,"The text of any superscripted footnotes on the value,
+  as shown on the statement page, truncated to 512 characters, or if there is
+  no footnote, then this field will be blank.",ALPHANUMERIC,512,Yes,
