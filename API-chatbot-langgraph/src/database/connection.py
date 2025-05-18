@@ -68,7 +68,37 @@ def get_schema_and_samples(conn=None):
         # Đây là metadata bạn yêu cầu dùng để thay cho việc truy vấn schema
         metadata_text = """
             Cơ sở dữ liệu này lưu trữ thông tin về các công ty trong chỉ số Dow Jones Industrial Average (DJIA) và dữ liệu giá cổ phiếu lịch sử của họ.
+            Đây là hai bảng chính trong cơ sở dữ liệu mà hệ thống có tham khảo nó để tạo câu truy vấn SQL:
+            CREATE TABLE public.djia_companies (
+                symbol text NOT NULL,
+                name text,
+                sector text,
+                industry text,
+                country text,
+                website text,
+                market_cap bigint,
+                pe_ratio double precision,
+                dividend_yield double precision,
+                "52_week_high" double precision,
+                "52_week_low" double precision,
+                description text
+            );
 
+            ALTER TABLE public.djia_companies OWNER TO postgres;
+
+            CREATE TABLE public.djia_prices (
+                "Date" timestamp with time zone,
+                "Open" double precision,
+                "High" double precision,
+                "Low" double precision,
+                "Close" double precision,
+                "Volume" bigint,
+                "Dividends" text,
+                "Stock Splits" text,
+                "Ticker" text NOT NULL
+            );
+            ALTER TABLE public.djia_prices OWNER TO postgres;
+            
             Các bảng:
 
             djia_companies: Thông tin về các công ty DJIA.
@@ -92,16 +122,44 @@ def get_schema_and_samples(conn=None):
             "Stock Splits" (FLOAT): Tỷ lệ chia tách cổ phiếu.
             "Ticker" (VARCHAR): Mã cổ phiếu (Khóa ngoại tham chiếu djia_companies.symbol).
 
-            Quan hệ:
-
-            djia_prices."Ticker" tham chiếu djia_companies.symbol (Quan hệ Một-Nhiều: Một công ty có nhiều dòng giá).
+            Tài liệu hệ thống một số mã trong cột Ticker của bảng djia_prices:
+            AAPL - Apple Inc.
+            AMGN - Amgen Inc.
+            AXP  - American Express
+            BA   - Boeing Co.
+            CAT  - Caterpillar Inc.
+            CRM  - Salesforce Inc.
+            CSCO - Cisco Systems
+            CVX  - Chevron Corp.
+            DIS  - Walt Disney Co.
+            DOW  - Dow Inc.
+            GS   - Goldman Sachs
+            HD   - Home Depot
+            HON  - Honeywell International
+            IBM  - International Business Machines
+            INTC - Intel Corp.
+            JNJ  - Johnson & Johnson
+            JPM  - JPMorgan Chase
+            KO   - Coca-Cola Co.
+            MCD  - McDonald's Corp.
+            MMM  - 3M Company
+            MRK  - Merck & Co.
+            MSFT - Microsoft Corp.
+            NKE  - Nike Inc.
+            PG   - Procter & Gamble
+            TRV  - Travelers Companies
+            UNH  - UnitedHealth Group
+            V    - Visa Inc.
+            VZ   - Verizon Communications
+            WBA  - Walgreens Boots Alliance
+            WMT  - Walmart Inc.
 
             Lưu ý quan trọng cho PostgreSQL:
 
             Tên các cột trong bảng djia_prices là phân biệt chữ hoa/thường.
             Luôn sử dụng dấu ngoặc kép cho các cột này trong truy vấn: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits", "Ticker".
             Tên các cột trong bảng djia_companies không cần dấu ngoặc kép.
-            
+
             Ví dụ truy vấn SQL:
 
             1. Lấy 10 công ty có P/E ratio cao nhất:
@@ -150,6 +208,12 @@ def get_schema_and_samples(conn=None):
             GROUP BY c.name
             ORDER BY avg_dividend DESC
             LIMIT 5;
+
+            8. Lấy giá đóng cửa của Microsoft vào ngày 2024-03-15:
+            SELECT "Date", "Ticker", "Close"
+            FROM djia_prices
+            WHERE "Ticker" = 'MSFT'
+            AND "Date"::date = '2024-03-15';
 
         """
         return {"metadata_text": metadata_text.strip()}
@@ -205,6 +269,26 @@ Return ONLY the SQL query without any explanation or markdown formatting.
 Make sure the query is correct PostgreSQL syntax.
 """)
     
+#     prompt = ChatPromptTemplate.from_template("""
+# You are an expert PostgreSQL developer. Generate a SQL query to answer the user's question.
+
+# Use the following schema information (be careful with case-sensitive column names):
+
+# {schema}
+
+# Guidelines:
+# - Use double quotes for column names with uppercase letters: "Date", "Open", "Close", etc.
+# - Use "Date"::date = 'YYYY-MM-DD' for exact date filtering, not "Date" = 'YYYY-MM-DD'.
+# - Only JOIN djia_companies if the user asks for company name, sector, or industry.
+# - Only select relevant columns (avoid SELECT * unless necessary).
+# - Do not use markdown, explanation, or comments. Return only raw SQL.
+
+# User's question:
+# {question}
+
+# SQL query:
+# """)
+
     # chain = prompt | llm | StrOutputParser()
     chain = prompt | RunnableLambda(call_openrouter) | StrOutputParser()
 
