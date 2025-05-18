@@ -11,6 +11,8 @@ from langgraph.graph import StateGraph, END
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from src.database.connection import connect_to_database, execute_sql_query, get_schema_and_samples, generate_sql_query
 from langchain_core.messages import HumanMessage
+from deep_translator import GoogleTranslator
+
 # from vertexai.generative_models import GenerativeModel
 
 import os
@@ -170,12 +172,20 @@ Câu hỏi để tìm kiếm trên web:"""
 question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter)|StrOutputParser())
 
 
+def translate_text(text, to_lang='en'):
+    try:
+        translated = GoogleTranslator(source='auto', target=to_lang).translate(text)
+        return translated
+    except Exception as e:
+        print(f"❌ Lỗi khi dịch văn bản: {e}")
+        return text 
 
 def retrieve(state):
     print("---RETRIEVAL FROM VECTOR DB---")
     question = state.question
     documents = []
-
+    print(f"📥 Question: {question}")
+    question = translate_text(question, to_lang='en')
     chunks, index, model = get_vector_store_and_retriever(resource_dir=os.path.join(os.path.dirname(__file__), "sec_embeddings"))
 
     if index and chunks and model:
@@ -213,15 +223,67 @@ def retrieve(state):
 #     ])
 #     return response.content.strip().lower() == "yes"
 
+# prompt_template = ChatPromptTemplate.from_messages([
+#     ("system", "Bạn là chuyên gia phân loại truy vấn. Hãy xác định xem câu hỏi sau đây có yêu cầu truy vấn dữ liệu từ cơ sở dữ liệu SQL hay không. Trả lời chỉ 'yes' hoặc 'no'."),
+#     ("human", "Câu hỏi: {question}")
+# ])
+
 prompt_template = ChatPromptTemplate.from_messages([
-    ("system", "Bạn là chuyên gia phân loại truy vấn. Hãy xác định xem câu hỏi sau đây có yêu cầu truy vấn dữ liệu từ cơ sở dữ liệu SQL hay không. Trả lời chỉ 'yes' hoặc 'no'."),
+    ("system", """
+Bạn là chuyên gia phân loại truy vấn cho hệ thống hỏi đáp tài chính.
+
+Hệ thống có khả năng truy vấn dữ liệu SQL từ cơ sở dữ liệu chứa giá cổ phiếu lịch sử (daily OHLCV) của 30 công ty thuộc chỉ số Dow Jones Industrial Average (DJIA), bao gồm:
+
+- Ticker mã có trong hệ thống 
+            AAPL - Apple Inc.
+            AMGN - Amgen Inc.
+            AXP  - American Express
+            BA   - Boeing Co.
+            CAT  - Caterpillar Inc.
+            CRM  - Salesforce Inc.
+            CSCO - Cisco Systems
+            CVX  - Chevron Corp.
+            DIS  - Walt Disney Co.
+            DOW  - Dow Inc.
+            GS   - Goldman Sachs
+            HD   - Home Depot
+            HON  - Honeywell International
+            IBM  - International Business Machines
+            INTC - Intel Corp.
+            JNJ  - Johnson & Johnson
+            JPM  - JPMorgan Chase
+            KO   - Coca-Cola Co.
+            MCD  - McDonald's Corp.
+            MMM  - 3M Company
+            MRK  - Merck & Co.
+            MSFT - Microsoft Corp.
+            NKE  - Nike Inc.
+            PG   - Procter & Gamble
+            TRV  - Travelers Companies
+            UNH  - UnitedHealth Group
+            V    - Visa Inc.
+            VZ   - Verizon Communications
+            WBA  - Walgreens Boots Alliance
+            WMT  - Walmart Inc.
+- Cột dữ liệu: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits"
+- Khoảng thời gian dữ liệu sẵn có:
+    + Từ ngày "2023-04-26" đến ngày "2025-04-25" (định dạng YYYY-MM-DD). Nếu câu hỏi yêu cầu dữ liệu nằm **ngoài** khoảng thời gian này, hãy trả lời **no**.
+
+Nhiệm vụ của bạn: xác định xem câu hỏi dưới đây có thể được trả lời bằng dữ liệu trong cơ sở dữ liệu SQL hay không lưu ý nếu thời gian không thuộc vào hệ thống thì là no.
+Ngoài ra nếu câu hỏi có thời gian bạn cần phải xác định chính xác thời gian của câu hỏi có nằm trong khoảng thời gian của hệ thống hay không từ format YYYY-MM-DD (quan trọng).
+Chỉ trả lời **yes** hoặc **no**, không thêm giải thích.
+
+Nếu câu hỏi đề cập đến giá, thời gian cụ thể, ticker/công ty có trong danh sách, hãy trả lời "yes".
+"""),
     ("human", "Câu hỏi: {question}")
 ])
 
 def is_sql_question(question: str) -> bool:
-    filled_prompt = prompt_template.format(question=question)
+    # filled_prompt = prompt_template.format(question=question)
+    print(f"📥 ghjfklkhkghjklkghkjjhkh: {question}")
     response = call_openrouter(prompt_template.format_prompt(question=question))
     return response.strip().lower() == "yes"
+    # return "yes"
 
 
 def grade_documents(state):
@@ -234,10 +296,10 @@ def grade_documents(state):
     use_sql = "No"
 
     # Check SQL query keywords
-    database_keywords = [
-        "lấy dữ liệu", "database", "sql", "select", "from table", "stocks", "query", "table", 
-        "dữ liệu", "cơ sở dữ liệu", "truy vấn", "truy vấn sql", "lấy dữ liệu", "sinh sql", "câu lệnh"
-    ]
+    # database_keywords = [
+    #     "lấy dữ liệu", "database", "sql", "select", "from table", "stocks", "query", "table", 
+    #     "dữ liệu", "cơ sở dữ liệu", "truy vấn", "truy vấn sql", "lấy dữ liệu", "sinh sql", "câu lệnh"
+    # ]
 
     # if any(keyword in question.lower() for keyword in database_keywords):
     #     use_sql = "Yes"
@@ -469,7 +531,8 @@ def generate_answer(state):
         unique_docs = list({doc.page_content: doc for doc in documents}.values())
         formatted_context = format_docs(unique_docs)
         generation = call_gemini_rag(question, formatted_context)
-
+    # print(f"📄 Formatted context: {formatted_context[:1000]}...")
+    print(f"✅ Generated answer: {generation}...")
     return {
         "documents": documents,
         "question": question,

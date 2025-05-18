@@ -20,3 +20,5 @@ httpx
 itsdangerous    
 google-generativeai
 tabulate
+deep_translator
+tabulate
