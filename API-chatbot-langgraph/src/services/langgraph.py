@@ -13,9 +13,11 @@ from src.database.connection import connect_to_database, execute_sql_query, get_
 from langchain_core.messages import HumanMessage
 from deep_translator import GoogleTranslator
 
+
 # from vertexai.generative_models import GenerativeModel
 
 import os
+import io  # đừng quên import ở đầu file nếu chưa có
 import json
 import numpy as np
 import faiss
@@ -23,6 +25,12 @@ import pickle
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple
 import google.generativeai as genai
+        
+import os
+import matplotlib.pyplot as plt
+import pandas as pd
+import uuid
+
 
 import requests
 from dotenv import load_dotenv
@@ -49,11 +57,15 @@ chroma_db = None
 similarity_threshold_retriever = None
 ENABLE_WEB_SEARCH = True
 ENABLE_GPT_GRADING = True
+FORCE_SQL_ONLY = True
 
 
 chunks, index, embedding_model = None, None, None
 def call_openrouter(prompt_obj) -> str:
-    prompt = prompt_obj.to_string()  
+    if hasattr(prompt_obj, "to_string"):
+        prompt = prompt_obj.to_string()
+    else:
+        prompt = str(prompt_obj) 
 
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
@@ -73,6 +85,23 @@ def call_openrouter(prompt_obj) -> str:
         return res.json()["choices"][0]["message"]["content"].strip()
     else:
         raise RuntimeError(f"OpenRouter API error: {res.status_code} - {res.text}")
+
+def call_openrouter_for_chart(prompt: str) -> str:
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are a Python data visualization expert. Only return matplotlib code using the df variable. Do not explain."},
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+    return res.json()["choices"][0]["message"]["content"].strip()
+
 
 
 # Data model for graph state
@@ -280,7 +309,7 @@ Nếu câu hỏi đề cập đến giá, thời gian cụ thể, ticker/công t
 
 def is_sql_question(question: str) -> bool:
     # filled_prompt = prompt_template.format(question=question)
-    print(f"📥 ghjfklkhkghjklkghkjjhkh: {question}")
+    print(f"📥 Question: {question}")
     response = call_openrouter(prompt_template.format_prompt(question=question))
     return response.strip().lower() == "yes"
     # return "yes"
@@ -419,8 +448,7 @@ def web_search(state):
 
 def query_sql(state):
     print("---EXECUTE SQL QUERY---")
-    question = state.question
-    
+    question = state.question    
     try:
         # Connect to database
         conn = connect_to_database()
@@ -471,7 +499,7 @@ def query_sql(state):
         else:
             # Format results nicely
             content = f"SQL Query Results:\n{results.to_markdown(index=False)}"
-            print("📊 Query Results:\n", content)
+            # print("📊 Query Results:\n", content)
 
         # Create document for next steps
         sql_doc = Document(page_content=f"SQL used:\n{sql_query}")
@@ -494,6 +522,76 @@ def query_sql(state):
             "web_search_needed": "Yes",
             "use_sql": "No"
         }
+
+
+
+def generate_chart_code_via_llm(question: str, df: pd.DataFrame) -> str:
+    df_sample = df.head(10).to_csv(index=False)
+    prompt = f"""
+Bạn là chuyên gia Python vẽ biểu đồ.
+
+Dữ liệu đã được lưu trong biến `df` dưới dạng DataFrame. Dưới đây là 10 dòng đầu tiên:
+{df_sample}
+
+Câu hỏi: "{question}"
+
+Yêu cầu:
+- Viết mã `matplotlib` vẽ biểu đồ phù hợp nhất với câu hỏi.
+- Chỉ sử dụng biến `df`, KHÔNG tạo lại dữ liệu.
+- KHÔNG dùng `plt.show()`, KHÔNG dùng if df['col'] trực tiếp.
+- Tránh dùng biểu thức điều kiện trực tiếp trên Series pandas.
+- KHÔNG thêm mô tả, KHÔNG dùng `import`.
+- Chỉ trả về các lệnh bắt đầu bằng `plt.` hoặc `df.`.
+"""
+    code = call_openrouter_for_chart(prompt.strip())  # ✅ gọi đúng role để sinh mã vẽ biểu đồ
+    print("📤 Code from LLM:\n", code)
+    return code.strip()
+
+
+
+def execute_generated_plot_code(code: str, df: pd.DataFrame, static_dir="static/charts") -> str:
+    filename = f"chart_{uuid.uuid4().hex[:8]}.png"
+    filepath = os.path.join(static_dir, filename)
+
+    local_vars = {
+        "df": df.copy(),
+        "plt": plt,
+        "savefig_path": filepath
+    }
+
+    try:
+        # Xoá những dòng import thừa hoặc markdown
+        cleaned_code = code.replace("plt.show()", "").replace("```python", "").replace("```", "").strip()
+
+        # Thêm lệnh save
+        safe_code = f"""{cleaned_code}
+plt.savefig(savefig_path)
+plt.close()
+"""
+        print("📋 Running code:\n", safe_code)
+        exec(safe_code, {"plt": plt, "pd": pd}, local_vars)
+        return f"/static/charts/{filename}"
+    except Exception as e:
+        print(f"❌ Error in generated chart code: {e}")
+        return ""
+
+
+
+def generate_sql_conclusion(question: str, df: pd.DataFrame) -> str:
+    import json
+    sample = df.head(10).to_dict(orient='records')
+    prompt = f"""
+Bạn là chuyên gia phân tích dữ liệu. Dưới đây là câu hỏi của người dùng và dữ liệu SQL vừa truy vấn được (gồm 10 dòng đầu tiên).
+
+Câu hỏi: {question}
+
+Dữ liệu:
+{json.dumps(sample, ensure_ascii=False, indent=2)}
+
+Hãy viết một đoạn kết luận ngắn gọn (1-2câu) để tóm tắt hoặc đưa ra insight từ dữ liệu này. Không cần giải thích lại câu hỏi. Ngắn ngọn thôi.
+"""
+    return call_openrouter(prompt.strip())
+
 
 def generate_answer(state):
     print("---GENERATE ANSWER---")
@@ -526,7 +624,33 @@ def generate_answer(state):
 #### Kết quả truy vấn:
 
 {result_table}
+
+#### Kết luận:
 """
+        try:
+             # Tách từng dòng và bỏ dòng chứa dấu '---' (separator markdown)
+            lines = result_table.strip().splitlines()
+            clean_lines = [line for line in lines if "---" not in line]
+            table_str = "\n".join(clean_lines)
+
+            # Đọc lại bằng pandas
+            df = pd.read_table(io.StringIO(table_str), sep="|", engine='python')
+            df = df.dropna(axis=1, how='all')  # bỏ cột rỗng do padding '|'
+            df.columns = [c.strip() for c in df.columns]  # xóa khoảng trắng
+            df = df.reset_index(drop=True)
+
+            # Sinh mã vẽ và render
+            chart_code = generate_chart_code_via_llm(question, df)
+            chart_url = execute_generated_plot_code(chart_code, df)
+
+            conclusion = generate_sql_conclusion(question, df)
+            generation += f"\n{conclusion}"    
+            
+            if chart_url:
+                generation += f"\n\n ![Xem biểu đồ tại đây](http://localhost:8000{chart_url})"
+            
+        except Exception as e:
+            print(f"⚠️ Không thể tạo biểu đồ: {e}")
     else:
         unique_docs = list({doc.page_content: doc for doc in documents}.values())
         formatted_context = format_docs(unique_docs)
@@ -557,6 +681,15 @@ def decide_to_generate(state):
 # Initialize graph
 def create_rag_graph():
     agentic_rag = StateGraph(GraphState)
+
+    if FORCE_SQL_ONLY:
+        # Chế độ chỉ test SQL branch
+        agentic_rag.add_node("query_sql", query_sql)
+        agentic_rag.add_node("generate_answer", generate_answer)
+        agentic_rag.set_entry_point("query_sql")
+        agentic_rag.add_edge("query_sql", "generate_answer")
+        agentic_rag.add_edge("generate_answer", END)
+        return agentic_rag.compile()
 
     # Nodes
     agentic_rag.add_node("retrieve", retrieve)

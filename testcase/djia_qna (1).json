@@ -1,0 +1,702 @@
+[
+  {
+    "number": 1,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Microsoft on March 15, 2024?",
+    "answer": "$413.26"
+  },
+  {
+    "number": 2,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the opening price of Boeing on August 1, 2023?",
+    "answer": "$237.55"
+  },
+  {
+    "number": 3,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the highest price Apple reached on February 28, 2025?",
+    "answer": "$242.09"
+  },
+  {
+    "number": 4,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the lowest price Disney traded at on November 1, 2023?",
+    "answer": "$79.20"
+  },
+  {
+    "number": 5,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Apple on January 2, 2024?",
+    "answer": "82,488,700 shares"
+  },
+  {
+    "number": 6,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Walmart on March 10, 2025?",
+    "answer": "$87.58"
+  },
+  {
+    "number": 7,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Disney on October 1, 2024?",
+    "answer": "$93.64"
+  },
+  {
+    "number": 8,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Chevron on January 31, 2025?",
+    "answer": "$147.55"
+  },
+  {
+    "number": 9,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the opening price of American Express on January 3, 2025?",
+    "answer": "$299.69"
+  },
+  {
+    "number": 10,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Visa on March 8, 2024?",
+    "answer": "$234.22"
+  },
+  {
+    "number": 11,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Nike on November 10, 2023?",
+    "answer": "$104.32"
+  },
+  {
+    "number": 12,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of JPMorgan Chase on April 18, 2025?",
+    "answer": "$141.88"
+  },
+  {
+    "number": 13,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Johnson & Johnson on January 31, 2025?",
+    "answer": "$161.02"
+  },
+  {
+    "number": 14,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Caterpillar on December 2, 2024?",
+    "answer": "$265.11"
+  },
+  {
+    "number": 15,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of 3M on December 15, 2023?",
+    "answer": "$99.42"
+  },
+  {
+    "number": 16,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Procter & Gamble on May 6, 2024?",
+    "answer": "$156.77"
+  },
+  {
+    "number": 17,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Walgreens Boots Alliance on August 1, 2024?",
+    "answer": "$15.23"
+  },
+  {
+    "number": 18,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Merck on October 10, 2024?",
+    "answer": "$107.35"
+  },
+  {
+    "number": 19,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Travelers on July 20, 2024?",
+    "answer": "$174.28"
+  },
+  {
+    "number": 20,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Home Depot on December 1, 2024?",
+    "answer": "$315.50"
+  },
+  {
+    "number": 21,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Dow Inc. on February 14, 2025?",
+    "answer": "$40.32"
+  },
+  {
+    "number": 22,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Cisco on February 2, 2024?",
+    "answer": "$48.74"
+  },
+  {
+    "number": 23,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Amgen on March 10, 2024?",
+    "answer": "$233.58"
+  },
+  {
+    "number": 24,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of UnitedHealth Group on May 10, 2024?",
+    "answer": "$498.20"
+  },
+  {
+    "number": 25,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Goldman Sachs on May 1, 2024?",
+    "answer": "$328.45"
+  },
+  {
+    "number": 26,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Honeywell on October 15, 2024?",
+    "answer": "$182.90"
+  },
+  {
+    "number": 27,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of McDonald’s on June 30, 2024?",
+    "answer": "$290.11"
+  },
+  {
+    "number": 28,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of IBM on March 1, 2024?",
+    "answer": "$132.50"
+  },
+  {
+    "number": 29,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Verizon on March 5, 2025?",
+    "answer": "18,750,000 shares"
+  },
+  {
+    "number": 30,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Walt Disney on March 5, 2025?",
+    "answer": "9,956,100 shares"
+  },
+  {
+    "number": 31,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Salesforce on March 5, 2025?",
+    "answer": "6,612,600 shares"
+  },
+  {
+    "number": 32,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Boeing on March 5, 2025?",
+    "answer": "7,355,800 shares"
+  },
+  {
+    "number": 33,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "On what date did Apple stock reach its highest closing price in 2024, and what was that price?",
+    "answer": "December 31, 2024, with a closing price of $250.14"
+  },
+  {
+    "number": 34,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "What was the lowest closing price of Verizon in 2023, and on what date did it occur?",
+    "answer": "$27.81, on October 13, 2023"
+  },
+  {
+    "number": 35,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "What was the highest closing price of Microsoft in 2024, and when was it achieved?",
+    "answer": "$422.00 on March 14, 2024"
+  },
+  {
+    "number": 36,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "How many dividends did Apple pay in 2024?",
+    "answer": "4"
+  },
+  {
+    "number": 37,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "What dividend per share did Microsoft pay on May 17, 2023?",
+    "answer": "$0.68"
+  },
+  {
+    "number": 38,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "On what date did Walmart execute a stock split, and what was the split ratio?",
+    "answer": "February 26, 2024 (3-for-1 split)"
+  },
+  {
+    "number": 39,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On January 15, 2025, which company had a higher closing price, Apple or Microsoft?",
+    "answer": "Microsoft, with a closing price of about $412, compared to Apple’s $237.61"
+  },
+  {
+    "number": 40,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On July 1, 2024, which had a higher closing price: Coca-Cola or McDonald’s?",
+    "answer": "McDonald’s, with a closing price around $290, versus about $65 for Coca-Cola"
+  },
+  {
+    "number": 41,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On October 2, 2024, which company’s stock closed higher: Goldman Sachs or Visa?",
+    "answer": "Goldman Sachs, with a closing price of roughly $340, compared to about $230 for Visa"
+  },
+  {
+    "number": 42,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On November 5, 2024, which company had a higher closing price, Amgen or Boeing?",
+    "answer": "Amgen, with about $280 versus Boeing’s $180"
+  },
+  {
+    "number": 43,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On January 10, 2025, who closed higher: Merck or Johnson & Johnson?",
+    "answer": "Johnson & Johnson, with around $160, versus Merck’s ~$110"
+  },
+  {
+    "number": 44,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On August 8, 2024, which stock was higher, Honeywell or Caterpillar?",
+    "answer": "Caterpillar, with a closing price near $340, compared to Honeywell’s ~$190"
+  },
+  {
+    "number": 45,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On August 1, 2024, which had a higher closing price: Nike or Boeing?",
+    "answer": "Boeing, with about $180, versus roughly $100 for Nike"
+  },
+  {
+    "number": 46,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On December 1, 2024, which company’s stock price was higher, Disney or Coca-Cola?",
+    "answer": "Disney, with approximately $98, compared to Coca-Cola’s ~$64"
+  },
+  {
+    "number": 47,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On September 1, 2024, which company had a higher closing price, Travelers or American Express?",
+    "answer": "American Express, with a closing price around $170, versus about $155 for Travelers"
+  },
+  {
+    "number": 48,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the lowest closing price on April 1, 2025?",
+    "answer": "Walgreens Boots Alliance, with a closing price of roughly $8.50"
+  },
+  {
+    "number": 49,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the highest closing price on July 1, 2024?",
+    "answer": "UnitedHealth Group, with a closing price near $500"
+  },
+  {
+    "number": 50,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the highest closing price on January 2, 2024?",
+    "answer": "UnitedHealth Group, with a closing price of about $495"
+  },
+  {
+    "number": 51,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the lowest closing price on January 2, 2024?",
+    "answer": "Walgreens Boots Alliance, with a closing price around $36"
+  },
+  {
+    "number": 52,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Which company had the largest percentage increase in its stock price during 2024?",
+    "answer": "Salesforce, with its stock rising by approximately 60% in 2024"
+  },
+  {
+    "number": 53,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Which company had the largest absolute increase in closing price (in dollars) during 2024?",
+    "answer": "UnitedHealth Group, which rose by roughly $120 per share in 2024"
+  },
+  {
+    "number": 54,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Which company had the largest percentage decline in stock price during 2024?",
+    "answer": "Walgreens Boots Alliance, with a drop of about 50%"
+  },
+  {
+    "number": 55,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "By how many dollars did Boeing’s closing price change from January 2, 2024 to December 31, 2024?",
+    "answer": "It decreased by approximately $75"
+  },
+  {
+    "number": 56,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the average closing price of Microsoft in March 2025?",
+    "answer": "About $410.00"
+  },
+  {
+    "number": 57,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the average closing price of Apple during Q1 2025 (Jan–Mar 2025)?",
+    "answer": "Approximately $230.00"
+  },
+  {
+    "number": 58,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the average daily trading volume of Apple in 2024?",
+    "answer": "Around 60 million shares"
+  },
+  {
+    "number": 59,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "By what percentage did Apple’s stock price increase in 2024?",
+    "answer": "About 36%"
+  },
+  {
+    "number": 60,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the average closing price of Boeing in the second half of 2023?",
+    "answer": "Roughly $200.00"
+  },
+  {
+    "number": 61,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the total trading volume for Microsoft in 2024?",
+    "answer": "On the order of 5 billion shares (approximately)"
+  },
+  {
+    "number": 62,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the average closing price of Apple during the first quarter of 2025?",
+    "answer": "Approximately $230"
+  },
+  {
+    "number": 63,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the average closing price of Boeing from July through December 2023?",
+    "answer": "About $200"
+  },
+  {
+    "number": 64,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "In 2024, what percentage of trading days did Microsoft close above $300?",
+    "answer": "100% (every trading day of 2024)"
+  },
+  {
+    "number": 65,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "On how many trading days in 2024 did Apple close above $200?",
+    "answer": "Approximately 5 days"
+  },
+  {
+    "number": 66,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "By how much (in percentage points) did Walgreens Boots Alliance’s stock price change over 2024?",
+    "answer": "It fell by roughly 50%"
+  },
+  {
+    "number": 67,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "By how many dollars did Boeing’s closing price change between January 2, 2024 and December 31, 2024?",
+    "answer": "Decreased by about $75"
+  },
+  {
+    "number": 68,
+    "type": "factual",
+    "complexity": "difficult",
+    "question": "On which date in 2025 did Microsoft reach its highest intra-day high, and what was the price?",
+    "answer": "March 14, 2025, $435.00"
+  },
+  {
+    "number": 69,
+    "type": "factual",
+    "complexity": "difficult",
+    "question": "What was the standard deviation of Apple’s daily closing prices in 2024?",
+    "answer": "About $12.50"
+  },
+  {
+    "number": 70,
+    "type": "factual",
+    "complexity": "difficult",
+    "question": "How many trading days in 2024 saw Disney’s closing price above $90?",
+    "answer": "8"
+  },
+  {
+    "number": 71,
+    "type": "factual",
+    "complexity": "difficult",
+    "question": "What was UnitedHealth Group’s dividend yield as of December 31, 2024?",
+    "answer": "1.18%"
+  },
+  {
+    "number": 72,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the highest average trading volume in 2024?",
+    "answer": "Apple"
+  },
+  {
+    "number": 73,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the lowest volatility (standard deviation of daily returns) in 2024?",
+    "answer": "Coca-Cola"
+  },
+  {
+    "number": 74,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company experienced the highest single-day percentage drop in 2024?",
+    "answer": "Boeing"
+  },
+  {
+    "number": 75,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company experienced the highest single-day percentage gain in 2024?",
+    "answer": "Salesforce"
+  },
+  {
+    "number": 76,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Rank the top three companies by total return in 2024.",
+    "answer": "1) Salesforce, 2) Microsoft, 3) UnitedHealth Group"
+  },
+  {
+    "number": 77,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Rank the bottom three companies by total return in 2024.",
+    "answer": "1) Walgreens Boots Alliance, 2) 3M, 3) Verizon"
+  },
+  {
+    "number": 78,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the moving average (30-day) closing price of Microsoft on April 30, 2024?",
+    "answer": "$415.30"
+  },
+  {
+    "number": 79,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was Apple’s highest weekly trading volume in 2024, and which week was it?",
+    "answer": "Week of March 18, 2024, at 405 million shares"
+  },
+  {
+    "number": 80,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "Calculate the cumulative return of Microsoft from January 2 to December 31, 2024.",
+    "answer": "About 38%"
+  },
+  {
+    "number": 81,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "Calculate the median closing price of Disney in 2024.",
+    "answer": "$92.40"
+  },
+  {
+    "number": 82,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the compound annual growth rate (CAGR) of Apple from Jan 1, 2023 to Dec 31, 2024?",
+    "answer": "About 17%"
+  },
+  {
+    "number": 83,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was Boeing’s beta (relative to the DJIA index) for 2024?",
+    "answer": "1.25"
+  },
+  {
+    "number": 84,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was the Sharpe ratio of Microsoft in 2024, assuming a risk-free rate of 4%?",
+    "answer": "1.15"
+  },
+  {
+    "number": 85,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was the annualized volatility of Apple for 2024?",
+    "answer": "22%"
+  },
+  {
+    "number": 86,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was the correlation between Apple’s and Microsoft’s daily returns in 2024?",
+    "answer": "0.68"
+  },
+  {
+    "number": 87,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "How many trading days in 2024 had Boeing’s closing price within one standard deviation of its mean?",
+    "answer": "174 days"
+  },
+  {
+    "number": 88,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "On which dates in 2024 did Microsoft pay dividends, and what were the amounts?",
+    "answer": "Mar 14 ($0.75), Jun 13 ($0.75), Sept 12 ($0.75), Dec 12 ($0.75)"
+  },
+  {
+    "number": 89,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "On which dates in 2024 did Apple pay dividends, and what were the amounts?",
+    "answer": "Feb 15 ($0.24), May 16 ($0.24), Aug 15 ($0.24), Nov 14 ($0.24)"
+  },
+  {
+    "number": 90,
+    "type": "factual",
+    "complexity": "hard",
+    "question": "Which DJIA company was removed in Q4 2024 and which company replaced it?",
+    "answer": "Walgreens Boots Alliance was replaced by Salesforce"
+  },
+  {
+    "number": 91,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "Which sector does UnitedHealth Group belong to?",
+    "answer": "Healthcare"
+  },
+  {
+    "number": 92,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "Which sector does Chevron belong to?",
+    "answer": "Energy"
+  },
+  {
+    "number": 93,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "Which sector does Coca-Cola belong to?",
+    "answer": "Consumer Staples"
+  },
+  {
+    "number": 94,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "Which sector does IBM belong to?",
+    "answer": "Information Technology"
+  },
+  {
+    "number": 95,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What is the ticker symbol for Walt Disney?",
+    "answer": "DIS"
+  },
+  {
+    "number": 96,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What is the ticker symbol for Nike?",
+    "answer": "NKE"
+  },
+  {
+    "number": 97,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "Which company had higher dividends per share in 2024, Microsoft or Apple?",
+    "answer": "Microsoft ($3.00) vs Apple ($0.96)"
+  },
+  {
+    "number": 98,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the average dividend yield for the DJIA as a whole in 2024?",
+    "answer": "About 2.1%"
+  },
+  {
+    "number": 99,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "Calculate the DJIA total return for 2024, assuming equal weighting.",
+    "answer": "Approximately 12%"
+  },
+  {
+    "number": 100,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was the maximum drawdown for Microsoft in 2024?",
+    "answer": "-14%"
+  }
+]

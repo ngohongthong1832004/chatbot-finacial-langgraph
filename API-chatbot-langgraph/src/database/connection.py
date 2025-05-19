@@ -236,65 +236,44 @@ def generate_sql_query(question, schema_info=None):
     from langchain_openai import ChatOpenAI
     from langchain_core.prompts import ChatPromptTemplate
     from langchain_core.output_parsers import StrOutputParser
+    import json
 
-    # llm = ChatOpenAI(model="gpt-4", temperature=0, api_key=OPENAI_API_KEY)
+    # print(f"Schema preview:\n{json.dumps(schema_info, indent=2)}")
+    # print(f"Prompted question:\n{question}")
 
-    # Nếu có metadata text => dùng luôn
+    # 1. Tạo biến schema_description
     if schema_info and "metadata_text" in schema_info:
         schema_description = schema_info["metadata_text"]
-    elif schema_info:
-        schema_parts = []
-        for table_name, table_info in schema_info.items():
-            columns = ", ".join([f"{col['column_name']} ({col['data_type']})"
-                                 for col in table_info['columns']])
-            schema_parts.append(f"Table: {table_name}\nColumns: {columns}")
-
-            if table_info['sample_data']:
-                sample = str(table_info['sample_data'][0])
-                schema_parts.append(f"Sample row: {sample}")
-
-        schema_description = "\n\n".join(schema_parts)
     else:
-        schema_description = "Unknown schema. Try to generate a generic SQL query."
+        schema_description = "No schema information available."
 
+    # 2. Tạo sample_data (mô phỏng hoặc tải từ metadata)
+    sample_data = get_schema_and_samples(conn=None)  # đã chứa key 'metadata_text'
+    sample_description = sample_data.get("metadata_text", "")
+
+    # 3. Prompt kết hợp cả schema và sample
     prompt = ChatPromptTemplate.from_template("""
 You are an expert SQL developer. Generate a SQL query to answer the user's question.
 Use the following database schema information:
 
 {schema}
 
+And some reference sample or metadata (if needed):
+
+{sample_data}
+
 User's question: {question}
 
 Return ONLY the SQL query without any explanation or markdown formatting.
 Make sure the query is correct PostgreSQL syntax.
 """)
-    
-#     prompt = ChatPromptTemplate.from_template("""
-# You are an expert PostgreSQL developer. Generate a SQL query to answer the user's question.
 
-# Use the following schema information (be careful with case-sensitive column names):
-
-# {schema}
-
-# Guidelines:
-# - Use double quotes for column names with uppercase letters: "Date", "Open", "Close", etc.
-# - Use "Date"::date = 'YYYY-MM-DD' for exact date filtering, not "Date" = 'YYYY-MM-DD'.
-# - Only JOIN djia_companies if the user asks for company name, sector, or industry.
-# - Only select relevant columns (avoid SELECT * unless necessary).
-# - Do not use markdown, explanation, or comments. Return only raw SQL.
-
-# User's question:
-# {question}
-
-# SQL query:
-# """)
-
-    # chain = prompt | llm | StrOutputParser()
     chain = prompt | RunnableLambda(call_openrouter) | StrOutputParser()
 
     try:
         sql_query = chain.invoke({
             "schema": schema_description,
+            "sample_data": sample_description,
             "question": question
         })
         return sql_query.strip()

@@ -160,7 +160,7 @@ function App() {
   const handleOptionClick = async (option) => {
     let message = '';
     let botResponse = '';
-    const active = true; // Set this to false to use predefined responses
+    const active = false; // Set this to false to use predefined responses
     
     switch(option) {
       case 1:
@@ -281,6 +281,55 @@ Bạn muốn phân tích thêm công ty hoặc ngành nào cụ thể?`;
 
 Bạn muốn lập kế hoạch cho mục tiêu nào?`;
         break;
+      case 5:
+  message = "Tôi muốn trực quan hóa dữ liệu";
+  botResponse = `# 📊 Trực quan hóa dữ liệu
+
+Trực quan hóa giúp bạn hiểu dữ liệu nhanh chóng thông qua biểu đồ. Ví dụ:
+
+## Biểu đồ doanh thu theo quý
+
+\`\`\`python
+import matplotlib.pyplot as plt
+
+quarters = ['Q1', 'Q2', 'Q3', 'Q4']
+revenue = [10, 15, 13, 20]
+
+plt.plot(quarters, revenue, marker='o')
+plt.title('Doanh thu theo quý')
+plt.xlabel('Quý')
+plt.ylabel('Doanh thu (tỷ đồng)')
+plt.grid(True)
+plt.show()
+\`\`\`
+
+Bạn có thể cung cấp dữ liệu cụ thể để tôi giúp bạn vẽ biểu đồ phù hợp?
+`;
+  break;
+      case 6:
+  message = "Tôi muốn phân tích pipeline dữ liệu";
+  botResponse = `# 🔄 Phân tích pipeline dữ liệu
+
+Một pipeline dữ liệu thường gồm các bước:
+
+1. Thu thập dữ liệu (Ingestion)
+2. Làm sạch và xử lý (Cleaning & Transformation)
+3. Lưu trữ (Storage)
+4. Phân tích và trực quan hóa (Analytics & Visualization)
+
+## Ví dụ biểu đồ dòng pipeline:
+
+\`\`\`mermaid
+graph LR
+A[Ingest data] --> B[Clean data]
+B --> C[Store in DB]
+C --> D[Run analytics]
+D --> E[Show dashboard]
+\`\`\`
+
+Bạn đang quan tâm tới bước nào trong pipeline?
+`;
+  break;
       default:
         message = "Xin lỗi, tôi không hiểu lựa chọn của bạn";
         botResponse = "Vui lòng chọn một trong các tùy chọn trên.";
@@ -580,33 +629,42 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
   const renderMessage = (message) => {
     if (message.sender === 'bot') {
       return (
-
-<ReactMarkdown
-  remarkPlugins={[remarkGfm]}
-  components={{
-    code({node, inline, className, children, ...props}) {
-      const match = /language-(\w+)/.exec(className || '');
-      return !inline && match ? (
-        <SyntaxHighlighter
-          style={vscDarkPlus}
-          language={match[1]}
-          PreTag="div"
-          {...props}
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            code({node, inline, className, children, ...props}) {
+              const match = /language-(\w+)/.exec(className || '');
+              return !inline && match ? (
+                <SyntaxHighlighter
+                  style={vscDarkPlus}
+                  language={match[1]}
+                  PreTag="div"
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              ) : (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            },
+            img({ node, ...props }) {
+              return (
+                <img
+                  {...props}
+                  style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '12px' }}
+                  alt={props.alt || 'Image'}
+                />
+              );
+            }
+          }}
         >
-          {String(children).replace(/\n$/, '')}
-        </SyntaxHighlighter>
-      ) : (
-        <code className={className} {...props}>
-          {children}
-        </code>
+          {message.text}
+        </ReactMarkdown>
       );
     }
-  }}
->
-  {message.text}
-</ReactMarkdown>
-      );
-    }
+
     return <p>{message.text}</p>;
   };
 
@@ -829,6 +887,14 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
                   <button onClick={() => handleOptionClick(4)} className="option-button">
                     <i className="fas fa-calendar-check"></i>
                     Kế hoạch tài chính
+                  </button>
+                    <button onClick={() => handleOptionClick(5)} className="option-button">
+                    <i className="fas fa-chart-bar"></i>
+                    Trực quan hóa dữ liệu
+                  </button>
+                  <button onClick={() => handleOptionClick(6)} className="option-button">
+                    <i className="fas fa-cogs"></i>
+                    Pipeline dữ liệu
                   </button>
                 </div>
               </div>
