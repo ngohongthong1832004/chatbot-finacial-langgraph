@@ -25,6 +25,7 @@ import pickle
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple
 import google.generativeai as genai
+import seaborn as sns
         
 import os
 import matplotlib.pyplot as plt
@@ -528,52 +529,91 @@ def query_sql(state):
 def generate_chart_code_via_llm(question: str, df: pd.DataFrame) -> str:
     df_sample = df.head(10).to_csv(index=False)
     prompt = f"""
-Bạn là chuyên gia Python vẽ biểu đồ.
+You are a Python expert specialized in data visualization using matplotlib.
 
-Dữ liệu đã được lưu trong biến `df` dưới dạng DataFrame. Dưới đây là 10 dòng đầu tiên:
+The variable `df` is a preloaded pandas DataFrame that contains the dataset. Here are the first 10 rows:
+
 {df_sample}
 
-Câu hỏi: "{question}"
+User question: "{question}"
 
-Yêu cầu:
-- Viết mã `matplotlib` vẽ biểu đồ phù hợp nhất với câu hỏi.
-- Chỉ sử dụng biến `df`, KHÔNG tạo lại dữ liệu.
-- KHÔNG dùng `plt.show()`, KHÔNG dùng if df['col'] trực tiếp.
-- Tránh dùng biểu thức điều kiện trực tiếp trên Series pandas.
-- KHÔNG thêm mô tả, KHÔNG dùng `import`.
-- Chỉ trả về các lệnh bắt đầu bằng `plt.` hoặc `df.`.
+Instructions:
+- Always start your code with `plt.figure()` and end with `plt.savefig(savefig_path)` and `plt.close()`.
+- Only use the existing `df` variable. Do NOT define or assign any new variables like `df_sorted`, `correlation_matrix`, or `data`.
+- If transformation is needed (e.g., sorting, pivoting, grouping), reassign it directly to `df`, like: df = df.sort_values(...).
+- You MAY use df['column'].values or df['column'].tolist() inside plotting functions (e.g., for labels and values in pie charts).
+- All plotting operations must reference `df` directly.
+- Do NOT use `plt.show()`, `import`, `input`, `eval`, `exec`, or any OS/system functions.
+- Do NOT use control flow statements such as `if`, `while`, or `for`.
+- Every line of code must begin with `df.`, `plt.`, or `sns.` (for seaborn).
+- Do NOT include any explanation, comment, markdown formatting, or code fences (```).
+- Do NOT include any import statements. All required libraries (pandas, matplotlib, seaborn) are already available.
+- Your output will be automatically executed. Only return clean, complete matplotlib code using `df`.
+- ALWAYS use keyword arguments in df.pivot(): e.g., df = df.pivot(index="...", columns="...", values="...") — never pass positional arguments.
+- If using .dt accessors (e.g., df["Date"].dt.month), make sure to convert "Date" to datetime first using: df["Date"] = pd.to_datetime(df["Date"])
+
+
+
+Output only the raw code.
 """
-    code = call_openrouter_for_chart(prompt.strip())  # ✅ gọi đúng role để sinh mã vẽ biểu đồ
-    print("📤 Code from LLM:\n", code)
+
+    code = call_openrouter_for_chart(prompt.strip())
+    print("📤 Code gen chart from LLM:\n", code)
     return code.strip()
 
 
 
 def execute_generated_plot_code(code: str, df: pd.DataFrame, static_dir="static/charts") -> str:
+    import os
+    os.makedirs(static_dir, exist_ok=True)
+
     filename = f"chart_{uuid.uuid4().hex[:8]}.png"
     filepath = os.path.join(static_dir, filename)
 
     local_vars = {
         "df": df.copy(),
         "plt": plt,
-        "savefig_path": filepath
+        "pd": pd,
+        "savefig_path": filepath,
     }
 
     try:
-        # Xoá những dòng import thừa hoặc markdown
-        cleaned_code = code.replace("plt.show()", "").replace("```python", "").replace("```", "").strip()
+        # Xoá markdown và các lệnh không an toàn
+        cleaned_code = (
+            code.replace("```python", "")
+                .replace("```", "")
+                .replace("plt.show()", "")
+                .strip()
+        )
 
-        # Thêm lệnh save
-        safe_code = f"""{cleaned_code}
-plt.savefig(savefig_path)
-plt.close()
-"""
-        print("📋 Running code:\n", safe_code)
-        exec(safe_code, {"plt": plt, "pd": pd}, local_vars)
+        # Chặn các lệnh nguy hiểm
+        forbidden_keywords = ["import", "input(", "os.", "__", "eval(", "exec(", "subprocess"]
+        if any(k in cleaned_code for k in forbidden_keywords):
+            raise ValueError("⚠️ Unsafe code detected in chart code.")
+
+        # Lọc các dòng hợp lệ bắt đầu bằng df., plt., sns. (bỏ savefig và close)
+        filtered_lines = []
+        for line in cleaned_code.splitlines():
+            line = line.strip()
+            if (line.startswith("df") or line.startswith("plt.") or line.startswith("sns.")) and not any(x in line for x in ["savefig", "close"]):
+                filtered_lines.append(line)
+
+        if not filtered_lines:
+            raise ValueError("⚠️ No valid plotting commands detected.")
+
+        # Ghép code và đảm bảo lưu đúng ảnh
+        safe_code = "\n".join(filtered_lines) + "\nplt.savefig(savefig_path)\nplt.close()"
+
+        print("📋 Running cleaned matplotlib code:\n", safe_code)
+
+        exec(safe_code, {"plt": plt, "pd": pd, "sns": sns}, local_vars)
+
         return f"/static/charts/{filename}"
+
     except Exception as e:
         print(f"❌ Error in generated chart code: {e}")
         return ""
+
 
 
 
@@ -581,7 +621,7 @@ def generate_sql_conclusion(question: str, df: pd.DataFrame) -> str:
     import json
     sample = df.head(10).to_dict(orient='records')
     prompt = f"""
-Bạn là chuyên gia phân tích dữ liệu. Dưới đây là câu hỏi của người dùng và dữ liệu SQL vừa truy vấn được (gồm 10 dòng đầu tiên).
+Bạn là chuyên gia phân tích dữ liệu. Dưới đây là câu hỏi của người dùng và dữ liệu SQL vừa truy vấn được (gồm 20 dòng đầu tiên).
 
 Câu hỏi: {question}
 
@@ -628,7 +668,16 @@ def generate_answer(state):
 #### Kết luận:
 """
         try:
-             # Tách từng dòng và bỏ dòng chứa dấu '---' (separator markdown)
+            
+            if(not result_table):
+                generation += "Không có kết quả nào từ truy vấn SQL."
+                return {
+                    "documents": documents,
+                    "question": question,
+                    "generation": generation
+                }
+            
+            # Parse markdown table from SQL result
             lines = result_table.strip().splitlines()
             clean_lines = [line for line in lines if "---" not in line]
             table_str = "\n".join(clean_lines)
@@ -636,9 +685,17 @@ def generate_answer(state):
             # Đọc lại bằng pandas
             df = pd.read_table(io.StringIO(table_str), sep="|", engine='python')
             df = df.dropna(axis=1, how='all')  # bỏ cột rỗng do padding '|'
+            df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
             df.columns = [c.strip() for c in df.columns]  # xóa khoảng trắng
             df = df.reset_index(drop=True)
+            
+            # lưu thành file tạm thời
+            # temp_file_path = f"temp_{uuid.uuid4().hex}.csv"
+            # df.to_csv(temp_file_path, index=False)
 
+            for col in df.select_dtypes(include=['float']).columns:
+                if df[col].max() > 1e11:
+                    df[col] = df[col] / 1e9  # Convert sang đơn vị tỷ
             # Sinh mã vẽ và render
             chart_code = generate_chart_code_via_llm(question, df)
             chart_url = execute_generated_plot_code(chart_code, df)
