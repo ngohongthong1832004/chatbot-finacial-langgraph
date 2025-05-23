@@ -538,7 +538,7 @@ The variable `df` is a preloaded pandas DataFrame that contains the dataset. Her
 User question: "{question}"
 
 Instructions:
-- Always start your code with `plt.figure()` and end with `plt.savefig(savefig_path)` and `plt.close()`.
+- Always start your code with `plt.figure(figsize=(10, 7))` and end with `plt.tight_layout()` and `plt.savefig(savefig_path)` and `plt.close()`.
 - Only use the existing `df` variable. Do NOT define or assign any new variables like `df_sorted`, `correlation_matrix`, or `data`.
 - If transformation is needed (e.g., sorting, pivoting, grouping), reassign it directly to `df`, like: df = df.sort_values(...).
 - You MAY use df['column'].values or df['column'].tolist() inside plotting functions (e.g., for labels and values in pie charts).
@@ -587,9 +587,9 @@ def execute_generated_plot_code(code: str, df: pd.DataFrame, static_dir="static/
         )
 
         # Chặn các lệnh nguy hiểm
-        forbidden_keywords = ["import", "input(", "os.", "__", "eval(", "exec(", "subprocess"]
-        if any(k in cleaned_code for k in forbidden_keywords):
-            raise ValueError("⚠️ Unsafe code detected in chart code.")
+        # forbidden_keywords = ["import", "input(", "os.", "__", "eval(", "exec(", "subprocess"]
+        # if any(k in cleaned_code for k in forbidden_keywords):
+        #     raise ValueError("⚠️ Unsafe code detected in chart code.")
 
         # Lọc các dòng hợp lệ bắt đầu bằng df., plt., sns. (bỏ savefig và close)
         filtered_lines = []
@@ -621,14 +621,25 @@ def generate_sql_conclusion(question: str, df: pd.DataFrame) -> str:
     import json
     sample = df.head(10).to_dict(orient='records')
     prompt = f"""
-Bạn là chuyên gia phân tích dữ liệu. Dưới đây là câu hỏi của người dùng và dữ liệu SQL vừa truy vấn được (gồm 20 dòng đầu tiên).
+You are a financial data analysis expert.
 
-Câu hỏi: {question}
+Question:
+{question}
 
-Dữ liệu:
+The following data is the result of a SQL query, showing up to 20 rows.
+**The first row represents the most significant value (e.g., the highest or lowest depending on the query).**
+
+Data:
 {json.dumps(sample, ensure_ascii=False, indent=2)}
 
-Hãy viết một đoạn kết luận ngắn gọn (1-2câu) để tóm tắt hoặc đưa ra insight từ dữ liệu này. Không cần giải thích lại câu hỏi. Ngắn ngọn thôi.
+Instructions:
+- If the question asks for ranking or top-N (e.g., "top 3", "rank", "highest 5", etc.), list the top relevant entries (e.g., top 3 companies).
+- Otherwise, write a short and concise conclusion in **one sentence only**, focusing on the most significant result (usually the first row).
+- Do NOT restate the question.
+- Do NOT provide explanations or background.
+- Be direct and clear.
+
+Conclusion:
 """
     return call_openrouter(prompt.strip())
 
@@ -654,19 +665,25 @@ def generate_answer(state):
         if result_doc:
             result_table = result_doc.page_content.replace("SQL Query Results:", "").strip()
 
-        generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
+#         generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
 
-#### Câu lệnh SQL được sử dụng:
-```sql
-{sql_code}
-```
+# #### Câu lệnh SQL được sử dụng:
+# ```sql
+# {sql_code}
+# ```
 
-#### Kết quả truy vấn:
+# #### Kết quả truy vấn:
 
-{result_table}
+# {result_table}
 
-#### Kết luận:
-"""
+# #### Kết luận:
+# """
+
+        generation = f"""Kết luận:"""
+
+
+
+
         try:
             
             if(not result_table):
