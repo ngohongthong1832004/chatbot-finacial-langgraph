@@ -26,7 +26,10 @@ from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple
 import google.generativeai as genai
 import seaborn as sns
-        
+import ast
+from matplotlib import * 
+from seaborn import *
+
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -58,7 +61,7 @@ chroma_db = None
 similarity_threshold_retriever = None
 ENABLE_WEB_SEARCH = True
 ENABLE_GPT_GRADING = True
-FORCE_SQL_ONLY = True
+FORCE_SQL_ONLY = False
 
 
 chunks, index, embedding_model = None, None, None
@@ -260,57 +263,63 @@ def retrieve(state):
 
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", """
-Bạn là chuyên gia phân loại truy vấn cho hệ thống hỏi đáp tài chính.
+You are an expert query classifier for a financial Q&A system.
 
-Hệ thống có khả năng truy vấn dữ liệu SQL từ cơ sở dữ liệu chứa giá cổ phiếu lịch sử (daily OHLCV) của 30 công ty thuộc chỉ số Dow Jones Industrial Average (DJIA), bao gồm:
 
-- Ticker mã có trong hệ thống 
-            AAPL - Apple Inc.
-            AMGN - Amgen Inc.
-            AXP  - American Express
-            BA   - Boeing Co.
-            CAT  - Caterpillar Inc.
-            CRM  - Salesforce Inc.
-            CSCO - Cisco Systems
-            CVX  - Chevron Corp.
-            DIS  - Walt Disney Co.
-            DOW  - Dow Inc.
-            GS   - Goldman Sachs
-            HD   - Home Depot
-            HON  - Honeywell International
-            IBM  - International Business Machines
-            INTC - Intel Corp.
-            JNJ  - Johnson & Johnson
-            JPM  - JPMorgan Chase
-            KO   - Coca-Cola Co.
-            MCD  - McDonald's Corp.
-            MMM  - 3M Company
-            MRK  - Merck & Co.
-            MSFT - Microsoft Corp.
-            NKE  - Nike Inc.
-            PG   - Procter & Gamble
-            TRV  - Travelers Companies
-            UNH  - UnitedHealth Group
-            V    - Visa Inc.
-            VZ   - Verizon Communications
-            WBA  - Walgreens Boots Alliance
-            WMT  - Walmart Inc.
-- Cột dữ liệu: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits"
-- Khoảng thời gian dữ liệu sẵn có:
-    + Từ ngày "2023-04-26" đến ngày "2025-04-25" (định dạng YYYY-MM-DD). Nếu câu hỏi yêu cầu dữ liệu nằm **ngoài** khoảng thời gian này, hãy trả lời **no**.
+The system has SQL query capabilities for a database containing:
 
-Nhiệm vụ của bạn: xác định xem câu hỏi dưới đây có thể được trả lời bằng dữ liệu trong cơ sở dữ liệu SQL hay không lưu ý nếu thời gian không thuộc vào hệ thống thì là no.
-Ngoài ra nếu câu hỏi có thời gian bạn cần phải xác định chính xác thời gian của câu hỏi có nằm trong khoảng thời gian của hệ thống hay không từ format YYYY-MM-DD (quan trọng).
-Chỉ trả lời **yes** hoặc **no**, không thêm giải thích.
+**AVAILABLE DATA:**
+- Daily historical stock prices (OHLCV) for 30 companies in the Dow Jones Industrial Average (DJIA)
+- Companies: AAPL (Apple), AMGN (Amgen), AXP (American Express), BA (Boeing), CAT (Caterpillar), CRM (Salesforce), CSCO (Cisco), CVX (Chevron), DIS (Disney/Walt Disney), DOW (Dow Inc.), GS (Goldman Sachs), HD (Home Depot), HON (Honeywell), IBM, INTC (Intel), JNJ (Johnson & Johnson), JPM (JPMorgan Chase), KO (Coca-Cola), MCD (McDonald's), MMM (3M), MRK (Merck), MSFT (Microsoft), NKE (Nike), PG (Procter & Gamble), TRV (Travelers), UNH (UnitedHealth Group), V (Visa), VZ (Verizon), WBA (Walgreens Boots Alliance), WMT (Walmart)
+- Data columns: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits", "price", "companies", "ticker", "sector", "industry"
+- Time range: e.g from "2023-04-26" to "2025-04-25"
 
-Nếu câu hỏi đề cập đến giá, thời gian cụ thể, ticker/công ty có trong danh sách, hãy trả lời "yes".
+**SUPPORTED QUERY TYPES:**
+
+✅ **ALWAYS answer "yes" for questions about:**
+- have price data for any of the 30 DJIA companies
+- Price data for a specific date or time range
+- Price data for a specific company
+- Stock prices (closing price, opening price, highest price, lowest price)
+- Trading volume
+- Dividends and stock splits
+- Price comparisons between companies
+- Statistical calculations (average, total, percentage change, standard deviation, correlation)
+- Trend analysis and performance
+- Company rankings by financial criteria
+- Finding highest/lowest values within time periods
+- Counting trading days meeting specific conditions
+- Sector/industry classification
+- Ticker symbol information
+- Any question related to financial data of the 30 DJIA companies
+
+✅ **TIME PERIOD SUPPORT:**
+- Accept any date from 2023-04-26 to 2025-04-25
+- Accept time ranges (quarters, years, months) within the above scope
+- Examples: "2024", "Q1 2025", "March 2024", "Jan-Mar 2025" are all acceptable
+
+✅ **COMPANY NAMES:**
+- Accept both full names and abbreviations
+- Examples: "Apple", "Microsoft", "Walt Disney", "Johnson & Johnson", "Procter & Gamble"
+
+❌ **ONLY answer "no" when:**
+- Question is about companies NOT in the 30 DJIA company list
+- Question is completely unrelated to finance/stocks
+
+**IMPORTANT NOTES:**
+- When in doubt, prefer answering "yes"
+- All types of financial analysis, statistics, and comparisons are supported
+- Chart/visualization questions are also supported as they can query SQL data for creation
+- NEVER answer "no" if the question contains any of these keywords:"Create", "Plot", "price", "prices", "market", "volume", "dividends", "splits", "stock price", "closing price", "opening price", "companies".
+- IMPORTANT: If the question have any SQL query keywords and some keyword such as:"Create", "Plot", "price", "market", "volume", "dividends", "splits", "companies" always answer "yes".
+
+
+Respond with only one word: **yes** or **no**.
 """),
-    ("human", "Câu hỏi: {question}")
+    ("human", "Question: {question}")
 ])
 
 def is_sql_question(question: str) -> bool:
-    # filled_prompt = prompt_template.format(question=question)
-    print(f"📥 Question: {question}")
     response = call_openrouter(prompt_template.format_prompt(question=question))
     return response.strip().lower() == "yes"
     # return "yes"
@@ -333,6 +342,7 @@ def grade_documents(state):
 
     # if any(keyword in question.lower() for keyword in database_keywords):
     #     use_sql = "Yes"
+    
     if is_sql_question(question):
         use_sql = "Yes"
         print("---GRADE: DETECTED DATABASE QUERY---")
@@ -538,7 +548,24 @@ The variable `df` is a preloaded pandas DataFrame that contains the dataset. Her
 User question: "{question}"
 
 Instructions:
-- Always start your code with `plt.figure()` and end with `plt.savefig(savefig_path)` and `plt.close()`.
+- Always handle missing values before plotting:
+  • For line, bar, or scatter plots: drop or fill NaN using `df = df.dropna()` or `df = df.fillna(method='ffill')`
+  • For heatmaps: use `df = df.astype(float).dropna(axis=1, how='all').dropna(axis=0, how='any')`
+- Before plotting, always convert numerical columns to float using `.astype(float)` to ensure compatibility with matplotlib or seaborn.
+  • Example: `df['daily_return'] = df['daily_return'].astype(float)`
+- Never allow unhandled NaN values or object types to cause errors during plotting.
+- If any column used in plotting may contain NaN or unexpected types, you MUST handle it explicitly before passing to a plotting function.
+- Never allow unhandled NaN values to cause errors during plotting.
+- If any column used in plotting may contain NaN or nulls, you MUST handle it explicitly before passing to a plotting function.
+- Always start your code with `plt.figure(figsize=(10, 7))` and end with `plt.tight_layout()` and `plt.savefig(savefig_path)` and `plt.close()`.
+- You MUST include **at least one** actual plotting command such as:
+  - `plt.plot(...)` for line charts
+  - `plt.bar(...)` for bar charts
+  - `plt.pie(...)` for pie charts
+  - `plt.hist(...)` for histograms
+  - `plt.scatter(...)` for scatter plots
+- The plot must be meaningful and match the user question. Do NOT leave the figure empty.
+- Do NOT just define the DataFrame or format the chart — you MUST visualize data using `plt.`.
 - Only use the existing `df` variable. Do NOT define or assign any new variables like `df_sorted`, `correlation_matrix`, or `data`.
 - If transformation is needed (e.g., sorting, pivoting, grouping), reassign it directly to `df`, like: df = df.sort_values(...).
 - You MAY use df['column'].values or df['column'].tolist() inside plotting functions (e.g., for labels and values in pie charts).
@@ -551,14 +578,25 @@ Instructions:
 - Your output will be automatically executed. Only return clean, complete matplotlib code using `df`.
 - ALWAYS use keyword arguments in df.pivot(): e.g., df = df.pivot(index="...", columns="...", values="...") — never pass positional arguments.
 - If using .dt accessors (e.g., df["Date"].dt.month), make sure to convert "Date" to datetime first using: df["Date"] = pd.to_datetime(df["Date"])
-
+- Do NOT use eval() or ast. Instead, use ast.literal_eval() when converting string representations of lists.
+- Do NOT use any external libraries or APIs.
+- Before accessing a column, always ensure its name is correct by checking df.columns. If the column name might vary (e.g., "Date" vs. "date"), standardize it first with:df.columns = df.columns.str.strip().str.lower() Then access the column in lowercase, like df["date"].
+- This rule applies only when the user question requests a **boxplot** of values **per month** (e.g., contains "monthly", "each month", or "per month", and "boxplot").
+- If the DataFrame contains a date-related column (e.g., "date" or "month"):
+  • Ensure the column is parsed to datetime using: df["month"] = pd.to_datetime(df["month"])
+  • Create a new column df["month"] = df["month"].dt.to_period("M").dt.to_timestamp() only if needed
+  • Group data by month (e.g., using df.groupby("month")) and prepare a list of the numeric column (e.g., "close_price") per month
+  • Plot a boxplot where each box represents a month's values using plt.boxplot(...)
+  • Use abbreviated month names ("Jan", "Feb", ..., "Dec") as xtick labels
+  • Do NOT overwrite the column "month" if it already exists — add a new column like "month_group" if needed
+  • Do NOT use .reset_index() unless required
 
 
 Output only the raw code.
 """
+    code =  call_openrouter(prompt.strip())
 
-    code = call_openrouter_for_chart(prompt.strip())
-    print("📤 Code gen chart from LLM:\n", code)
+    # print("📤 Code gen chart from LLM:\n", code)
     return code.strip()
 
 
@@ -586,16 +624,14 @@ def execute_generated_plot_code(code: str, df: pd.DataFrame, static_dir="static/
                 .strip()
         )
 
-        # Chặn các lệnh nguy hiểm
-        forbidden_keywords = ["import", "input(", "os.", "__", "eval(", "exec(", "subprocess"]
-        if any(k in cleaned_code for k in forbidden_keywords):
-            raise ValueError("⚠️ Unsafe code detected in chart code.")
-
-        # Lọc các dòng hợp lệ bắt đầu bằng df., plt., sns. (bỏ savefig và close)
         filtered_lines = []
         for line in cleaned_code.splitlines():
             line = line.strip()
-            if (line.startswith("df") or line.startswith("plt.") or line.startswith("sns.")) and not any(x in line for x in ["savefig", "close"]):
+            if (
+                (line.startswith("df") or line.startswith("plt.") or line.startswith("sns."))
+                and not line.startswith("plt.savefig")
+                and not line.startswith("plt.close")
+            ):
                 filtered_lines.append(line)
 
         if not filtered_lines:
@@ -606,7 +642,14 @@ def execute_generated_plot_code(code: str, df: pd.DataFrame, static_dir="static/
 
         print("📋 Running cleaned matplotlib code:\n", safe_code)
 
-        exec(safe_code, {"plt": plt, "pd": pd, "sns": sns}, local_vars)
+        globals_for_exec = {
+            "plt": plt,
+            "pd": pd,
+            "sns": sns,
+            "df": local_vars["df"],
+            "savefig_path": local_vars["savefig_path"],
+        }
+        exec(safe_code, globals_for_exec)
 
         return f"/static/charts/{filename}"
 
@@ -621,16 +664,30 @@ def generate_sql_conclusion(question: str, df: pd.DataFrame) -> str:
     import json
     sample = df.head(10).to_dict(orient='records')
     prompt = f"""
-Bạn là chuyên gia phân tích dữ liệu. Dưới đây là câu hỏi của người dùng và dữ liệu SQL vừa truy vấn được (gồm 20 dòng đầu tiên).
+You are a financial data analysis expert.
 
-Câu hỏi: {question}
+Question:
+{question}
 
-Dữ liệu:
+The following data is the result of a SQL query, showing up to 20 rows.
+**The first row represents the most significant value (e.g., the highest or lowest depending on the query).**
+
+Data:
 {json.dumps(sample, ensure_ascii=False, indent=2)}
 
-Hãy viết một đoạn kết luận ngắn gọn (1-2câu) để tóm tắt hoặc đưa ra insight từ dữ liệu này. Không cần giải thích lại câu hỏi. Ngắn ngọn thôi.
+Instructions:
+- You MUST answer the question directly based on the data.
+- Do NOT answer "yes", "no", or avoid the question — write a clear, specific conclusion from the data.
+- If the question asks for rankings or top N (e.g., "top 3", "highest 5", "rank"), list the top results accordingly.
+- If it's a factual or analytical question, summarize the most relevant information from the top rows.
+- Do NOT restate the question.
+- Do NOT include explanations or general background.
+- Write a single, short, direct sentence as the final conclusion.
+
+Conclusion:
 """
     return call_openrouter(prompt.strip())
+
 
 
 def generate_answer(state):
@@ -654,19 +711,25 @@ def generate_answer(state):
         if result_doc:
             result_table = result_doc.page_content.replace("SQL Query Results:", "").strip()
 
-        generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
+#         generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
 
-#### Câu lệnh SQL được sử dụng:
-```sql
-{sql_code}
-```
+# #### Câu lệnh SQL được sử dụng:
+# ```sql
+# {sql_code}
+# ```
 
-#### Kết quả truy vấn:
+# #### Kết quả truy vấn:
 
-{result_table}
+# {result_table}
 
-#### Kết luận:
-"""
+# #### Kết luận:
+# """
+
+        generation = f"""Kết luận:"""
+
+
+
+
         try:
             
             if(not result_table):
@@ -685,7 +748,11 @@ def generate_answer(state):
             # Đọc lại bằng pandas
             df = pd.read_table(io.StringIO(table_str), sep="|", engine='python')
             df = df.dropna(axis=1, how='all')  # bỏ cột rỗng do padding '|'
-            df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+            # ✅ Không còn dùng applymap
+            for col in df.select_dtypes(include='object'):
+                df[col] = df[col].map(lambda x: x.strip() if isinstance(x, str) else x)
+
             df.columns = [c.strip() for c in df.columns]  # xóa khoảng trắng
             df = df.reset_index(drop=True)
             
@@ -693,18 +760,34 @@ def generate_answer(state):
             # temp_file_path = f"temp_{uuid.uuid4().hex}.csv"
             # df.to_csv(temp_file_path, index=False)
 
-            for col in df.select_dtypes(include=['float']).columns:
-                if df[col].max() > 1e11:
-                    df[col] = df[col] / 1e9  # Convert sang đơn vị tỷ
+            # for col in df.select_dtypes(include=['float']).columns:
+            #     if df[col].max() > 1e11:
+            #         df[col] = df[col] / 1e9  # Convert sang đơn vị tỷ
+                    
+                    
+            print(f"📊 DataFrame shape: {df.head(3)}")
+                    
             # Sinh mã vẽ và render
-            chart_code = generate_chart_code_via_llm(question, df)
-            chart_url = execute_generated_plot_code(chart_code, df)
+            if df.shape[1] >= 1:
+                chart_code = generate_chart_code_via_llm(question, df)
+                chart_url = execute_generated_plot_code(chart_code, df)
+            else:
+                chart_url = None  # Không đủ cột để vẽ biểu đồ
+            
+            # print(f"df.columns: {df.columns}")
+            # print(f"df.head(): {df.head(10).to_dict(orient='records')}")
 
             conclusion = generate_sql_conclusion(question, df)
             generation += f"\n{conclusion}"    
             
             if chart_url:
                 generation += f"\n\n ![Xem biểu đồ tại đây](http://localhost:8000{chart_url})"
+            
+            
+            # lưu thành file tạm thời
+            temp_file_path = f"temp.csv"
+            df.to_csv(temp_file_path, index=False)
+            print(f"✅ Tạo file tạm thời: {temp_file_path}")
             
         except Exception as e:
             print(f"⚠️ Không thể tạo biểu đồ: {e}")

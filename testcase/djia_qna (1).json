@@ -698,5 +698,124 @@
     "complexity": "difficult",
     "question": "What was the maximum drawdown for Microsoft in 2024?",
     "answer": "-14%"
+  },
+  {
+    "number": 102,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Plot the time series of Apple (AAPL) stock closing price from January 1, 2025 to March 31, 2025",
+    "answer": "chart"
+  },
+  {
+    "number": 103,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Plot the histogram of daily returns of Boeing (BA) during 2024.",
+    "answer": "chart"
+  },
+  {
+    "number": 104,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Create a boxplot of monthly closing prices of Walt Disney (DIS) for each month of 2024.",
+    "answer": "chart"
+  },
+  {
+    "number": 105,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": " Create a scatter plot of market capitalization versus P/E ratio for all DJIA companies as of April 26, 2025.",
+    "answer": "chart"
+  },
+  {
+    "number": 106,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Create a bar chart of the top 10 companies by market capitalization as of April 26, 2025.",
+    "answer": "chart"
+  },
+  {
+    "number": 107,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Create a pie chart showing the distribution of DJIA companies by sector.",
+    "answer": "chart"
+  },
+  {
+    "number": 108,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Plot a heatmap of the correlation matrix of daily returns in 2024 for AAPL, MSFT, JPM, BA, and WMT.",
+    "answer": "chart"
+  },
+  {
+    "number": 109,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Plot the daily trading volume of Apple (AAPL) for March 2025.",
+    "answer": "chart"
+  },
+  {
+    "number": 110,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Create a bar chart of Caterpillar (CAT) average monthly closing price in 2024",
+    "answer": "chart"
+  },
+  {
+    "number": 112,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Plot a histogram of market capitalizations in the Technology sector.",
+    "answer": "chart"
+  },
+  {
+    "number": 113,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Create a scatter plot of average daily volume versus average closing price for each DJIA company in 2024.",
+    "answer": "chart"
+  },
+  {
+    "number": 115,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Plot a histogram of the daily high–low range for Boeing (BA) in 2024",
+    "answer": "chart"
+  },
+  {
+    "number": 116,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": " Create a boxplot of daily returns for Apple (AAPL) in 2024.",
+    "answer": "chart"
+  },
+  {
+    "number": 117,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Create a bar chart of total dividends per share paid by each DJIA company in 2024.",
+    "answer": "chart"
+  },
+  {
+    "number": 118,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": " Create a pie chart of market capitalization proportions by sector as of April 26, 2025",
+    "answer": "chart"
+  },
+  {
+    "number": 119,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Plot the time series of Coca-Cola (KO) closing price from July 1, 2024 to December 31, 2024.",
+    "answer": "chart"
+  },
+  {
+    "number": 120,
+    "type": "chart",
+    "complexity": "difficult",
+    "question": "Create a boxplot of market capitalization values grouped by sector",
+    "answer": "chart"
   }
 ]

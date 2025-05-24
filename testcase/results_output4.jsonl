@@ -1,0 +1,701 @@
+{
+    "number": 1,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Microsoft on March 15, 2024?",
+    "expected_answer": "$413.26",
+    "generated_answer": "Kết luận: The closing price of Microsoft on March 15, 2024, was 413.265. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_1c7f3ce1.png)"
+} {
+    "number": 2,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the opening price of Boeing on August 1, 2023?",
+    "expected_answer": "$237.55",
+    "generated_answer": "Kết luận: The opening price of Boeing on August 1, 2023, was 237.55."
+} {
+    "number": 3,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the highest price Apple reached on February 28, 2025?",
+    "expected_answer": "$242.09",
+    "generated_answer": "Kết luận: The highest price Apple reached on February 28, 2025, was 242.09."
+} {
+    "number": 4,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the lowest price Disney traded at on November 1, 2023?",
+    "expected_answer": "$79.20",
+    "generated_answer": "Kết luận: The lowest price Disney traded at on November 1, 2023, was 79.2016."
+} {
+    "number": 5,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Apple on January 2, 2024?",
+    "expected_answer": "82,488,700 shares",
+    "generated_answer": "Kết luận: The trading volume of Apple on January 2, 2024, was 82,488,700 shares."
+} {
+    "number": 6,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Walmart on March 10, 2025?",
+    "expected_answer": "$87.58",
+    "generated_answer": "Kết luận: The closing price of Walmart on March 10, 2025, was 87.5795."
+} {
+    "number": 7,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Disney on October 1, 2024?",
+    "expected_answer": "$93.64",
+    "generated_answer": "Kết luận: The closing price of Disney on October 1, 2024, was 93.6351. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_9914c9b8.png)"
+} {
+    "number": 8,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Chevron on January 31, 2025?",
+    "expected_answer": "$147.55",
+    "generated_answer": "Kết luận: The closing price of Chevron on January 31, 2025, was 147.553."
+} {
+    "number": 9,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the opening price of American Express on January 3, 2025?",
+    "expected_answer": "$299.69",
+    "generated_answer": "Kết luận: The opening price of American Express on January 3, 2025, was 299.685."
+} {
+    "number": 10,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Visa on March 8, 2024?",
+    "expected_answer": "$234.22",
+    "generated_answer": "Kết luận: The closing price of Visa on March 8, 2024, was 277.966. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_9913bbbf.png)"
+} {
+    "number": 11,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Nike on November 10, 2023?",
+    "expected_answer": "$104.32",
+    "generated_answer": "Kết luận: The closing price of Nike on November 10, 2023, was 103.447. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_82d55a9f.png)"
+} {
+    "number": 12,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of JPMorgan Chase on April 18, 2025?",
+    "expected_answer": "$141.88",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 13,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Johnson & Johnson on January 31, 2025?",
+    "expected_answer": "$161.02",
+    "generated_answer": "Kết luận: The closing price of Johnson & Johnson on January 31, 2025, was 150.942."
+} {
+    "number": 14,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Caterpillar on December 2, 2024?",
+    "expected_answer": "$265.11",
+    "generated_answer": "Kết luận: The closing price of Caterpillar on December 2, 2024, was 399.118. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_1e1e8512.png)"
+} {
+    "number": 15,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of 3M on December 15, 2023?",
+    "expected_answer": "$99.42",
+    "generated_answer": "Kết luận: The closing price of 3M on December 15, 2023, was 86.0272. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_59dc5f5a.png)"
+} {
+    "number": 16,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Procter & Gamble on May 6, 2024?",
+    "expected_answer": "$156.77",
+    "generated_answer": "Kết luận: The closing price of Procter & Gamble on May 6, 2024, was 160.516."
+} {
+    "number": 17,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Walgreens Boots Alliance on August 1, 2024?",
+    "expected_answer": "$15.23",
+    "generated_answer": "Kết luận: The closing price of Walgreens Boots Alliance on August 1, 2024, was 11.1948."
+} {
+    "number": 18,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Merck on October 10, 2024?",
+    "expected_answer": "$107.35",
+    "generated_answer": "Kết luận: The closing price of Merck on October 10, 2024, was 107.602. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_f73364c7.png)"
+} {
+    "number": 19,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Travelers on July 20, 2024?",
+    "expected_answer": "$174.28",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 20,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Home Depot on December 1, 2024?",
+    "expected_answer": "$315.50",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 21,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Dow Inc. on February 14, 2025?",
+    "expected_answer": "$40.32",
+    "generated_answer": "Kết luận: The closing price of Dow Inc. on February 14, 2025, was 37.9656."
+} {
+    "number": 22,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Cisco on February 2, 2024?",
+    "expected_answer": "$48.74",
+    "generated_answer": "Kết luận: The closing price of Cisco on February 2, 2024, was 48.3222. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_a80c1d6d.png)"
+} {
+    "number": 23,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Amgen on March 10, 2024?",
+    "expected_answer": "$233.58",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 24,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of UnitedHealth Group on May 10, 2024?",
+    "expected_answer": "$498.20",
+    "generated_answer": "Kết luận: The closing price of UnitedHealth Group on May 10, 2024, was 504.738. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_5412d0c3.png)"
+} {
+    "number": 25,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Goldman Sachs on May 1, 2024?",
+    "expected_answer": "$328.45",
+    "generated_answer": "Kết luận: The closing price of Goldman Sachs on May 1, 2024, was 417.735."
+} {
+    "number": 26,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of Honeywell on October 15, 2024?",
+    "expected_answer": "$182.90",
+    "generated_answer": "Kết luận: The closing price of Honeywell on October 15, 2024, was 215.055. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_1a73b726.png)"
+} {
+    "number": 27,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of McDonald’s on June 30, 2024?",
+    "expected_answer": "$290.11",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 28,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the closing price of IBM on March 1, 2024?",
+    "expected_answer": "$132.50",
+    "generated_answer": "Kết luận: The closing price of IBM on March 1, 2024, was 182.077."
+} {
+    "number": 29,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Verizon on March 5, 2025?",
+    "expected_answer": "18,750,000 shares",
+    "generated_answer": "Kết luận: The trading volume of Verizon on March 5, 2025, was 18,038,400."
+} {
+    "number": 30,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Walt Disney on March 5, 2025?",
+    "expected_answer": "9,956,100 shares",
+    "generated_answer": "Kết luận: The trading volume of Walt Disney on March 5, 2025, was 9,956,100. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_18647d36.png)"
+} {
+    "number": 31,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Salesforce on March 5, 2025?",
+    "expected_answer": "6,612,600 shares",
+    "generated_answer": "Kết luận: The trading volume of Salesforce on March 5, 2025 was 6,612,600.0."
+} {
+    "number": 32,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What was the trading volume of Boeing on March 5, 2025?",
+    "expected_answer": "7,355,800 shares",
+    "generated_answer": "Kết luận: The trading volume of Boeing on March 5, 2025, was 7,355,800.0."
+} {
+    "number": 33,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "On what date did Apple stock reach its highest closing price in 2024, and what was that price?",
+    "expected_answer": "December 31, 2024, with a closing price of $250.14",
+    "generated_answer": "Kết luận: Apple stock reached its highest closing price of 258.736 on December 26, 2024. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_0de8926b.png)"
+} {
+    "number": 34,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "What was the lowest closing price of Verizon in 2023, and on what date did it occur?",
+    "expected_answer": "$27.81, on October 13, 2023",
+    "generated_answer": "Kết luận: The lowest closing price of Verizon in 2023 was 27.8067 on October 13, 2023. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_2f870f28.png)"
+} {
+    "number": 35,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "What was the highest closing price of Microsoft in 2024, and when was it achieved?",
+    "expected_answer": "$422.00 on March 14, 2024",
+    "generated_answer": "Kết luận: The highest closing price of Microsoft in 2024 was 464.854 on July 5, 2024. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_58ae3204.png)"
+} {
+    "number": 36,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "How many dividends did Apple pay in 2024?",
+    "expected_answer": "4",
+    "generated_answer": "Kết luận: Apple paid 4 dividends in 2024."
+} {
+    "number": 37,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "What dividend per share did Microsoft pay on May 17, 2023?",
+    "expected_answer": "$0.68",
+    "generated_answer": "Kết luận: Microsoft paid a dividend of $0.68 per share on May 17, 2023."
+} {
+    "number": 38,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "On what date did Walmart execute a stock split, and what was the split ratio?",
+    "expected_answer": "February 26, 2024 (3-for-1 split)",
+    "generated_answer": "Kết luận: Walmart executed a stock split on February 26, 2024, at a split ratio of 3. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_52020350.png)"
+} {
+    "number": 39,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On January 15, 2025, which company had a higher closing price, Apple or Microsoft?",
+    "expected_answer": "Microsoft, with a closing price of about $412, compared to Apple’s $237.61",
+    "generated_answer": "Kết luận: Microsoft Corporation had a higher closing price at 425.457."
+} {
+    "number": 40,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On July 1, 2024, which had a higher closing price: Coca-Cola or McDonald’s?",
+    "expected_answer": "McDonald’s, with a closing price around $290, versus about $65 for Coca-Cola",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 41,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On October 2, 2024, which company’s stock closed higher: Goldman Sachs or Visa?",
+    "expected_answer": "Goldman Sachs, with a closing price of roughly $340, compared to about $230 for Visa",
+    "generated_answer": "Kết luận: Goldman Sachs closed higher than Visa on October 2, 2024. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_c49346d4.png)"
+} {
+    "number": 42,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On November 5, 2024, which company had a higher closing price, Amgen or Boeing?",
+    "expected_answer": "Amgen, with about $280 versus Boeing’s $180",
+    "generated_answer": "Kết luận: Amgen had a higher closing price than Boeing on November 5, 2024."
+} {
+    "number": 43,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On January 10, 2025, who closed higher: Merck or Johnson & Johnson?",
+    "expected_answer": "Johnson & Johnson, with around $160, versus Merck’s ~$110",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 44,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On August 8, 2024, which stock was higher, Honeywell or Caterpillar?",
+    "expected_answer": "Caterpillar, with a closing price near $340, compared to Honeywell’s ~$190",
+    "generated_answer": "Kết luận: Caterpillar was higher than Honeywell on August 8, 2024."
+} {
+    "number": 45,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On August 1, 2024, which had a higher closing price: Nike or Boeing?",
+    "expected_answer": "Boeing, with about $180, versus roughly $100 for Nike",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 46,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On December 1, 2024, which company’s stock price was higher, Disney or Coca-Cola?",
+    "expected_answer": "Disney, with approximately $98, compared to Coca-Cola’s ~$64",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 47,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "On September 1, 2024, which company had a higher closing price, Travelers or American Express?",
+    "expected_answer": "American Express, with a closing price around $170, versus about $155 for Travelers",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 48,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the lowest closing price on April 1, 2025?",
+    "expected_answer": "Walgreens Boots Alliance, with a closing price of roughly $8.50",
+    "generated_answer": "Kết luận: Walgreens Boots Alliance, Inc. had the lowest closing price on April 1, 2025, at 11.16. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_b099faf0.png)"
+} {
+    "number": 49,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the highest closing price on July 1, 2024?",
+    "expected_answer": "UnitedHealth Group, with a closing price near $500",
+    "generated_answer": "Kết luận: UnitedHealth Group Incorporated had the highest closing price on July 1, 2024, at 488.929. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_36f81a3e.png)"
+} {
+    "number": 50,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the highest closing price on January 2, 2024?",
+    "expected_answer": "UnitedHealth Group, with a closing price of about $495",
+    "generated_answer": "Kết luận: UnitedHealth Group Incorporated had the highest closing price on January 2, 2024, at 528.766. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_dda59810.png)"
+} {
+    "number": 51,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the lowest closing price on January 2, 2024?",
+    "expected_answer": "Walgreens Boots Alliance, with a closing price around $36",
+    "generated_answer": "Kết luận: Walgreens Boots Alliance, Inc. had the lowest closing price on January 2, 2024, at 24.6349. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_25086333.png)"
+} {
+    "number": 52,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Which company had the largest percentage increase in its stock price during 2024?",
+    "expected_answer": "Salesforce, with its stock rising by approximately 60% in 2024",
+    "generated_answer": "[ERROR] HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=30)"
+} {
+    "number": 53,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Which company had the largest absolute increase in closing price (in dollars) during 2024?",
+    "expected_answer": "UnitedHealth Group, which rose by roughly $120 per share in 2024",
+    "generated_answer": "[ERROR] HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=30)"
+} {
+    "number": 54,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Which company had the largest percentage decline in stock price during 2024?",
+    "expected_answer": "Walgreens Boots Alliance, with a drop of about 50%",
+    "generated_answer": "[ERROR] HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=30)"
+} {
+    "number": 55,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "By how many dollars did Boeing’s closing price change from January 2, 2024 to December 31, 2024?",
+    "expected_answer": "It decreased by approximately $75",
+    "generated_answer": "Kết luận: Boeing’s closing price changed by -75.21 dollars from January 2, 2024 to December 31, 2024."
+} {
+    "number": 56,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the average closing price of Microsoft in March 2025?",
+    "expected_answer": "About $410.00",
+    "generated_answer": "Kết luận: The average closing price of Microsoft in March 2025 was 388.263."
+} {
+    "number": 57,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the average closing price of Apple during Q1 2025 (Jan–Mar 2025)?",
+    "expected_answer": "Approximately $230.00",
+    "generated_answer": "Kết luận: The average closing price of Apple during Q1 2025 was 231.724."
+} {
+    "number": 58,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the average daily trading volume of Apple in 2024?",
+    "expected_answer": "Around 60 million shares",
+    "generated_answer": "Kết luận: The average daily trading volume of Apple in 2024 was 57,197,600."
+} {
+    "number": 59,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "By what percentage did Apple’s stock price increase in 2024?",
+    "expected_answer": "About 36%",
+    "generated_answer": "Kết luận: Apple’s stock price increased by 36.52% in 2024. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_4b697d6f.png)"
+} {
+    "number": 60,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the average closing price of Boeing in the second half of 2023?",
+    "expected_answer": "Roughly $200.00",
+    "generated_answer": "Kết luận: The average closing price of Boeing in the second half of 2023 was 216.329."
+} {
+    "number": 61,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the total trading volume for Microsoft in 2024?",
+    "expected_answer": "On the order of 5 billion shares (approximately)",
+    "generated_answer": "Kết luận: The total trading volume for Microsoft in 2024 was 5,174,890,000."
+} {
+    "number": 62,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the average closing price of Apple during the first quarter of 2025?",
+    "expected_answer": "Approximately $230",
+    "generated_answer": "Kết luận: The average closing price of Apple during the first quarter of 2025 was 231.724."
+} {
+    "number": 63,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the average closing price of Boeing from July through December 2023?",
+    "expected_answer": "About $200",
+    "generated_answer": "Kết luận: The average closing price of Boeing from July through December 2023 was 216.329."
+} {
+    "number": 64,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "In 2024, what percentage of trading days did Microsoft close above $300?",
+    "expected_answer": "100% (every trading day of 2024)",
+    "generated_answer": "Kết luận: Microsoft closed above $300 for 100% of trading days in 2024."
+} {
+    "number": 65,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "On how many trading days in 2024 did Apple close above $200?",
+    "expected_answer": "Approximately 5 days",
+    "generated_answer": "Kết luận: Apple closed above $200 on 140 trading days in 2024."
+} {
+    "number": 66,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "By how much (in percentage points) did Walgreens Boots Alliance’s stock price change over 2024?",
+    "expected_answer": "It fell by roughly 50%",
+    "generated_answer": "Kết luận: Walgreens Boots Alliance’s stock price changed by -62.41 percentage points over 2024. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_cc75bb16.png)"
+} {
+    "number": 67,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "By how many dollars did Boeing’s closing price change between January 2, 2024 and December 31, 2024?",
+    "expected_answer": "Decreased by about $75",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 68,
+    "type": "factual",
+    "complexity": "difficult",
+    "question": "On which date in 2025 did Microsoft reach its highest intra-day high, and what was the price?",
+    "expected_answer": "March 14, 2025, $435.00",
+    "generated_answer": "Kết luận: On January 28, 2025, Microsoft reached its highest intra-day high at a price of 447.483. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_ef3375c2.png)"
+} {
+    "number": 69,
+    "type": "factual",
+    "complexity": "difficult",
+    "question": "What was the standard deviation of Apple’s daily closing prices in 2024?",
+    "expected_answer": "About $12.50",
+    "generated_answer": "Kết luận: The standard deviation of Apple’s daily closing prices in 2024 is 25.5897."
+} {
+    "number": 70,
+    "type": "factual",
+    "complexity": "difficult",
+    "question": "How many trading days in 2024 saw Disney’s closing price above $90?",
+    "expected_answer": "8",
+    "generated_answer": "Kết luận: Disney's closing price was above $90 on 217 trading days in 2024."
+} {
+    "number": 71,
+    "type": "factual",
+    "complexity": "difficult",
+    "question": "What was UnitedHealth Group’s dividend yield as of December 31, 2024?",
+    "expected_answer": "1.18%",
+    "generated_answer": "Kết luận: The dividend yield for UnitedHealth Group as of December 31, 2024, was 1.61775%. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_7bdf6403.png)"
+} {
+    "number": 72,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the highest average trading volume in 2024?",
+    "expected_answer": "Apple",
+    "generated_answer": "Kết luận: Intel Corporation had the highest average trading volume in 2024. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_a9730ee2.png)"
+} {
+    "number": 73,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company had the lowest volatility (standard deviation of daily returns) in 2024?",
+    "expected_answer": "Coca-Cola",
+    "generated_answer": "Kết luận: Coca-Cola Company had the lowest volatility in 2024 with a standard deviation of daily returns of 0.00803449. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_61bd3348.png)"
+} {
+    "number": 74,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company experienced the highest single-day percentage drop in 2024?",
+    "expected_answer": "Boeing",
+    "generated_answer": "Kết luận: Intel Corporation experienced the highest single-day percentage drop in 2024 at -26.0585%. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_70e8ac24.png)"
+} {
+    "number": 75,
+    "type": "comparative",
+    "complexity": "medium",
+    "question": "Which company experienced the highest single-day percentage gain in 2024?",
+    "expected_answer": "Salesforce",
+    "generated_answer": "Kết luận: 3M Company experienced the highest single-day percentage gain in 2024 with a gain of 22.99%. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_db831902.png)"
+} {
+    "number": 76,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Rank the top three companies by total return in 2024.",
+    "expected_answer": "1) Salesforce, 2) Microsoft, 3) UnitedHealth Group",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 77,
+    "type": "comparative",
+    "complexity": "difficult",
+    "question": "Rank the bottom three companies by total return in 2024.",
+    "expected_answer": "1) Walgreens Boots Alliance, 2) 3M, 3) Verizon",
+    "generated_answer": "[ERROR] HTTPConnectionPool(host='localhost', port=8000): Read timed out. (read timeout=30)"
+} {
+    "number": 78,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was the moving average (30-day) closing price of Microsoft on April 30, 2024?",
+    "expected_answer": "$415.30",
+    "generated_answer": "Kết luận: No ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_862db79f.png)"
+} {
+    "number": 79,
+    "type": "analytical",
+    "complexity": "easy",
+    "question": "What was Apple’s highest weekly trading volume in 2024, and which week was it?",
+    "expected_answer": "Week of March 18, 2024, at 405 million shares",
+    "generated_answer": "Kết luận: The highest weekly trading volume in 2024 was 635,755,000 on the week starting June 10, 2024. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_e2a09fcb.png)"
+} {
+    "number": 80,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "Calculate the cumulative return of Microsoft from January 2 to December 31, 2024.",
+    "expected_answer": "About 38%",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 81,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "Calculate the median closing price of Disney in 2024.",
+    "expected_answer": "$92.40",
+    "generated_answer": "Kết luận: The median closing price of Disney in 2024 is 99.9737."
+} {
+    "number": 82,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the compound annual growth rate (CAGR) of Apple from Jan 1, 2023 to Dec 31, 2024?",
+    "expected_answer": "About 17%",
+    "generated_answer": "Kết luận:Không có kết quả nào từ truy vấn SQL."
+} {
+    "number": 83,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was Boeing’s beta (relative to the DJIA index) for 2024?",
+    "expected_answer": "1.25",
+    "generated_answer": "Kết luận: no"
+} {
+    "number": 84,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was the Sharpe ratio of Microsoft in 2024, assuming a risk-free rate of 4%?",
+    "expected_answer": "1.15",
+    "generated_answer": "Kết luận: The Sharpe ratio of Microsoft in 2024 is 0.69."
+} {
+    "number": 85,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was the annualized volatility of Apple for 2024?",
+    "expected_answer": "22%",
+    "generated_answer": "Kết luận: The annualized volatility of Apple for 2024 is 22.4488%."
+} {
+    "number": 86,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was the correlation between Apple’s and Microsoft’s daily returns in 2024?",
+    "expected_answer": "0.68",
+    "generated_answer": "Kết luận: The correlation between Apple’s and Microsoft’s daily returns in 2024 is 0.469628."
+} {
+    "number": 87,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "How many trading days in 2024 had Boeing’s closing price within one standard deviation of its mean?",
+    "expected_answer": "174 days",
+    "generated_answer": "Kết luận: Boeing’s closing price was within one standard deviation of its mean on 151 trading days in 2024."
+} {
+    "number": 88,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "On which dates in 2024 did Microsoft pay dividends, and what were the amounts?",
+    "expected_answer": "Mar 14 ($0.75), Jun 13 ($0.75), Sept 12 ($0.75), Dec 12 ($0.75)",
+    "generated_answer": "Kết luận: Microsoft paid a dividend of $0.75 on February 14, 2024. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_6cb0f4c2.png)"
+} {
+    "number": 89,
+    "type": "factual",
+    "complexity": "medium",
+    "question": "On which dates in 2024 did Apple pay dividends, and what were the amounts?",
+    "expected_answer": "Feb 15 ($0.24), May 16 ($0.24), Aug 15 ($0.24), Nov 14 ($0.24)",
+    "generated_answer": "Kết luận: Apple paid dividends on February 9, 2024, in the amount of $0.24. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_52bd6fe9.png)"
+} {
+    "number": 90,
+    "type": "factual",
+    "complexity": "hard",
+    "question": "Which DJIA company was removed in Q4 2024 and which company replaced it?",
+    "expected_answer": "Walgreens Boots Alliance was replaced by Salesforce",
+    "generated_answer": "Kết luận: 3M Company was removed and replaced by Chevron Corporation."
+} {
+    "number": 91,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "Which sector does UnitedHealth Group belong to?",
+    "expected_answer": "Healthcare",
+    "generated_answer": "Kết luận: UnitedHealth Group belongs to the Healthcare sector. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_d137c4e9.png)"
+} {
+    "number": 92,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "Which sector does Chevron belong to?",
+    "expected_answer": "Energy",
+    "generated_answer": "Kết luận: Chevron belongs to the Energy sector. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_4ee67497.png)"
+} {
+    "number": 93,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "Which sector does Coca-Cola belong to?",
+    "expected_answer": "Consumer Staples",
+    "generated_answer": "Kết luận: Coca-Cola belongs to the Consumer Defensive sector. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_50783ef0.png)"
+} {
+    "number": 94,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "Which sector does IBM belong to?",
+    "expected_answer": "Information Technology",
+    "generated_answer": "Kết luận: IBM belongs to the Technology sector. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_a69a5a30.png)"
+} {
+    "number": 95,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What is the ticker symbol for Walt Disney?",
+    "expected_answer": "DIS",
+    "generated_answer": "Kết luận: The ticker symbol for Walt Disney is DIS. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_e5750ea5.png)"
+} {
+    "number": 96,
+    "type": "factual",
+    "complexity": "easy",
+    "question": "What is the ticker symbol for Nike?",
+    "expected_answer": "NKE",
+    "generated_answer": "Kết luận: The ticker symbol for Nike is NKE. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_c5da281d.png)"
+} {
+    "number": 97,
+    "type": "comparative",
+    "complexity": "easy",
+    "question": "Which company had higher dividends per share in 2024, Microsoft or Apple?",
+    "expected_answer": "Microsoft ($3.00) vs Apple ($0.96)",
+    "generated_answer": "Kết luận: Microsoft had higher dividends per share in 2024 with a total dividend of 3.08. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_2110e8b4.png)"
+} {
+    "number": 98,
+    "type": "analytical",
+    "complexity": "medium",
+    "question": "What was the average dividend yield for the DJIA as a whole in 2024?",
+    "expected_answer": "About 2.1%",
+    "generated_answer": "Kết luận: The average dividend yield for the DJIA in 2024 was 2.69115. ![Xem biểu đồ tại đây](http://localhost:8000/static/charts/chart_d74dae36.png)"
+} {
+    "number": 99,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "Calculate the DJIA total return for 2024, assuming equal weighting.",
+    "expected_answer": "Approximately 12%",
+    "generated_answer": "Kết luận: The total return for AAPL is 37.06%."
+} {
+    "number": 100,
+    "type": "analytical",
+    "complexity": "difficult",
+    "question": "What was the maximum drawdown for Microsoft in 2024?",
+    "expected_answer": "-14%",
+    "generated_answer": "Kết luận: The maximum drawdown for Microsoft in 2024 was 15.4868%."
+}
