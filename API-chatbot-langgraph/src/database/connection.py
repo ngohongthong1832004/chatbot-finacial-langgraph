@@ -11,7 +11,7 @@ from src.database.schema_database import get_schema_and_samples
 from sqlalchemy import create_engine
 
 # Load biến môi trường từ file .env
-load_dotenv()
+load_dotenv() 
 
 def call_openrouter(prompt_obj) -> str:
     prompt = prompt_obj.to_string()  
