@@ -13,11 +13,9 @@ from src.database.connection import connect_to_database, execute_sql_query, get_
 from langchain_core.messages import HumanMessage
 from deep_translator import GoogleTranslator
 
-
 # from vertexai.generative_models import GenerativeModel
 
 import os
-import io  # đừng quên import ở đầu file nếu chưa có
 import json
 import numpy as np
 import faiss
@@ -25,16 +23,6 @@ import pickle
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple
 import google.generativeai as genai
-import seaborn as sns
-import ast
-from matplotlib import * 
-from seaborn import *
-
-import os
-import matplotlib.pyplot as plt
-import pandas as pd
-import uuid
-
 
 import requests
 from dotenv import load_dotenv
@@ -61,15 +49,11 @@ chroma_db = None
 similarity_threshold_retriever = None
 ENABLE_WEB_SEARCH = True
 ENABLE_GPT_GRADING = True
-FORCE_SQL_ONLY = False
 
 
 chunks, index, embedding_model = None, None, None
 def call_openrouter(prompt_obj) -> str:
-    if hasattr(prompt_obj, "to_string"):
-        prompt = prompt_obj.to_string()
-    else:
-        prompt = str(prompt_obj) 
+    prompt = prompt_obj.to_string()  
 
     headers = {
         "Authorization": f"Bearer {OPENAI_API_KEY}",
@@ -89,23 +73,6 @@ def call_openrouter(prompt_obj) -> str:
         return res.json()["choices"][0]["message"]["content"].strip()
     else:
         raise RuntimeError(f"OpenRouter API error: {res.status_code} - {res.text}")
-
-def call_openrouter_for_chart(prompt: str) -> str:
-    headers = {
-        "Authorization": f"Bearer {OPENAI_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": "openai/gpt-4o-mini",
-        "messages": [
-            {"role": "system", "content": "You are a Python data visualization expert. Only return matplotlib code using the df variable. Do not explain."},
-            {"role": "user", "content": prompt}
-        ]
-    }
-
-    res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
-    return res.json()["choices"][0]["message"]["content"].strip()
-
 
 
 # Data model for graph state
@@ -263,63 +230,57 @@ def retrieve(state):
 
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", """
-You are an expert query classifier for a financial Q&A system.
+Bạn là chuyên gia phân loại truy vấn cho hệ thống hỏi đáp tài chính.
 
+Hệ thống có khả năng truy vấn dữ liệu SQL từ cơ sở dữ liệu chứa giá cổ phiếu lịch sử (daily OHLCV) của 30 công ty thuộc chỉ số Dow Jones Industrial Average (DJIA), bao gồm:
 
-The system has SQL query capabilities for a database containing:
+- Ticker mã có trong hệ thống 
+            AAPL - Apple Inc.
+            AMGN - Amgen Inc.
+            AXP  - American Express
+            BA   - Boeing Co.
+            CAT  - Caterpillar Inc.
+            CRM  - Salesforce Inc.
+            CSCO - Cisco Systems
+            CVX  - Chevron Corp.
+            DIS  - Walt Disney Co.
+            DOW  - Dow Inc.
+            GS   - Goldman Sachs
+            HD   - Home Depot
+            HON  - Honeywell International
+            IBM  - International Business Machines
+            INTC - Intel Corp.
+            JNJ  - Johnson & Johnson
+            JPM  - JPMorgan Chase
+            KO   - Coca-Cola Co.
+            MCD  - McDonald's Corp.
+            MMM  - 3M Company
+            MRK  - Merck & Co.
+            MSFT - Microsoft Corp.
+            NKE  - Nike Inc.
+            PG   - Procter & Gamble
+            TRV  - Travelers Companies
+            UNH  - UnitedHealth Group
+            V    - Visa Inc.
+            VZ   - Verizon Communications
+            WBA  - Walgreens Boots Alliance
+            WMT  - Walmart Inc.
+- Cột dữ liệu: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits"
+- Khoảng thời gian dữ liệu sẵn có:
+    + Từ ngày "2023-04-26" đến ngày "2025-04-25" (định dạng YYYY-MM-DD). Nếu câu hỏi yêu cầu dữ liệu nằm **ngoài** khoảng thời gian này, hãy trả lời **no**.
 
-**AVAILABLE DATA:**
-- Daily historical stock prices (OHLCV) for 30 companies in the Dow Jones Industrial Average (DJIA)
-- Companies: AAPL (Apple), AMGN (Amgen), AXP (American Express), BA (Boeing), CAT (Caterpillar), CRM (Salesforce), CSCO (Cisco), CVX (Chevron), DIS (Disney/Walt Disney), DOW (Dow Inc.), GS (Goldman Sachs), HD (Home Depot), HON (Honeywell), IBM, INTC (Intel), JNJ (Johnson & Johnson), JPM (JPMorgan Chase), KO (Coca-Cola), MCD (McDonald's), MMM (3M), MRK (Merck), MSFT (Microsoft), NKE (Nike), PG (Procter & Gamble), TRV (Travelers), UNH (UnitedHealth Group), V (Visa), VZ (Verizon), WBA (Walgreens Boots Alliance), WMT (Walmart)
-- Data columns: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits", "price", "companies", "ticker", "sector", "industry"
-- Time range: e.g from "2023-04-26" to "2025-04-25"
+Nhiệm vụ của bạn: xác định xem câu hỏi dưới đây có thể được trả lời bằng dữ liệu trong cơ sở dữ liệu SQL hay không lưu ý nếu thời gian không thuộc vào hệ thống thì là no.
+Ngoài ra nếu câu hỏi có thời gian bạn cần phải xác định chính xác thời gian của câu hỏi có nằm trong khoảng thời gian của hệ thống hay không từ format YYYY-MM-DD (quan trọng).
+Chỉ trả lời **yes** hoặc **no**, không thêm giải thích.
 
-**SUPPORTED QUERY TYPES:**
-
-✅ **ALWAYS answer "yes" for questions about:**
-- have price data for any of the 30 DJIA companies
-- Price data for a specific date or time range
-- Price data for a specific company
-- Stock prices (closing price, opening price, highest price, lowest price)
-- Trading volume
-- Dividends and stock splits
-- Price comparisons between companies
-- Statistical calculations (average, total, percentage change, standard deviation, correlation)
-- Trend analysis and performance
-- Company rankings by financial criteria
-- Finding highest/lowest values within time periods
-- Counting trading days meeting specific conditions
-- Sector/industry classification
-- Ticker symbol information
-- Any question related to financial data of the 30 DJIA companies
-
-✅ **TIME PERIOD SUPPORT:**
-- Accept any date from 2023-04-26 to 2025-04-25
-- Accept time ranges (quarters, years, months) within the above scope
-- Examples: "2024", "Q1 2025", "March 2024", "Jan-Mar 2025" are all acceptable
-
-✅ **COMPANY NAMES:**
-- Accept both full names and abbreviations
-- Examples: "Apple", "Microsoft", "Walt Disney", "Johnson & Johnson", "Procter & Gamble"
-
-❌ **ONLY answer "no" when:**
-- Question is about companies NOT in the 30 DJIA company list
-- Question is completely unrelated to finance/stocks
-
-**IMPORTANT NOTES:**
-- When in doubt, prefer answering "yes"
-- All types of financial analysis, statistics, and comparisons are supported
-- Chart/visualization questions are also supported as they can query SQL data for creation
-- NEVER answer "no" if the question contains any of these keywords:"Create", "Plot", "price", "prices", "market", "volume", "dividends", "splits", "stock price", "closing price", "opening price", "companies".
-- IMPORTANT: If the question have any SQL query keywords and some keyword such as:"Create", "Plot", "price", "market", "volume", "dividends", "splits", "companies" always answer "yes".
-
-
-Respond with only one word: **yes** or **no**.
+Nếu câu hỏi đề cập đến giá, thời gian cụ thể, ticker/công ty có trong danh sách, hãy trả lời "yes".
 """),
-    ("human", "Question: {question}")
+    ("human", "Câu hỏi: {question}")
 ])
 
 def is_sql_question(question: str) -> bool:
+    # filled_prompt = prompt_template.format(question=question)
+    print(f"📥 ghjfklkhkghjklkghkjjhkh: {question}")
     response = call_openrouter(prompt_template.format_prompt(question=question))
     return response.strip().lower() == "yes"
     # return "yes"
@@ -342,7 +303,6 @@ def grade_documents(state):
 
     # if any(keyword in question.lower() for keyword in database_keywords):
     #     use_sql = "Yes"
-    
     if is_sql_question(question):
         use_sql = "Yes"
         print("---GRADE: DETECTED DATABASE QUERY---")
@@ -459,7 +419,8 @@ def web_search(state):
 
 def query_sql(state):
     print("---EXECUTE SQL QUERY---")
-    question = state.question    
+    question = state.question
+    
     try:
         # Connect to database
         conn = connect_to_database()
@@ -510,7 +471,7 @@ def query_sql(state):
         else:
             # Format results nicely
             content = f"SQL Query Results:\n{results.to_markdown(index=False)}"
-            # print("📊 Query Results:\n", content)
+            print("📊 Query Results:\n", content)
 
         # Create document for next steps
         sql_doc = Document(page_content=f"SQL used:\n{sql_query}")
@@ -534,162 +495,6 @@ def query_sql(state):
             "use_sql": "No"
         }
 
-
-
-def generate_chart_code_via_llm(question: str, df: pd.DataFrame) -> str:
-    df_sample = df.head(10).to_csv(index=False)
-    prompt = f"""
-You are a Python expert specialized in data visualization using matplotlib.
-
-The variable `df` is a preloaded pandas DataFrame that contains the dataset. Here are the first 10 rows:
-
-{df_sample}
-
-User question: "{question}"
-
-Instructions:
-- Always handle missing values before plotting:
-  • For line, bar, or scatter plots: drop or fill NaN using `df = df.dropna()` or `df = df.fillna(method='ffill')`
-  • For heatmaps: use `df = df.astype(float).dropna(axis=1, how='all').dropna(axis=0, how='any')`
-- Before plotting, always convert numerical columns to float using `.astype(float)` to ensure compatibility with matplotlib or seaborn.
-  • Example: `df['daily_return'] = df['daily_return'].astype(float)`
-- Never allow unhandled NaN values or object types to cause errors during plotting.
-- If any column used in plotting may contain NaN or unexpected types, you MUST handle it explicitly before passing to a plotting function.
-- Never allow unhandled NaN values to cause errors during plotting.
-- If any column used in plotting may contain NaN or nulls, you MUST handle it explicitly before passing to a plotting function.
-- Always start your code with `plt.figure(figsize=(10, 7))` and end with `plt.tight_layout()` and `plt.savefig(savefig_path)` and `plt.close()`.
-- You MUST include **at least one** actual plotting command such as:
-  - `plt.plot(...)` for line charts
-  - `plt.bar(...)` for bar charts
-  - `plt.pie(...)` for pie charts
-  - `plt.hist(...)` for histograms
-  - `plt.scatter(...)` for scatter plots
-- The plot must be meaningful and match the user question. Do NOT leave the figure empty.
-- Do NOT just define the DataFrame or format the chart — you MUST visualize data using `plt.`.
-- Only use the existing `df` variable. Do NOT define or assign any new variables like `df_sorted`, `correlation_matrix`, or `data`.
-- If transformation is needed (e.g., sorting, pivoting, grouping), reassign it directly to `df`, like: df = df.sort_values(...).
-- You MAY use df['column'].values or df['column'].tolist() inside plotting functions (e.g., for labels and values in pie charts).
-- All plotting operations must reference `df` directly.
-- Do NOT use `plt.show()`, `import`, `input`, `eval`, `exec`, or any OS/system functions.
-- Do NOT use control flow statements such as `if`, `while`, or `for`.
-- Every line of code must begin with `df.`, `plt.`, or `sns.` (for seaborn).
-- Do NOT include any explanation, comment, markdown formatting, or code fences (```).
-- Do NOT include any import statements. All required libraries (pandas, matplotlib, seaborn) are already available.
-- Your output will be automatically executed. Only return clean, complete matplotlib code using `df`.
-- ALWAYS use keyword arguments in df.pivot(): e.g., df = df.pivot(index="...", columns="...", values="...") — never pass positional arguments.
-- If using .dt accessors (e.g., df["Date"].dt.month), make sure to convert "Date" to datetime first using: df["Date"] = pd.to_datetime(df["Date"])
-- Do NOT use eval() or ast. Instead, use ast.literal_eval() when converting string representations of lists.
-- Do NOT use any external libraries or APIs.
-- Before accessing a column, always ensure its name is correct by checking df.columns. If the column name might vary (e.g., "Date" vs. "date"), standardize it first with:df.columns = df.columns.str.strip().str.lower() Then access the column in lowercase, like df["date"].
-- This rule applies only when the user question requests a **boxplot** of values **per month** (e.g., contains "monthly", "each month", or "per month", and "boxplot").
-- If the DataFrame contains a date-related column (e.g., "date" or "month"):
-  • Ensure the column is parsed to datetime using: df["month"] = pd.to_datetime(df["month"])
-  • Create a new column df["month"] = df["month"].dt.to_period("M").dt.to_timestamp() only if needed
-  • Group data by month (e.g., using df.groupby("month")) and prepare a list of the numeric column (e.g., "close_price") per month
-  • Plot a boxplot where each box represents a month's values using plt.boxplot(...)
-  • Use abbreviated month names ("Jan", "Feb", ..., "Dec") as xtick labels
-  • Do NOT overwrite the column "month" if it already exists — add a new column like "month_group" if needed
-  • Do NOT use .reset_index() unless required
-
-
-Output only the raw code.
-"""
-    code =  call_openrouter(prompt.strip())
-
-    # print("📤 Code gen chart from LLM:\n", code)
-    return code.strip()
-
-
-
-def execute_generated_plot_code(code: str, df: pd.DataFrame, static_dir="static/charts") -> str:
-    import os
-    os.makedirs(static_dir, exist_ok=True)
-
-    filename = f"chart_{uuid.uuid4().hex[:8]}.png"
-    filepath = os.path.join(static_dir, filename)
-
-    local_vars = {
-        "df": df.copy(),
-        "plt": plt,
-        "pd": pd,
-        "savefig_path": filepath,
-    }
-
-    try:
-        # Xoá markdown và các lệnh không an toàn
-        cleaned_code = (
-            code.replace("```python", "")
-                .replace("```", "")
-                .replace("plt.show()", "")
-                .strip()
-        )
-
-        filtered_lines = []
-        for line in cleaned_code.splitlines():
-            line = line.strip()
-            if (
-                (line.startswith("df") or line.startswith("plt.") or line.startswith("sns."))
-                and not line.startswith("plt.savefig")
-                and not line.startswith("plt.close")
-            ):
-                filtered_lines.append(line)
-
-        if not filtered_lines:
-            raise ValueError("⚠️ No valid plotting commands detected.")
-
-        # Ghép code và đảm bảo lưu đúng ảnh
-        safe_code = "\n".join(filtered_lines) + "\nplt.savefig(savefig_path)\nplt.close()"
-
-        print("📋 Running cleaned matplotlib code:\n", safe_code)
-
-        globals_for_exec = {
-            "plt": plt,
-            "pd": pd,
-            "sns": sns,
-            "df": local_vars["df"],
-            "savefig_path": local_vars["savefig_path"],
-        }
-        exec(safe_code, globals_for_exec)
-
-        return f"/static/charts/{filename}"
-
-    except Exception as e:
-        print(f"❌ Error in generated chart code: {e}")
-        return ""
-
-
-
-
-def generate_sql_conclusion(question: str, df: pd.DataFrame) -> str:
-    import json
-    sample = df.head(10).to_dict(orient='records')
-    prompt = f"""
-You are a financial data analysis expert.
-
-Question:
-{question}
-
-The following data is the result of a SQL query, showing up to 20 rows.
-**The first row represents the most significant value (e.g., the highest or lowest depending on the query).**
-
-Data:
-{json.dumps(sample, ensure_ascii=False, indent=2)}
-
-Instructions:
-- You MUST answer the question directly based on the data.
-- Do NOT answer "yes", "no", or avoid the question — write a clear, specific conclusion from the data.
-- If the question asks for rankings or top N (e.g., "top 3", "highest 5", "rank"), list the top results accordingly.
-- If it's a factual or analytical question, summarize the most relevant information from the top rows.
-- Do NOT restate the question.
-- Do NOT include explanations or general background.
-- Write a single, short, direct sentence as the final conclusion.
-
-Conclusion:
-"""
-    return call_openrouter(prompt.strip())
-
-
-
 def generate_answer(state):
     print("---GENERATE ANSWER---")
     question = state.question
@@ -711,86 +516,17 @@ def generate_answer(state):
         if result_doc:
             result_table = result_doc.page_content.replace("SQL Query Results:", "").strip()
 
-#         generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
+        generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
 
-# #### Câu lệnh SQL được sử dụng:
-# ```sql
-# {sql_code}
-# ```
+#### Câu lệnh SQL được sử dụng:
+```sql
+{sql_code}
+```
 
-# #### Kết quả truy vấn:
+#### Kết quả truy vấn:
 
-# {result_table}
-
-# #### Kết luận:
-# """
-
-        generation = f"""Kết luận:"""
-
-
-
-
-        try:
-            
-            if(not result_table):
-                generation += "Không có kết quả nào từ truy vấn SQL."
-                return {
-                    "documents": documents,
-                    "question": question,
-                    "generation": generation
-                }
-            
-            # Parse markdown table from SQL result
-            lines = result_table.strip().splitlines()
-            clean_lines = [line for line in lines if "---" not in line]
-            table_str = "\n".join(clean_lines)
-
-            # Đọc lại bằng pandas
-            df = pd.read_table(io.StringIO(table_str), sep="|", engine='python')
-            df = df.dropna(axis=1, how='all')  # bỏ cột rỗng do padding '|'
-
-            # ✅ Không còn dùng applymap
-            for col in df.select_dtypes(include='object'):
-                df[col] = df[col].map(lambda x: x.strip() if isinstance(x, str) else x)
-
-            df.columns = [c.strip() for c in df.columns]  # xóa khoảng trắng
-            df = df.reset_index(drop=True)
-            
-            # lưu thành file tạm thời
-            # temp_file_path = f"temp_{uuid.uuid4().hex}.csv"
-            # df.to_csv(temp_file_path, index=False)
-
-            # for col in df.select_dtypes(include=['float']).columns:
-            #     if df[col].max() > 1e11:
-            #         df[col] = df[col] / 1e9  # Convert sang đơn vị tỷ
-                    
-                    
-            print(f"📊 DataFrame shape: {df.head(3)}")
-                    
-            # Sinh mã vẽ và render
-            if df.shape[1] >= 1:
-                chart_code = generate_chart_code_via_llm(question, df)
-                chart_url = execute_generated_plot_code(chart_code, df)
-            else:
-                chart_url = None  # Không đủ cột để vẽ biểu đồ
-            
-            # print(f"df.columns: {df.columns}")
-            # print(f"df.head(): {df.head(10).to_dict(orient='records')}")
-
-            conclusion = generate_sql_conclusion(question, df)
-            generation += f"\n{conclusion}"    
-            
-            if chart_url:
-                generation += f"\n\n ![Xem biểu đồ tại đây](http://localhost:8000{chart_url})"
-            
-            
-            # lưu thành file tạm thời
-            temp_file_path = f"temp.csv"
-            df.to_csv(temp_file_path, index=False)
-            print(f"✅ Tạo file tạm thời: {temp_file_path}")
-            
-        except Exception as e:
-            print(f"⚠️ Không thể tạo biểu đồ: {e}")
+{result_table}
+"""
     else:
         unique_docs = list({doc.page_content: doc for doc in documents}.values())
         formatted_context = format_docs(unique_docs)
@@ -821,15 +557,6 @@ def decide_to_generate(state):
 # Initialize graph
 def create_rag_graph():
     agentic_rag = StateGraph(GraphState)
-
-    if FORCE_SQL_ONLY:
-        # Chế độ chỉ test SQL branch
-        agentic_rag.add_node("query_sql", query_sql)
-        agentic_rag.add_node("generate_answer", generate_answer)
-        agentic_rag.set_entry_point("query_sql")
-        agentic_rag.add_edge("query_sql", "generate_answer")
-        agentic_rag.add_edge("generate_answer", END)
-        return agentic_rag.compile()
 
     # Nodes
     agentic_rag.add_node("retrieve", retrieve)

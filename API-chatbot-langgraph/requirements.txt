@@ -22,6 +22,3 @@ google-generativeai
 tabulate
 deep_translator
 tabulate
-matplotlib
-pillow
-seaborn

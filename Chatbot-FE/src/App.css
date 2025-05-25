@@ -839,12 +839,11 @@ body {
 
 .message-content table {
   width: max-content;
-  /* border-collapse: collapse; */
+  border-collapse: collapse;
   margin: 1rem 0;
   background-color: #2d2d2d;
   border-radius: 8px;
-  max-height: 500px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .message-content th,
