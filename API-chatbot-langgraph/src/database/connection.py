@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import requests
 
 # Load biến môi trường từ file .env
-load_dotenv()
+load_dotenv() 
 
 def call_openrouter(prompt_obj) -> str:
     prompt = prompt_obj.to_string()  
