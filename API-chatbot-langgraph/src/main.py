@@ -2,12 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import router
 from starlette.middleware.sessions import SessionMiddleware
+from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI(
     title="LangGraph RAG API",
     description="API for RAG-based question answering system using LangGraph",
     version="1.0.0"
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # CORS middleware configuration
 app.add_middleware(

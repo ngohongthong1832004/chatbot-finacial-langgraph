@@ -3,6 +3,9 @@ import pandas as pd
 
 import os
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from dotenv import load_dotenv
 import requests
 
@@ -19,7 +22,7 @@ def call_openrouter(prompt_obj) -> str:
     data = {
         "model": "openai/gpt-4o-mini",
         "messages": [
-            {"role": "system", "content": "You are an expert grader assessing relevance of a retrieved document to a user question. Answer only 'yes' or 'no'."},
+            {"role": "system", "content": "You are an expert SQL developer specializing in PostgreSQL for financial data analysis. Generate only SQL queries, no explanations."},
             {"role": "user", "content": prompt}
         ]
     }
@@ -65,198 +68,381 @@ def execute_sql_query(conn, query):
 def get_schema_and_samples(conn=None):
     # Luôn dùng metadata dạng text cung cấp thủ công
     try:
-        # Đây là metadata bạn yêu cầu dùng để thay cho việc truy vấn schema
         metadata_text = """
-            Cơ sở dữ liệu này lưu trữ thông tin về các công ty trong chỉ số Dow Jones Industrial Average (DJIA) và dữ liệu giá cổ phiếu lịch sử của họ.
-            Đây là hai bảng chính trong cơ sở dữ liệu mà hệ thống có tham khảo nó để tạo câu truy vấn SQL:
-            CREATE TABLE public.djia_companies (
-                symbol text NOT NULL,
-                name text,
-                sector text,
-                industry text,
-                country text,
-                website text,
-                market_cap bigint,
-                pe_ratio double precision,
-                dividend_yield double precision,
-                "52_week_high" double precision,
-                "52_week_low" double precision,
-                description text
-            );
+# Stock Market Database Schema - Optimized
 
-            ALTER TABLE public.djia_companies OWNER TO postgres;
+## Database Overview
+- **Dataset**: Dow Jones Industrial Average (DJIA) companies
+- **Date Range**: 2023-04-26 to 2025-04-25
+- **Tables**: 2 (companies + daily prices)
+- **Companies**: 30 DJIA constituents
 
-            CREATE TABLE public.djia_prices (
-                "Date" timestamp with time zone,
-                "Open" double precision,
-                "High" double precision,
-                "Low" double precision,
-                "Close" double precision,
-                "Volume" bigint,
-                "Dividends" text,
-                "Stock Splits" text,
-                "Ticker" text NOT NULL
-            );
-            ALTER TABLE public.djia_prices OWNER TO postgres;
-            
-            Các bảng:
+---
 
-            djia_companies: Thông tin về các công ty DJIA.
+## Table Structure
 
-            symbol (VARCHAR): Mã cổ phiếu (Khóa chính).
-            name (VARCHAR): Tên công ty.
-            sector (VARCHAR): Lĩnh vực kinh doanh.
-            industry (VARCHAR): Ngành cụ thể.
-            country (VARCHAR): Quốc gia trụ sở.
-            Các cột khác: website, market_cap (BIGINT), pe_ratio (FLOAT), dividend_yield (FLOAT), 52_week_high (FLOAT), 52_week_low (FLOAT), description (TEXT).
+### djia_companies (Company Master Data)
+```sql
+symbol VARCHAR PRIMARY KEY    -- Stock ticker (e.g., 'AAPL')
+name VARCHAR                  -- Company name (e.g., 'Apple Inc.')
+sector VARCHAR               -- Business sector
+industry VARCHAR             -- Industry category
+country VARCHAR              -- HQ location
+website VARCHAR              -- Company URL
+market_cap BIGINT           -- Market cap (USD)
+pe_ratio FLOAT              -- P/E ratio
+dividend_yield FLOAT        -- Dividend yield %
+52_week_high FLOAT          -- 52-week high price
+52_week_low FLOAT           -- 52-week low price
+description TEXT            -- Business description
+```
 
-            djia_prices: Dữ liệu giá cổ phiếu lịch sử hàng ngày.
+### djia_prices (Daily OHLCV Data)
+```sql
+"Date" TIMESTAMP            -- Trading date (QUOTED COLUMN)
+"Open" FLOAT               -- Opening price (QUOTED)
+"High" FLOAT               -- Day high (QUOTED)
+"Low" FLOAT                -- Day low (QUOTED)
+"Close" FLOAT              -- Closing price (QUOTED)
+"Volume" BIGINT            -- Shares traded (QUOTED)
+"Dividends" TEXT/FLOAT     -- Dividend amount (QUOTED)
+"Stock Splits" TEXT/FLOAT  -- Split ratio (QUOTED)
+"Ticker" VARCHAR           -- Stock symbol FK (QUOTED)
+```
 
-            "Date" (TIMESTAMP): Ngày giao dịch.
-            "Open" (FLOAT): Giá mở cửa.
-            "High" (FLOAT): Giá cao nhất.
-            "Low" (FLOAT): Giá thấp nhất.
-            "Close" (FLOAT): Giá đóng cửa.
-            "Volume" (INTEGER): Khối lượng giao dịch.
-            "Dividends" (FLOAT hoặc TEXT, nên ép kiểu FLOAT khi dùng với AVG/SUM): Cổ tức.
-            "Stock Splits" (FLOAT): Tỷ lệ chia tách cổ phiếu.
-            "Ticker" (VARCHAR): Mã cổ phiếu (Khóa ngoại tham chiếu djia_companies.symbol).
+---
 
-            Tài liệu hệ thống một số mã trong cột Ticker của bảng djia_prices:
-            AAPL - Apple Inc.
-            AMGN - Amgen Inc.
-            AXP  - American Express
-            BA   - Boeing Co.
-            CAT  - Caterpillar Inc.
-            CRM  - Salesforce Inc.
-            CSCO - Cisco Systems
-            CVX  - Chevron Corp.
-            DIS  - Walt Disney Co.
-            DOW  - Dow Inc.
-            GS   - Goldman Sachs
-            HD   - Home Depot
-            HON  - Honeywell International
-            IBM  - International Business Machines
-            INTC - Intel Corp.
-            JNJ  - Johnson & Johnson
-            JPM  - JPMorgan Chase
-            KO   - Coca-Cola Co.
-            MCD  - McDonald's Corp.
-            MMM  - 3M Company
-            MRK  - Merck & Co.
-            MSFT - Microsoft Corp.
-            NKE  - Nike Inc.
-            PG   - Procter & Gamble
-            TRV  - Travelers Companies
-            UNH  - UnitedHealth Group
-            V    - Visa Inc.
-            VZ   - Verizon Communications
-            WBA  - Walgreens Boots Alliance
-            WMT  - Walmart Inc.
+## Critical Query Rules
 
-            Lưu ý quan trọng cho PostgreSQL:
+### Column Naming
+- **djia_prices**: ALL columns MUST use double quotes: `"Date"`, `"Close"`, etc.
+- **djia_companies**: No quotes needed: `symbol`, `name`, etc.
 
-            Tên các cột trong bảng djia_prices là phân biệt chữ hoa/thường.
-            Luôn sử dụng dấu ngoặc kép cho các cột này trong truy vấn: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits", "Ticker".
-            Tên các cột trong bảng djia_companies không cần dấu ngoặc kép.
+### Date Handling
+```sql
+-- Cast dates for comparison
+WHERE p."Date"::date = '2024-03-15'
 
-            Ví dụ truy vấn SQL:
+-- Date ranges
+WHERE p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+```
 
-            1. Lấy 10 công ty có P/E ratio cao nhất:
-            SELECT name, pe_ratio
-            FROM djia_companies
-            ORDER BY pe_ratio DESC
-            LIMIT 10;
+### Type Casting
+```sql
+-- Dividends calculations
+AVG("Dividends"::FLOAT)
 
-            2. Lấy giá đóng cửa cao nhất của mỗi công ty trong ngày gần nhất:
-            SELECT c.name, MAX(p."Close") AS max_close
-            FROM djia_companies c
-            JOIN djia_prices p ON c.symbol = p."Ticker"
-            WHERE p."Date" = (SELECT MAX("Date") FROM djia_prices)
-            GROUP BY c.name;
+-- Percentage calculations
+ROUND(((new_val - old_val) / old_val * 100)::numeric, 2)
+```
 
-            3. Lấy giá đóng cửa của Apple trong tháng 3 năm 2024:
-            SELECT c.name, p."Date", p."Close"
-            FROM djia_companies c
-            JOIN djia_prices p ON c.symbol = p."Ticker"
-            WHERE p."Date" = (
-                SELECT MAX("Date") FROM djia_prices p2 WHERE p2."Ticker" = p."Ticker"
-            )
-            ORDER BY p."Close" DESC;
+---
 
-            4. Lấy giá đóng cửa trung bình của Apple trong tháng 3 năm 2024:
-            SELECT AVG("Close") AS avg_close
-            FROM djia_prices
-            WHERE "Ticker" = 'AAPL'
-            AND "Date" BETWEEN '2024-03-01' AND '2024-03-31';
+## Company Reference
 
-            5. Lấy danh sách các công ty trong lĩnh vực công nghệ:
-            SELECT name, sector, industry, market_cap
-            FROM djia_companies
-            WHERE sector = 'Technology';
+### By Sector
+| Sector | Tickers |
+|--------|---------|
+| **Basic Materials** | DOW |
+| **Communication Services** | DIS, VZ |
+| **Consumer Cyclical** | HD, MCD, NKE |
+| **Consumer Defensive** | KO, PG, WMT |
+| **Energy** | CVX |
+| **Financial Services** | AXP, GS, JPM, TRV, V |
+| **Healthcare** | AMGN, JNJ, MRK, UNH, WBA |
+| **Industrials** | BA, CAT, HON, MMM |
+| **Technology** | AAPL, CRM, CSCO, IBM, INTC, MSFT |
 
-            6. Lấy danh sách các công ty có cổ tức cao nhất:
-            SELECT c.name, p."Open", p."Close"
-            FROM djia_companies c
-            JOIN djia_prices p ON c.symbol = p."Ticker"
-            WHERE DATE_TRUNC('day', p."Date") = '2024-05-01'::DATE
+### Complete Company List
+```
+AAPL - Apple Inc.                        | AMGN - Amgen Inc.
+AXP  - American Express Company          | BA   - Boeing Company (The)
+CAT  - Caterpillar, Inc.                 | CRM  - Salesforce, Inc.
+CSCO - Cisco Systems, Inc.               | CVX  - Chevron Corporation
+DIS  - Walt Disney Company (The)         | DOW  - Dow Inc.
+GS   - Goldman Sachs Group, Inc. (The)   | HD   - Home Depot, Inc. (The)
+HON  - Honeywell International Inc.      | IBM  - International Business Machines
+INTC - Intel Corporation                 | JNJ  - Johnson & Johnson
+JPM  - JP Morgan Chase & Co.             | KO   - Coca-Cola Company (The)
+MCD  - McDonald's Corporation            | MMM  - 3M Company
+MRK  - Merck & Company, Inc.             | MSFT - Microsoft Corporation
+NKE  - Nike, Inc.                        | PG   - Procter & Gamble Company (The)
+TRV  - The Travelers Companies, Inc.     | UNH  - UnitedHealth Group Incorporated
+V    - Visa Inc.                         | VZ   - Verizon Communications Inc.
+WBA  - Walgreens Boots Alliance, Inc.    | WMT  - Walmart Inc.
+```
 
-            7. Lấy danh sách 5 công ty có cổ tức trung bình cao nhất:
-            SELECT c.name, AVG(p."Dividends"::FLOAT) AS avg_dividend
-            FROM djia_companies c
-            JOIN djia_prices p ON c.symbol = p."Ticker"
-            GROUP BY c.name
-            ORDER BY avg_dividend DESC
-            LIMIT 5;
+---
 
-            8. Lấy giá đóng cửa của Microsoft vào ngày 2024-03-15:
-            SELECT "Date", "Ticker", "Close"
-            FROM djia_prices
-            WHERE "Ticker" = 'MSFT'
-            AND "Date"::date = '2024-03-15';
+## Common Query Templates
 
-        """
+### Price Lookups
+```sql
+-- Single stock, specific date
+SELECT "Date", "Close" FROM djia_prices 
+WHERE "Ticker" = 'AAPL' AND "Date"::date = '2024-03-15';
+
+-- With company name
+SELECT c.name, p."Close" FROM djia_companies c
+JOIN djia_prices p ON c.symbol = p."Ticker"
+WHERE c.symbol = 'MSFT' AND p."Date"::date = '2024-03-15';
+```
+
+### Time Series Analysis
+```sql
+-- Price range (month)
+WHERE "Date" BETWEEN '2024-03-01' AND '2024-03-31'
+
+-- Quarter ranges
+Q1: '2024-01-01' AND '2024-03-31'
+Q2: '2024-04-01' AND '2024-06-30'
+Q3: '2024-07-01' AND '2024-09-30'
+Q4: '2024-10-01' AND '2024-12-31'
+
+-- Year-over-year
+WHERE "Date" BETWEEN '2023-01-01' AND '2024-12-31'
+```
+
+### Statistical Queries
+```sql
+-- Basic stats
+SELECT AVG("Close"), MIN("Close"), MAX("Close"), STDDEV("Close")
+FROM djia_prices WHERE "Ticker" = 'AAPL';
+
+-- Moving average (30-day)
+SELECT "Date", "Close",
+  AVG("Close") OVER (ORDER BY "Date" ROWS 29 PRECEDING) as ma_30
+FROM djia_prices WHERE "Ticker" = 'MSFT';
+
+-- Performance calculation
+ROUND(((end_price - start_price) / start_price * 100)::numeric, 2) as pct_change
+```
+
+### Comparative Analysis
+```sql
+-- Top performers
+SELECT c.name, (end_p."Close" - start_p."Close") / start_p."Close" * 100 as return_pct
+FROM djia_companies c
+JOIN djia_prices start_p ON c.symbol = start_p."Ticker"
+JOIN djia_prices end_p ON c.symbol = end_p."Ticker"
+WHERE start_p."Date"::date = '2024-01-01'
+  AND end_p."Date"::date = '2024-12-31'
+ORDER BY return_pct DESC;
+```
+
+---
+
+## Financial Calculation Standards
+
+### Returns & Performance
+| Metric | Formula | SQL Example |
+|--------|---------|-------------|
+| **Daily Return** | `(Close_t - Close_t-1) / Close_t-1` | `LAG("Close") OVER (ORDER BY "Date")` |
+| **Period Return** | `(Close_end - Close_start) / Close_start` | `((end_p."Close" - start_p."Close") / start_p."Close")` |
+| **Cumulative Return** | Same as Period Return | `ROUND((...) * 100, 2)` for percentage |
+| **Total Return** | `(Final_Price + Dividends - Initial_Price) / Initial_Price` | Include dividend adjustments |
+| **CAGR** | `(Close_end/Close_start)^(1/years) - 1` | `POWER(ratio, 1.0/years) - 1` |
+| **Annualized Return** | `Daily_Return_Avg × 252` | Assumes 252 trading days |
+
+### Risk & Volatility
+| Metric | Formula | SQL Implementation |
+|--------|---------|-------------------|
+| **Daily Volatility** | `STDDEV(daily_returns)` | `STDDEV((p."Close" - LAG(p."Close"))...)` |
+| **Annualized Vol** | `Daily_Vol × √252` | `daily_vol * SQRT(252)` |
+| **Standard Dev Price** | `STDDEV(closing_prices)` | `STDDEV(p."Close")` |
+| **Max Drawdown** | `MAX((Peak - Trough) / Peak)` | Requires window functions |
+| **Beta** | `COV(stock, market) / VAR(market)` | Correlation-based calculation |
+
+### Advanced Metrics
+| Metric | Formula | Notes |
+|--------|---------|-------|
+| **Sharpe Ratio** | `(Ann_Return - Risk_Free_Rate) / Ann_Vol` | Assume 4% risk-free rate |
+| **Correlation** | `CORR(returns_A, returns_B)` | Between two stocks |
+| **Median Price** | `PERCENTILE_CONT(0.5)` | Middle value of price series |
+| **Moving Average** | `AVG() OVER (ROWS n PRECEDING)` | n-day rolling average |
+| **Dividend Yield** | `(Annual_Dividends / Current_Price) * 100` | As percentage |
+
+### Volume & Trading
+| Metric | Calculation | Purpose |
+|--------|-------------|---------|
+| **Avg Daily Volume** | `AVG("Volume")` | Liquidity measure |
+| **Total Volume** | `SUM("Volume")` | Period trading activity |
+| **Volume-Weighted Price** | `SUM(Price × Volume) / SUM(Volume)` | VWAP calculation |
+| **High/Low Analysis** | `MAX("High"), MIN("Low")` | Price extremes |
+
+### Threshold Analysis
+| Query Type | SQL Pattern | Example |
+|------------|-------------|---------|
+| **Days Above Price** | `COUNT(*) WHERE "Close" > threshold` | `WHERE "Close" > 200` |
+| **% Days Above** | `(COUNT(*) WHERE condition) / COUNT(*)` | Trading days percentage |
+| **Within 1 Std Dev** | `WHERE ABS("Close" - avg) <= stddev` | Normal distribution analysis |
+| **Price Ranking** | `RANK() OVER (ORDER BY "Close")` | Relative positioning |
+
+---
+
+## Advanced Query Patterns
+
+### Complex Statistical Queries
+```sql
+-- Standard deviation of closing prices
+SELECT STDDEV(p."Close")::numeric AS price_stddev
+FROM djia_prices p
+WHERE p."Ticker" = 'AAPL' AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31';
+
+-- Days within 1 standard deviation
+WITH stats AS (
+  SELECT AVG(p."Close") as avg_price, STDDEV(p."Close") as std_price
+  FROM djia_prices p WHERE p."Ticker" = 'BA' AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+)
+SELECT COUNT(*) as days_within_1std
+FROM djia_prices p, stats s
+WHERE p."Ticker" = 'BA' 
+  AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+  AND ABS(p."Close" - s.avg_price) <= s.std_price;
+
+-- Median closing price
+SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY p."Close") as median_price
+FROM djia_prices p
+WHERE p."Ticker" = 'DIS' AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31';
+```
+
+### Correlation Analysis
+```sql
+-- Correlation between two stocks
+WITH daily_returns AS (
+  SELECT p."Date", p."Ticker",
+    (p."Close" - LAG(p."Close") OVER (PARTITION BY p."Ticker" ORDER BY p."Date")) 
+    / LAG(p."Close") OVER (PARTITION BY p."Ticker" ORDER BY p."Date") AS daily_return
+  FROM djia_prices p
+  WHERE p."Ticker" IN ('AAPL', 'MSFT') 
+    AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+)
+SELECT CORR(aapl.daily_return, msft.daily_return) as correlation
+FROM daily_returns aapl
+JOIN daily_returns msft ON aapl."Date" = msft."Date"
+WHERE aapl."Ticker" = 'AAPL' AND msft."Ticker" = 'MSFT';
+```
+
+### Performance Rankings
+```sql
+-- Top/Bottom performers by total return
+WITH performance AS (
+  SELECT c.name,
+    ROUND(((end_p."Close" - start_p."Close") / start_p."Close" * 100)::numeric, 2) as total_return
+  FROM djia_companies c
+  JOIN djia_prices start_p ON c.symbol = start_p."Ticker" 
+  JOIN djia_prices end_p ON c.symbol = end_p."Ticker"
+  WHERE start_p."Date"::date = '2024-01-02'
+    AND end_p."Date"::date = '2024-12-31'
+)
+SELECT name, total_return,
+  RANK() OVER (ORDER BY total_return DESC) as rank_best,
+  RANK() OVER (ORDER BY total_return ASC) as rank_worst
+FROM performance
+ORDER BY total_return DESC;
+```
+
+### Volatility & Risk Analysis
+```sql
+-- Annualized volatility
+WITH daily_returns AS (
+  SELECT (p."Close" - LAG(p."Close") OVER (ORDER BY p."Date")) 
+         / LAG(p."Close") OVER (ORDER BY p."Date") AS daily_return
+  FROM djia_prices p
+  WHERE p."Ticker" = 'AAPL' AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+)
+SELECT STDDEV(daily_return) * SQRT(252) * 100 as annualized_volatility_pct
+FROM daily_returns
+WHERE daily_return IS NOT NULL;
+
+-- Maximum drawdown calculation
+WITH price_peaks AS (
+  SELECT p."Date", p."Close",
+    MAX(p."Close") OVER (ORDER BY p."Date" ROWS UNBOUNDED PRECEDING) as running_max
+  FROM djia_prices p
+  WHERE p."Ticker" = 'MSFT' AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+)
+SELECT MAX((running_max - "Close") / running_max * 100) as max_drawdown_pct
+FROM price_peaks;
+```
+
+### Dividend Analysis
+```sql
+-- All dividend payments with dates
+SELECT p."Date", p."Dividends"::float as dividend_amount
+FROM djia_prices p
+WHERE p."Ticker" = 'MSFT' 
+  AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+  AND p."Dividends"::float > 0
+ORDER BY p."Date";
+
+-- Annual dividend yield calculation
+WITH dividends AS (
+  SELECT SUM(p."Dividends"::float) as annual_dividends
+  FROM djia_prices p
+  WHERE p."Ticker" = 'UNH' AND p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+    AND p."Dividends"::float > 0
+),
+current_price AS (
+  SELECT p."Close" FROM djia_prices p
+  WHERE p."Ticker" = 'UNH' AND p."Date"::date = '2024-12-31'
+)
+SELECT (d.annual_dividends / cp."Close" * 100) as dividend_yield_pct
+FROM dividends d, current_price cp;
+```
+
+### Volume Analysis
+```sql
+-- Highest volume days
+SELECT p."Date", p."Volume", c.name
+FROM djia_prices p
+JOIN djia_companies c ON p."Ticker" = c.symbol
+WHERE p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+ORDER BY p."Volume" DESC
+LIMIT 5;
+
+-- Average volume comparison
+SELECT c.name, AVG(p."Volume") as avg_volume,
+  RANK() OVER (ORDER BY AVG(p."Volume") DESC) as volume_rank
+FROM djia_companies c
+JOIN djia_prices p ON c.symbol = p."Ticker"
+WHERE p."Date" BETWEEN '2024-01-01' AND '2024-12-31'
+GROUP BY c.name
+ORDER BY avg_volume DESC;
+```
+
+### Query Optimization
+1. **Always quote djia_prices columns**: `"Date"`, `"Close"`, `"Volume"`
+2. **Cast dates properly**: `"Date"::date = '2024-01-01'`
+3. **Use proper JOINs**: Link tables via `symbol = "Ticker"`
+4. **Index-friendly ranges**: Use BETWEEN for date ranges
+
+### Common Pitfalls to Avoid
+- ❌ Unquoted djia_prices columns
+- ❌ Wrong date format (use YYYY-MM-DD)
+- ❌ Missing type casts for calculations
+- ❌ Comparing dates without ::date cast
+
+### Performance Tips
+- Use specific date ranges to limit data
+- Index on "Ticker" and "Date" for faster queries
+- LIMIT results for large datasets
+- Use EXPLAIN PLAN for complex queries      
+"""
         return {"metadata_text": metadata_text.strip()}
     except Exception as e:
         print(f"❌ Error loading text metadata: {e}")
         return {"error": str(e)}
+ 
 
-def load_metadata_from_txt(file_path: str) -> str:
-    try:
-        abs_path = os.path.abspath(file_path)
-        print(f"📄 Attempting to load metadata from: {abs_path}")
-        with open(abs_path, "r", encoding="utf-8") as f:
-            return f.read()
-    except Exception as e:
-        print(f"❌ Error reading metadata: {e}")
-        return ""    
-
-def generate_sql_query(question, schema_info=None):
+def generate_sql_query(question):
     """Generate SQL query from natural language question using LLM"""
-    from langchain_openai import ChatOpenAI
-    from langchain_core.prompts import ChatPromptTemplate
-    from langchain_core.output_parsers import StrOutputParser
-
-    # llm = ChatOpenAI(model="gpt-4", temperature=0, api_key=OPENAI_API_KEY)
-
     # Nếu có metadata text => dùng luôn
-    if schema_info and "metadata_text" in schema_info:
-        schema_description = schema_info["metadata_text"]
-    elif schema_info:
-        schema_parts = []
-        for table_name, table_info in schema_info.items():
-            columns = ", ".join([f"{col['column_name']} ({col['data_type']})"
-                                 for col in table_info['columns']])
-            schema_parts.append(f"Table: {table_name}\nColumns: {columns}")
-
-            if table_info['sample_data']:
-                sample = str(table_info['sample_data'][0])
-                schema_parts.append(f"Sample row: {sample}")
-
-        schema_description = "\n\n".join(schema_parts)
+    if get_schema_and_samples().get("metadata_text"):
+        schema_description = get_schema_and_samples()["metadata_text"]
     else:
-        schema_description = "Unknown schema. Try to generate a generic SQL query."
-
+        schema_description = "No schema metadata available."
+        
     prompt = ChatPromptTemplate.from_template("""
 You are an expert SQL developer. Generate a SQL query to answer the user's question.
 Use the following database schema information:
@@ -268,26 +454,6 @@ User's question: {question}
 Return ONLY the SQL query without any explanation or markdown formatting.
 Make sure the query is correct PostgreSQL syntax.
 """)
-    
-#     prompt = ChatPromptTemplate.from_template("""
-# You are an expert PostgreSQL developer. Generate a SQL query to answer the user's question.
-
-# Use the following schema information (be careful with case-sensitive column names):
-
-# {schema}
-
-# Guidelines:
-# - Use double quotes for column names with uppercase letters: "Date", "Open", "Close", etc.
-# - Use "Date"::date = 'YYYY-MM-DD' for exact date filtering, not "Date" = 'YYYY-MM-DD'.
-# - Only JOIN djia_companies if the user asks for company name, sector, or industry.
-# - Only select relevant columns (avoid SELECT * unless necessary).
-# - Do not use markdown, explanation, or comments. Return only raw SQL.
-
-# User's question:
-# {question}
-
-# SQL query:
-# """)
 
     # chain = prompt | llm | StrOutputParser()
     chain = prompt | RunnableLambda(call_openrouter) | StrOutputParser()

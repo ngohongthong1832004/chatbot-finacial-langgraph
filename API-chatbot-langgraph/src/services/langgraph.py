@@ -12,10 +12,15 @@ from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from src.database.connection import connect_to_database, execute_sql_query, get_schema_and_samples, generate_sql_query
 from langchain_core.messages import HumanMessage
 from deep_translator import GoogleTranslator
+from langchain_core.messages import BaseMessage
+
+
+
 
 # from vertexai.generative_models import GenerativeModel
 
 import os
+import io  # đừng quên import ở đầu file nếu chưa có
 import json
 import numpy as np
 import faiss
@@ -23,6 +28,13 @@ import pickle
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Tuple
 import google.generativeai as genai
+import seaborn as sns
+        
+import os
+import matplotlib.pyplot as plt
+import pandas as pd
+import uuid
+
 
 import requests
 from dotenv import load_dotenv
@@ -73,6 +85,75 @@ def call_openrouter(prompt_obj) -> str:
         return res.json()["choices"][0]["message"]["content"].strip()
     else:
         raise RuntimeError(f"OpenRouter API error: {res.status_code} - {res.text}")
+    
+def call_openrouter_for_rewriting(prompt_obj) -> str:
+    prompt = prompt_obj.to_string()
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant who rewrites user questions to be short, clear, and suitable for web search. Focus on recent and current events (e.g., year 2025)."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    }
+    res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+    return res.json()["choices"][0]["message"]["content"].strip()
+
+def call_openrouter_for_generic(prompt: str, system_message: str = "You are a helpful assistant.") -> str:
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    try:
+        res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+        res.raise_for_status()
+        return res.json()["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print(f"❌ Error from OpenRouter: {e}")
+        return "Không thể tạo kết luận từ dữ liệu."
+
+
+
+def call_openrouter_for_sql_classification(prompt_obj) -> str:
+    prompt = prompt_obj.to_string()  
+
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are an expert classifier for SQL queries question."},
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+
+    if res.status_code == 200:
+        return res.json()["choices"][0]["message"]["content"].strip()
+    else:
+        raise RuntimeError(f"OpenRouter API error: {res.status_code} - {res.text}")
+
 
 
 # Data model for graph state
@@ -101,7 +182,8 @@ def get_vector_store_and_retriever(resource_dir: str = "sec_embeddings") -> Tupl
         return chunks, index, embedding_model
 
     try:
-        print(f"📁 Loading RAG vector store from: {resource_dir}")
+        # print(f"📁 Loading RAG vector store from: {resource_dir}")
+        print(f"📁 Loading RAG vector store")
         
         with open(os.path.join(resource_dir, "chunks.json"), 'r', encoding='utf-8') as f:
             chunks = json.load(f)
@@ -169,7 +251,7 @@ Câu hỏi gốc: {question}
 Câu hỏi để tìm kiếm trên web:"""
 )
 # question_rewriter = (re_write_prompt|llm|StrOutputParser())
-question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter)|StrOutputParser())
+question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter_for_rewriting)|StrOutputParser())
 
 
 def translate_text(text, to_lang='en'):
@@ -184,7 +266,7 @@ def retrieve(state):
     print("---RETRIEVAL FROM VECTOR DB---")
     question = state.question
     documents = []
-    print(f"📥 Question: {question}")
+    # print(f"📥 Question: {question}")
     question = translate_text(question, to_lang='en')
     chunks, index, model = get_vector_store_and_retriever(resource_dir=os.path.join(os.path.dirname(__file__), "sec_embeddings"))
 
@@ -213,77 +295,69 @@ def retrieve(state):
 
     return {"documents": documents, "question": question}
 
-# def is_sql_question(question: str) -> bool:
-#     response = llm.invoke([
-#         HumanMessage(content=f"""Bạn là chuyên gia phân loại truy vấn. 
-# Hãy xác định xem câu hỏi sau đây có yêu cầu truy vấn dữ liệu từ cơ sở dữ liệu SQL hay không. 
-# Trả lời chỉ 'yes' hoặc 'no'.
 
-# Câu hỏi: {question}""")
-#     ])
-#     return response.content.strip().lower() == "yes"
-
-# prompt_template = ChatPromptTemplate.from_messages([
-#     ("system", "Bạn là chuyên gia phân loại truy vấn. Hãy xác định xem câu hỏi sau đây có yêu cầu truy vấn dữ liệu từ cơ sở dữ liệu SQL hay không. Trả lời chỉ 'yes' hoặc 'no'."),
-#     ("human", "Câu hỏi: {question}")
-# ])
 
 prompt_template = ChatPromptTemplate.from_messages([
     ("system", """
-Bạn là chuyên gia phân loại truy vấn cho hệ thống hỏi đáp tài chính.
+You are an expert query classifier for a financial Q&A system.
 
-Hệ thống có khả năng truy vấn dữ liệu SQL từ cơ sở dữ liệu chứa giá cổ phiếu lịch sử (daily OHLCV) của 30 công ty thuộc chỉ số Dow Jones Industrial Average (DJIA), bao gồm:
+The system has SQL query capabilities for a database containing:
 
-- Ticker mã có trong hệ thống 
-            AAPL - Apple Inc.
-            AMGN - Amgen Inc.
-            AXP  - American Express
-            BA   - Boeing Co.
-            CAT  - Caterpillar Inc.
-            CRM  - Salesforce Inc.
-            CSCO - Cisco Systems
-            CVX  - Chevron Corp.
-            DIS  - Walt Disney Co.
-            DOW  - Dow Inc.
-            GS   - Goldman Sachs
-            HD   - Home Depot
-            HON  - Honeywell International
-            IBM  - International Business Machines
-            INTC - Intel Corp.
-            JNJ  - Johnson & Johnson
-            JPM  - JPMorgan Chase
-            KO   - Coca-Cola Co.
-            MCD  - McDonald's Corp.
-            MMM  - 3M Company
-            MRK  - Merck & Co.
-            MSFT - Microsoft Corp.
-            NKE  - Nike Inc.
-            PG   - Procter & Gamble
-            TRV  - Travelers Companies
-            UNH  - UnitedHealth Group
-            V    - Visa Inc.
-            VZ   - Verizon Communications
-            WBA  - Walgreens Boots Alliance
-            WMT  - Walmart Inc.
-- Cột dữ liệu: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits"
-- Khoảng thời gian dữ liệu sẵn có:
-    + Từ ngày "2023-04-26" đến ngày "2025-04-25" (định dạng YYYY-MM-DD). Nếu câu hỏi yêu cầu dữ liệu nằm **ngoài** khoảng thời gian này, hãy trả lời **no**.
+**AVAILABLE DATA:**
+- Daily historical stock prices (OHLCV) for 30 companies in the Dow Jones Industrial Average (DJIA)
+- Companies: AAPL (Apple), AMGN (Amgen), AXP (American Express), BA (Boeing), CAT (Caterpillar), CRM (Salesforce), CSCO (Cisco), CVX (Chevron), DIS (Disney/Walt Disney), DOW (Dow Inc.), GS (Goldman Sachs), HD (Home Depot), HON (Honeywell), IBM, INTC (Intel), JNJ (Johnson & Johnson), JPM (JPMorgan Chase), KO (Coca-Cola), MCD (McDonald's), MMM (3M), MRK (Merck), MSFT (Microsoft), NKE (Nike), PG (Procter & Gamble), TRV (Travelers), UNH (UnitedHealth Group), V (Visa), VZ (Verizon), WBA (Walgreens Boots Alliance), WMT (Walmart)
+- Data columns: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits", "price", "companies", "ticker", "sector", "industry"
+- Time range: e.g from "2023-04-26" to "2025-04-25"
 
-Nhiệm vụ của bạn: xác định xem câu hỏi dưới đây có thể được trả lời bằng dữ liệu trong cơ sở dữ liệu SQL hay không lưu ý nếu thời gian không thuộc vào hệ thống thì là no.
-Ngoài ra nếu câu hỏi có thời gian bạn cần phải xác định chính xác thời gian của câu hỏi có nằm trong khoảng thời gian của hệ thống hay không từ format YYYY-MM-DD (quan trọng).
-Chỉ trả lời **yes** hoặc **no**, không thêm giải thích.
+**SUPPORTED QUERY TYPES:**
 
-Nếu câu hỏi đề cập đến giá, thời gian cụ thể, ticker/công ty có trong danh sách, hãy trả lời "yes".
+**ALWAYS answer "yes" for questions about:**
+- have price data for any of the 30 DJIA companies
+- Price data for a specific date or time range
+- Price data for a specific company
+- Stock prices (closing price, opening price, highest price, lowest price)
+- Trading volume
+- Dividends and stock splits
+- Price comparisons between companies
+- Statistical calculations (average, total, percentage change, standard deviation, correlation)
+- Trend analysis and performance
+- Company rankings by financial criteria
+- Finding highest/lowest values within time periods
+- Counting trading days meeting specific conditions
+- Sector/industry classification
+- Ticker symbol information
+- Any question related to financial data of the 30 DJIA companies
+
+**TIME PERIOD SUPPORT:**
+- Accept any date from 2023-04-26 to 2025-04-25
+- Accept time ranges (quarters, years, months) within the above scope
+- Examples: "2024", "Q1 2025", "March 2024", "Jan-Mar 2025" are all acceptable
+
+**COMPANY NAMES:**
+- Accept both full names and abbreviations
+- Examples: "Apple", "Microsoft", "Walt Disney", "Johnson & Johnson", "Procter & Gamble"
+
+**ONLY answer "no" when:**
+- Question is about companies NOT in the 30 DJIA company list
+- Question is completely unrelated to finance/stocks
+
+**IMPORTANT NOTES:**
+- When in doubt, prefer answering "yes"
+- All types of financial analysis, statistics, and comparisons are supported
+- Chart/visualization questions are also supported as they can query SQL data for creation
+- NEVER answer "no" if the question contains any of these keywords:"Create", "Plot", "price", "prices", "market", "volume", "dividends", "splits", "stock price", "closing price", "opening price", "companies".
+- IMPORTANT: If the question have any SQL query keywords and some keyword such as:"Create", "Plot", "price", "market", "volume", "dividends", "splits", "companies" always answer "yes".
+
+
+Respond with only one word: **yes** or **no**.
 """),
-    ("human", "Câu hỏi: {question}")
+    ("human", "Question: {question}")
 ])
 
 def is_sql_question(question: str) -> bool:
-    # filled_prompt = prompt_template.format(question=question)
-    print(f"📥 ghjfklkhkghjklkghkjjhkh: {question}")
-    response = call_openrouter(prompt_template.format_prompt(question=question))
+    # print(f"📥 Question: {question}")
+    response = call_openrouter_for_sql_classification(prompt_template.format_prompt(question=question))
     return response.strip().lower() == "yes"
-    # return "yes"
 
 
 def grade_documents(state):
@@ -295,55 +369,41 @@ def grade_documents(state):
     web_search_needed = "No"
     use_sql = "No"
 
-    # Check SQL query keywords
-    # database_keywords = [
-    #     "lấy dữ liệu", "database", "sql", "select", "from table", "stocks", "query", "table", 
-    #     "dữ liệu", "cơ sở dữ liệu", "truy vấn", "truy vấn sql", "lấy dữ liệu", "sinh sql", "câu lệnh"
-    # ]
-
-    # if any(keyword in question.lower() for keyword in database_keywords):
-    #     use_sql = "Yes"
-    if is_sql_question(question):
-        use_sql = "Yes"
-        print("---GRADE: DETECTED DATABASE QUERY---")
-        return {
-            "documents": filtered_docs,
-            "question": question,
-            "web_search_needed": "No",
-            "use_sql": "Yes"
-        }
-
     # Grade retrieved documents
     if documents:
         for i, d in enumerate(documents):
-            # print(f"\n📝 Grading document #{i+1}")
-            # print(f"📌 Question:\n{question}")
-            # print(f"📄 Document Content (preview):\n{d.page_content[:1000]}")
-            # print("-" * 60)
-
             score = doc_grader.invoke({
                 "question": question,
                 "document": d.page_content,
                 "metadata": json.dumps(d.metadata, indent=2)
             })
-
             if score.strip().lower() == "yes":
                 print("---GRADE: DOCUMENT RELEVANT---")
                 filtered_docs.append(d)
-
-        if not filtered_docs:
-            print("---GRADE: NO RELEVANT DOCUMENTS, WEB SEARCH NEEDED---")
-            web_search_needed = "Yes"
+        if filtered_docs:
+            print(f"---GRADE: {len(filtered_docs)} RELEVANT DOCUMENTS RETRIEVED---")
+        else:
+            if is_sql_question(question):
+                print("---GRADE: DETECTED DATABASE QUERY WITH NO RELEVANCE---")
+                use_sql = "Yes"
+            else:
+                print("---NO DOCUMENTS RELEVANCE RETRIEVED---")
+                web_search_needed = "Yes"
     else:
-        print("---NO DOCUMENTS RETRIEVED---")
-        web_search_needed = "Yes"
-
+        if is_sql_question(question):
+            print("---GRADE: DETECTED DATABASE QUERY---")
+            use_sql = "Yes"
+        else:
+            print("---NO DOCUMENTS RELEVANCE RETRIEVED---")
+            web_search_needed = "Yes"
+        
     return {
         "documents": filtered_docs,
         "question": question,
         "web_search_needed": web_search_needed,
         "use_sql": use_sql
     }
+
 
 def rewrite_query(state):
     print("---REWRITING QUERY FOR WEB SEARCH---")
@@ -355,18 +415,23 @@ def rewrite_query(state):
     
     return {"documents": documents, "question": rewritten_question, "original_question": question}
 
-# def call_openai_rag(question: str) -> str:
-#     prompt = f"""
-#     Bạn là trợ lý AI chuyên trả lời các câu hỏi tổng hợp kiến thức. Hãy cố gắng trả lời ngắn gọn, chính xác và súc tích.
 
-#     Câu hỏi: {question}
 
-#     Trả lời:
-#     """
-#     response = llm.invoke([
-#         HumanMessage(content=prompt)
-#     ])
-#     return response.content.strip()
+def generate_sql_conclusion(question: str, df: pd.DataFrame) -> str:
+    sample = df.head(10).to_dict(orient='records')
+    prompt = f"""
+Bạn là chuyên gia phân tích dữ liệu. Dưới đây là câu hỏi của người dùng và dữ liệu SQL vừa truy vấn được (gồm 10 dòng đầu tiên).
+
+Câu hỏi: {question}
+
+Dữ liệu:
+{json.dumps(sample, ensure_ascii=False, indent=2)}
+
+Hãy viết một đoạn kết luận ngắn gọn (1-2câu) để tóm tắt hoặc đưa ra insight từ dữ liệu này. Không cần giải thích lại câu hỏi. Ngắn ngọn thôi.
+"""
+    return call_openrouter_for_generic(prompt.strip())
+
+
 
 def call_gemini_free_search(question: str) -> str:
     model = genai.GenerativeModel("gemini-2.0-flash")
@@ -434,21 +499,8 @@ def query_sql(state):
                 "use_sql": "No"
             }
 
-        # Get schema info
-        schema_info = get_schema_and_samples(conn)
-        if not schema_info or "error" in schema_info:
-            error_msg = f"Cannot get schema information: {schema_info.get('error', 'Unknown error')}"
-            print(f"⚠️ {error_msg}")
-            conn.close()
-            return {
-                "documents": state.documents + [Document(page_content=f"Error: {error_msg}")],
-                "question": question,
-                "web_search_needed": "Yes",
-                "use_sql": "No"
-            }
-
         # Generate SQL query
-        sql_query = generate_sql_query(question, schema_info)
+        sql_query = generate_sql_query(question)
         if not sql_query:
             error_msg = "Cannot generate SQL query from question"
             print(f"⚠️ {error_msg}")
@@ -471,7 +523,7 @@ def query_sql(state):
         else:
             # Format results nicely
             content = f"SQL Query Results:\n{results.to_markdown(index=False)}"
-            print("📊 Query Results:\n", content)
+            # print("📊 Query Results:\n", content)
 
         # Create document for next steps
         sql_doc = Document(page_content=f"SQL used:\n{sql_query}")
@@ -494,6 +546,141 @@ def query_sql(state):
             "web_search_needed": "Yes",
             "use_sql": "No"
         }
+        
+
+def call_openrouter_for_chart(prompt: str) -> str:
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are a Python data visualization expert. Only return matplotlib code using the df variable. Do not explain."},
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+    return res.json()["choices"][0]["message"]["content"].strip()
+
+
+
+def generate_chart_code_via_llm(question: str, df: pd.DataFrame) -> str:
+    df_sample = df.head(10).to_csv(index=False)
+    prompt = f"""
+You are a Python expert specialized in data visualization using matplotlib.
+
+The variable `df` is a preloaded pandas DataFrame that contains the dataset. Here are the first 10 rows:
+
+{df_sample}
+
+User question: "{question}"
+
+Instructions:
+- Always start your code with `plt.figure(figsize=(10, 7))` and end with `plt.tight_layout()`.
+- Only use the existing `df` variable. Do NOT define or assign any new variables like `df_sorted`, `correlation_matrix`, or `data`.
+- If transformation is needed (e.g., sorting, pivoting, grouping), reassign it directly to `df`, like: df = df.sort_values(...).
+- You MAY use df['column'].values or df['column'].tolist() inside plotting functions (e.g., for labels and values in pie charts).
+- All plotting operations must reference `df` directly.
+- Do NOT use `plt.show()`, `import`, `input`, `eval`, `exec`, or any OS/system functions.
+- Do NOT use control flow statements such as `if`, `while`, or `for`.
+- Every line of code must begin with `df.`, `plt.`, or `sns.` (for seaborn).
+- Do NOT include any explanation, comment, markdown formatting, or code fences (```).
+- Do NOT include any import statements. All required libraries (pandas, matplotlib, seaborn) are already available.
+- Your output will be automatically executed. Only return clean, complete matplotlib code using `df`.
+- ALWAYS use keyword arguments in df.pivot(): e.g., df = df.pivot(index="...", columns="...", values="...") — never pass positional arguments.
+- If using .dt accessors (e.g., df["Date"].dt.month), make sure to convert "Date" to datetime first using: df["Date"] = pd.to_datetime(df["Date"])
+
+
+
+Output only the raw code.
+"""
+
+    code = call_openrouter_for_chart(prompt.strip())
+    print("📤 Code gen chart from LLM:\n", code)
+    return code.strip()
+
+
+
+def execute_generated_plot_code(code: str, df: pd.DataFrame, static_dir="static/charts") -> str:
+    import os
+    os.makedirs(static_dir, exist_ok=True)
+
+    filename = f"chart_{uuid.uuid4().hex[:8]}.png"
+    filepath = os.path.join(static_dir, filename)
+
+    local_vars = {
+        "df": df.copy(),
+        "plt": plt,
+        "pd": pd,
+        "savefig_path": filepath,
+    }
+
+    try:
+        # Xoá markdown và các lệnh không an toàn
+        cleaned_code = (
+            code.replace("```python", "")
+                .replace("```", "")
+                .replace("plt.show()", "")
+                .strip()
+        )
+
+
+        # Lọc các dòng hợp lệ bắt đầu bằng df., plt., sns. (bỏ savefig và close)
+        filtered_lines = []
+        for line in cleaned_code.splitlines():
+            line = line.strip()
+            if (line.startswith("df") or line.startswith("plt.") or line.startswith("sns.")):
+                if "savefig" not in line and "plt.close" not in line:
+                    filtered_lines.append(line)
+
+        if not filtered_lines:
+            raise ValueError("⚠️ No valid plotting commands detected.")
+
+        # Ghép code và đảm bảo lưu đúng ảnh
+        safe_code = "\n".join(filtered_lines) + "\nplt.savefig(savefig_path)\nplt.close()"
+
+
+        print("📋 Running cleaned matplotlib code:\n", safe_code)
+
+        exec(safe_code, {"plt": plt, "pd": pd, "sns": sns}, local_vars)
+
+        return f"/static/charts/{filename}"
+
+    except Exception as e:
+        print(f"❌ Error in generated chart code: {e}")
+        return ""
+
+
+
+
+def generate_sql_conclusion(question: str, df: pd.DataFrame) -> str:
+    sample = df.head(10).to_dict(orient='records')
+    prompt = f"""
+You are a financial data analysis expert.
+
+Question:
+{question}
+
+The following data is the result of a SQL query, showing up to 20 rows.
+**The first row represents the most significant value (e.g., the highest or lowest depending on the query).**
+
+Data:
+{json.dumps(sample, ensure_ascii=False, indent=2)}
+
+Instructions:
+- If the question asks for ranking or top-N (e.g., "top 3", "rank", "highest 5", etc.), list the top relevant entries (e.g., top 3 companies).
+- Otherwise, write a short and concise conclusion in **one sentence only**, focusing on the most significant result (usually the first row).
+- Do NOT restate the question.
+- Do NOT provide explanations or background.
+- Be direct and clear.
+
+Conclusion:
+"""
+    return call_openrouter(prompt.strip())
+
+
 
 def generate_answer(state):
     print("---GENERATE ANSWER---")
@@ -516,17 +703,79 @@ def generate_answer(state):
         if result_doc:
             result_table = result_doc.page_content.replace("SQL Query Results:", "").strip()
 
-        generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
+#         generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
 
-#### Câu lệnh SQL được sử dụng:
-```sql
-{sql_code}
-```
+# #### Câu lệnh SQL được sử dụng:
+# ```sql
+# {sql_code}
+# ```
 
-#### Kết quả truy vấn:
+# #### Kết quả truy vấn:
 
-{result_table}
-"""
+# {result_table}
+
+# #### Kết luận:
+# """
+
+        generation = f"""Kết luận:"""
+        try:
+            
+            if(not result_table):
+                generation += "Không có kết quả nào từ truy vấn SQL."
+                return {
+                    "documents": documents,
+                    "question": question,
+                    "generation": generation
+                }
+            
+            # Parse markdown table from SQL result
+            lines = result_table.strip().splitlines()
+            clean_lines = [line for line in lines if "---" not in line]
+            table_str = "\n".join(clean_lines)
+
+            # Đọc lại bằng pandas
+            df = pd.read_table(io.StringIO(table_str), sep="|", engine='python')
+            df = df.dropna(axis=1, how='all')  # bỏ cột rỗng do padding '|'
+
+            # ✅ Không còn dùng applymap
+            for col in df.select_dtypes(include='object'):
+                df[col] = df[col].map(lambda x: x.strip() if isinstance(x, str) else x)
+
+            df.columns = [c.strip() for c in df.columns]  # xóa khoảng trắng
+            df = df.reset_index(drop=True)
+            
+            # lưu thành file tạm thời
+            # temp_file_path = f"temp_{uuid.uuid4().hex}.csv"
+            # df.to_csv(temp_file_path, index=False)
+
+            # for col in df.select_dtypes(include=['float']).columns:
+            #     if df[col].max() > 1e11:
+            #         df[col] = df[col] / 1e9  # Convert sang đơn vị tỷ
+                    
+                    
+            print(f"📊 DataFrame shape: {df.head(3)}")
+                    
+            # Sinh mã vẽ và render
+            if df.shape[1] >= 1:
+                chart_code = generate_chart_code_via_llm(question, df)
+                chart_url = execute_generated_plot_code(chart_code, df)
+            else:
+                chart_url = None  # Không đủ cột để vẽ biểu đồ
+
+            # conclusion = generate_sql_conclusion(question, df)
+            # generation += f"\n{conclusion}"    
+            
+            if chart_url:
+                generation += f"\n\n ![Xem biểu đồ tại đây](http://localhost:8000{chart_url})"
+            
+            
+            # lưu thành file tạm thời
+            temp_file_path = f"temp.csv"
+            df.to_csv(temp_file_path, index=False)
+            print(f"✅ Tạo file tạm thời: {temp_file_path}")
+            
+        except Exception as e:
+            print(f"⚠️ Không thể tạo biểu đồ: {e}")
     else:
         unique_docs = list({doc.page_content: doc for doc in documents}.values())
         formatted_context = format_docs(unique_docs)
@@ -538,7 +787,9 @@ def generate_answer(state):
         "question": question,
         "generation": generation
     }
-
+    
+    
+    
 def decide_to_generate(state):
     print("---ASSESS GRADED DOCUMENTS---")
     web_search_needed = getattr(state, "web_search_needed", "No")
