@@ -10,6 +10,7 @@ simplewiki-2020-11-01.jsonl.gz
 node_modules
 API-chatbot-langgraph/src/__pycache__/*
 API-chatbot-langgraph/src/api/__pycache__/*
+API-chatbot-langgraph/static/charts/*.png
 __pycache__/
 *.pyc
 *.py[cod]
