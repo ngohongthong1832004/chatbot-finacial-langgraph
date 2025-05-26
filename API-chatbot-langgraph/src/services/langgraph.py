@@ -97,7 +97,16 @@ def call_openrouter_for_rewriting(prompt_obj) -> str:
         "messages": [
             {
                 "role": "system",
-                "content": "You are a helpful assistant who rewrites user questions to be short, clear, and suitable for web search. Focus on recent and current events (e.g., year 2025)."
+                "content": """ You are a smart assistant who rewrites user questions to make them clearer and more suitable for Google search.
+                                Your job is to improve the question for search engines without changing its original meaning or intent.
+                                Only make edits that:
+                                - clarify vague phrasing,
+                                - add keywords for relevance,
+                                - or remove unnecessary words.
+                                Do NOT change the meaning, time range, company names, or data types.
+                                If the question already contains a specific year (e.g., 2024), keep it. Only use 2025 if it is clearly implied or the original question is ambiguous.
+                                Output only the rewritten question.
+                            """
             },
             {
                 "role": "user",
@@ -703,21 +712,21 @@ def generate_answer(state):
         if result_doc:
             result_table = result_doc.page_content.replace("SQL Query Results:", "").strip()
 
-#         generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
+        generation = f"""### Kết quả từ truy vấn cơ sở dữ liệu
 
-# #### Câu lệnh SQL được sử dụng:
-# ```sql
-# {sql_code}
-# ```
+#### Câu lệnh SQL được sử dụng:
+```sql
+{sql_code}
+```
 
-# #### Kết quả truy vấn:
+#### Kết quả truy vấn:
 
-# {result_table}
+{result_table}
 
-# #### Kết luận:
-# """
+#### Kết luận:
+"""
 
-        generation = f"""Kết luận:"""
+        # generation = f"""Kết luận:"""
         try:
             
             if(not result_table):
@@ -756,11 +765,13 @@ def generate_answer(state):
             print(f"📊 DataFrame shape: {df.head(3)}")
                     
             # Sinh mã vẽ và render
+            chart_url = None
             if df.shape[1] >= 1:
-                chart_code = generate_chart_code_via_llm(question, df)
-                chart_url = execute_generated_plot_code(chart_code, df)
-            else:
-                chart_url = None  # Không đủ cột để vẽ biểu đồ
+                try:
+                    chart_code = generate_chart_code_via_llm(question, df)
+                    chart_url = execute_generated_plot_code(chart_code, df)
+                except Exception as e:
+                    print(f"⚠️ Không thể tạo biểu đồ: {e}")
 
             # conclusion = generate_sql_conclusion(question, df)
             # generation += f"\n{conclusion}"    

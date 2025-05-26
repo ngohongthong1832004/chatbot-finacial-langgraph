@@ -1,31 +1,10 @@
-name,avg_daily_volume,avg_closing_price
-"Nike, Inc.",11644600.0,86.4322
-Intel Corporation,61681900.0,30.8775
-International Business Machines,4217330.0,189.591
-Boeing Company (The),9354990.0,177.708
-Walmart Inc.,17013500.0,69.6477
-"Cisco Systems, Inc.",19231900.0,49.5133
-Microsoft Corporation,20617100.0,417.897
-Honeywell International Inc.,3196720.0,203.992
-3M Company,4614090.0,107.002
-Walt Disney Company (The),10726700.0,101.528
-JP Morgan Chase & Co.,9036190.0,201.076
-"Caterpillar, Inc.",2532800.0,345.126
-Apple Inc.,57197600.0,206.369
-Verizon Communications Inc.,18430500.0,38.8347
-Chevron Corporation,7809260.0,148.264
-"Walgreens Boots Alliance, Inc.",18171800.0,13.8223
-Amgen Inc.,2685500.0,295.999
-"Goldman Sachs Group, Inc. (The)",2192330.0,461.641
-Procter & Gamble Company (The),6706570.0,161.573
-American Express Company,2849760.0,241.759
-Visa Inc.,6925010.0,278.748
-Johnson & Johnson,7173270.0,151.854
-"The Travelers Companies, Inc.",1307180.0,221.73
-"Salesforce, Inc.",6392940.0,281.291
-"Home Depot, Inc. (The)",3368350.0,363.203
-Dow Inc.,5101820.0,50.4054
-McDonald's Corporation,3449670.0,277.205
-"Merck & Company, Inc.",9349620.0,115.497
-Coca-Cola Company (The),13991800.0,62.4877
-UnitedHealth Group Incorporated,4106780.0,526.865
+sector,company_count
+Healthcare,5
+Consumer Defensive,3
+Financial Services,5
+Basic Materials,1
+Consumer Cyclical,3
+Technology,6
+Energy,1
+Communication Services,2
+Industrials,4
