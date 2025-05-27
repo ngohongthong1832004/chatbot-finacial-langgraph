@@ -26,5 +26,18 @@ services:
     networks:
       - fullstack-network
 
-networks:
-  fullstack-network:
+  db:
+    image: postgres:17
+    container_name: postgres-db
+    restart: always
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./schema/supabase_backup.sql:/docker-entrypoint-initdb.d/supabase_backup.sql:ro
+    networks:
+      - fullstack-network
+
+volumes:
+  db:
+    driver: local

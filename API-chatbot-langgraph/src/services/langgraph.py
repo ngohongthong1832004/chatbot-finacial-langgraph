@@ -103,6 +103,19 @@ def call_openrouter_for_rewriting(prompt_obj) -> str:
                                 - clarify vague phrasing,
                                 - add keywords for relevance,
                                 - or remove unnecessary words.
+                                Additionally, follow these rules to make the question concise and accurate:
+
+                                1. Remove filler words and politeness (e.g., “Can you show me”, “Please give me”).
+                                2. Shorten long phrases into exact financial terms (e.g., “stock price at end of day” → "Close").
+                                3. Normalize vague time references like “today” to “2025-04-25”.
+                                4. Drop descriptive phrases if the core meaning is intact.
+                                5. Keep only key metrics and company references.
+                                6. Eliminate repeated words and redundant parts.
+                                7. Convert comparative phrases into direct short queries (e.g., “X vs Y”).
+                                8. Remove any user-oriented language like “in your system”.
+                                9. If multiple parts are present, focus on the one with clear data intent.
+                                10. Prioritize accuracy, brevity, and relevance to the Dow Jones dataset.
+
                                 Do NOT change the meaning, time range, company names, or data types.
                                 If the question already contains a specific year (e.g., 2024), keep it. Only use 2025 if it is clearly implied or the original question is ambiguous.
                                 Output only the rewritten question.
@@ -151,7 +164,24 @@ def call_openrouter_for_sql_classification(prompt_obj) -> str:
     data = {
         "model": "openai/gpt-4o-mini",
         "messages": [
-            {"role": "system", "content": "You are an expert classifier for SQL queries question."},
+            {
+                "role": "system",
+                "content": """You are a specialized assistant that determines whether a user's question should be answered using a SQL query on a financial stock database.
+
+    Your job is to classify the question strictly as "yes" or "no".
+
+    📌 Label as "yes" if:
+    - The question requires structured data from a database (e.g., stock prices, dates, volumes, market cap, rankings, comparisons, averages, percentages)
+    - The question asks for filtering, aggregating, sorting, or joining data
+    - The answer depends on exact values or computations from financial data
+
+    📌 Label as "no" if:
+    - The question is general knowledge, conceptual, explanatory, or does not require structured data
+    - The answer can be found in document context or natural language without SQL
+
+    💡 Respond only with `yes` or `no` — no explanation, no punctuation.
+    """
+            },
             {"role": "user", "content": prompt}
         ]
     }
@@ -231,17 +261,31 @@ def format_docs(docs):
 
 def call_gemini_rag(question: str, context: str) -> str:
     prompt = f"""
-        Bạn là một trợ lý thông minh có nhiệm vụ trả lời câu hỏi của người dùng.
-        Hãy sử dụng những đoạn thông tin dưới đây (được truy xuất từ tài liệu) để trả lời.
-        Nếu không có thông tin phù hợp trong đoạn văn, hãy nói rằng bạn không biết câu trả lời.
-        Tuyệt đối không tự bịa ra thông tin nếu nó không có trong phần ngữ cảnh.
+Bạn là một trợ lý AI chuyên nghiệp, có nhiệm vụ trả lời các câu hỏi về tài chính chứng khoán, đặc biệt là các công ty thuộc chỉ số Dow Jones (DJIA).
+Dưới đây là một đoạn ngữ cảnh đã được truy xuất từ cơ sở dữ liệu hoặc tài liệu liên quan.
 
-        Câu hỏi: {question}
+🎯 **Mục tiêu**:
+- Trả lời chính xác, ngắn gọn, súc tích.
+- Ưu tiên sử dụng thông tin có trong ngữ cảnh.
+- Không được bịa thêm số liệu, dữ kiện, ngày tháng nếu không có trong ngữ cảnh.
 
-        Ngữ cảnh:
-        {context}
+📌 **Quy tắc bắt buộc**:
+1. Nếu ngữ cảnh không đủ để trả lời, hãy nói rõ: "Tôi không có đủ thông tin để trả lời câu hỏi này."
+2. Không đưa ra dự đoán hoặc lời khuyên đầu tư.
+3. Có thể trích dẫn dữ liệu hoặc cụm từ trong ngữ cảnh nếu cần làm rõ.
+4. Không dịch thuật ngữ tài chính trừ khi được hỏi rõ (giữ nguyên như: market cap, volatility, Close...).
+5. Ưu tiên trả lời theo cấu trúc ngắn: (1-3 câu rõ ràng).
+6. Không dùng từ ngữ mơ hồ như "có vẻ như", "có thể là", "có lẽ".
 
-        Trả lời:
+---
+
+❓ **Câu hỏi người dùng**:  
+{question}
+
+📄 **Ngữ cảnh đã truy xuất**:  
+{context}
+
+✍️ **Câu trả lời chính xác**:
     """
     model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
@@ -556,6 +600,21 @@ def query_sql(state):
             "use_sql": "No"
         }
         
+def call_openrouter_for_chart(prompt: str) -> str:
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "You are a Python data visualization expert. Only return matplotlib code using the df variable. Do not explain."},
+            {"role": "user", "content": prompt}
+        ]
+    }
+
+    res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
+    return res.json()["choices"][0]["message"]["content"].strip()
 
 def call_openrouter_for_chart(prompt: str) -> str:
     headers = {
@@ -573,43 +632,93 @@ def call_openrouter_for_chart(prompt: str) -> str:
     res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
     return res.json()["choices"][0]["message"]["content"].strip()
 
+def check_plot_code_quality(question: str, code: str) -> bool:
+    """
+    Đánh giá code vẽ có đúng yêu cầu từ câu hỏi không.
+    Trả về True nếu chấp nhận được, False nếu cần regenerate.
+    """
+    # Luật kiểm tra cơ bản
+    illegal_keywords = ["import", "eval", "exec", "input", "plt.show", "os.", "for ", "while ", "if "]
+    disallowed_vars = ["df_sorted", "df2", "data", "df_filtered", "correlation_matrix"]
+
+    # 1. Kiểm tra từ cấm
+    for word in illegal_keywords + disallowed_vars:
+        if word in code:
+            print(f"❌ Vi phạm từ cấm: {word}")
+            return False
+
+    # 2. Bắt đầu và kết thúc chuẩn
+    if not code.strip().startswith("plt.figure"):
+        print("❌ Không bắt đầu bằng plt.figure")
+        return False
+    if "plt.tight_layout()" not in code:
+        print("❌ Thiếu plt.tight_layout()")
+        return False
+
+    # 3. Chỉ dùng df / plt / sns
+    valid_lines = all(
+        line.strip().startswith(("df.", "plt.", "sns.", "")) for line in code.strip().splitlines()
+    )
+    if not valid_lines:
+        print("❌ Có dòng không bắt đầu bằng df./plt./sns.")
+        return False
+
+    return True
 
 
 def generate_chart_code_via_llm(question: str, df: pd.DataFrame) -> str:
     df_sample = df.head(10).to_csv(index=False)
-    prompt = f"""
-You are a Python expert specialized in data visualization using matplotlib.
+    base_prompt = f"""
+You are a Python expert specialized in financial data visualization using matplotlib and seaborn.
 
-The variable `df` is a preloaded pandas DataFrame that contains the dataset. Here are the first 10 rows:
+The variable `df` is a preloaded pandas DataFrame. Here are the first 10 rows:
 
 {df_sample}
 
-User question: "{question}"
+---
 
-Instructions:
-- Always start your code with `plt.figure(figsize=(10, 7))` and end with `plt.tight_layout()`.
-- Only use the existing `df` variable. Do NOT define or assign any new variables like `df_sorted`, `correlation_matrix`, or `data`.
-- If transformation is needed (e.g., sorting, pivoting, grouping), reassign it directly to `df`, like: df = df.sort_values(...).
-- You MAY use df['column'].values or df['column'].tolist() inside plotting functions (e.g., for labels and values in pie charts).
-- All plotting operations must reference `df` directly.
-- Do NOT use `plt.show()`, `import`, `input`, `eval`, `exec`, or any OS/system functions.
-- Do NOT use control flow statements such as `if`, `while`, or `for`.
-- Every line of code must begin with `df.`, `plt.`, or `sns.` (for seaborn).
-- Do NOT include any explanation, comment, markdown formatting, or code fences (```).
-- Do NOT include any import statements. All required libraries (pandas, matplotlib, seaborn) are already available.
-- Your output will be automatically executed. Only return clean, complete matplotlib code using `df`.
-- ALWAYS use keyword arguments in df.pivot(): e.g., df = df.pivot(index="...", columns="...", values="...") — never pass positional arguments.
-- If using .dt accessors (e.g., df["Date"].dt.month), make sure to convert "Date" to datetime first using: df["Date"] = pd.to_datetime(df["Date"])
+🎯 User question:
+"{question}"
 
+---
 
+📌 **Strict Rules**:
+1. Only use the existing `df` variable — do not reassign new dataframes like `df2`, `df_sorted`, etc.
+2. Always begin with `plt.figure(figsize=(10, 7))` and end with `plt.tight_layout()`.
+3. Do NOT use: `plt.show()`, `input()`, `eval()`, `exec()`, `os.`, `import`, or any system-level commands.
+4. Do NOT use `for`, `while`, or `if` statements.
+5. All code lines must begin with: `df.`, `plt.`, or `sns.` (e.g., `plt.bar(...)`, `df.sort_values(...)`, etc.)
+6. Use `keyword arguments only` for functions like `df.pivot()`, e.g.:  
+   ✅ `df = df.pivot(index="Date", columns="Ticker", values="Close")`
+7. If using `df["Date"].dt.month`, convert "Date" to datetime first:  
+   ✅ `df["Date"] = pd.to_datetime(df["Date"])`
+8. Do NOT rename columns or create temporary variables.
+9. Avoid chaining multiple operations on one line (no `df.sort_values(...).plot(...)`).
+10. Format axes or labels properly using `plt.xlabel`, `plt.ylabel`, `plt.title`, `plt.xticks`, etc.
 
-Output only the raw code.
+---
+
+✅ **Output format**:
+- Return only clean, executable `matplotlib` code (no markdown, no code fences, no explanation).
+- Do NOT return any non-code content.
+- Use `df` only — do not create any new variables or functions.
 """
 
-    code = call_openrouter_for_chart(prompt.strip())
-    print("📤 Code gen chart from LLM:\n", code)
-    return code.strip()
 
+
+    for attempt in range(3):
+        print(f"🔁 Attempt {attempt + 1}")
+        code = call_openrouter_for_chart(base_prompt.strip())
+        print("📤 Generated chart code:\n", code)
+
+        if check_plot_code_quality(question, code):
+            print("✅ Code passed quality check.")
+            return code.strip()
+        else:
+            print("⚠️ Code failed quality check. Retrying...")
+
+    print("❌ All attempts failed. Returning last generated code anyway.")
+    return code.strip()
 
 
 def execute_generated_plot_code(code: str, df: pd.DataFrame, static_dir="static/charts") -> str:

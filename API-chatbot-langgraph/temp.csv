@@ -1,10 +1,30 @@
-sector,company_count
-Healthcare,5
-Consumer Defensive,3
-Financial Services,5
-Basic Materials,1
-Consumer Cyclical,3
-Technology,6
-Energy,1
-Communication Services,2
-Industrials,4
+name,total_dividends_per_share
+"Goldman Sachs Group, Inc. (The)",2.875
+Amgen Inc.,2.25
+"Home Depot, Inc. (The)",2.25
+UnitedHealth Group Incorporated,2.045
+McDonald's Corporation,1.695
+International Business Machines,1.6675
+Chevron Corporation,1.63
+"Caterpillar, Inc.",1.355
+Johnson & Johnson,1.2275
+JP Morgan Chase & Co.,1.15
+Honeywell International Inc.,1.0925
+"The Travelers Companies, Inc.",1.0375
+Procter & Gamble Company (The),0.9905
+3M Company,0.840636
+"Merck & Company, Inc.",0.78
+Microsoft Corporation,0.77
+Dow Inc.,0.7
+American Express Company,0.675
+Verizon Communications Inc.,0.66825
+Visa Inc.,0.5375
+Coca-Cola Company (The),0.485
+Walt Disney Company (The),0.475
+"Salesforce, Inc.",0.4
+"Cisco Systems, Inc.",0.3975
+"Nike, Inc.",0.3775
+"Walgreens Boots Alliance, Inc.",0.25
+Apple Inc.,0.2475
+Walmart Inc.,0.208
+Intel Corporation,0.125

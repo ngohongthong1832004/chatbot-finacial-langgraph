@@ -444,16 +444,32 @@ def generate_sql_query(question):
         schema_description = "No schema metadata available."
         
     prompt = ChatPromptTemplate.from_template("""
-You are an expert SQL developer. Generate a SQL query to answer the user's question.
-Use the following database schema information:
+You are an expert data analyst and SQL developer. Your task is to write a correct and efficient PostgreSQL SQL query to answer the user's question using the following schema:
 
 {schema}
 
-User's question: {question}
+🔧 Follow these strict rules:
+1. Use **PostgreSQL syntax only**
+2. Do **NOT** include any explanations, comments, or markdown formatting
+3. If querying `djia_prices`, you must **double-quote all column names** (e.g., "Date", "Close", "Volume")
+4. When filtering by date, always cast with `::date`, e.g., `"Date"::date = '2024-03-15'`
+5. Use `JOIN` between `djia_companies` and `djia_prices` via `symbol = "Ticker"` when needed
+6. Use proper aggregation (AVG, SUM, MAX, etc.) for time series or sector-based questions
+7. When calculating returns, use:  
+   `((end_price - start_price) / start_price * 100)`
+8. Prefer `BETWEEN` for date ranges
+9. Use `ROUND(..., 2)` when formatting percentages or decimals
+10. If unsure, prefer safe and readable queries over complexity
 
-Return ONLY the SQL query without any explanation or markdown formatting.
-Make sure the query is correct PostgreSQL syntax.
+---
+
+User's question:  
+{question}
+
+✅ Output:
+Return **only** the raw SQL query (no explanation).
 """)
+
 
     # chain = prompt | llm | StrOutputParser()
     chain = prompt | RunnableLambda(call_openrouter) | StrOutputParser()
