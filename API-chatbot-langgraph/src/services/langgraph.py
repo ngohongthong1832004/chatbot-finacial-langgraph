@@ -183,11 +183,12 @@ openai_embed_model = OpenAIEmbeddings(model='text-embedding-3-small', api_key=OP
 tv_search = TavilySearchResults(max_results=3, search_depth='advanced', max_tokens=10000, api_key=TAVILY_API_KEY)
 
 
+# get_vector_store_and_retriever
 def get_vector_store_and_retriever(resource_dir: str = "sec_embeddings") -> Tuple[List[Dict[str, Any]], faiss.Index, SentenceTransformer]:
     global chunks, index, embedding_model
     
     if chunks is not None and index is not None and embedding_model is not None:
-        print("✅ Vector store & retriever already initialized. Reusing...")
+        print("Vector store & retriever already initialized. Reusing...")
         return chunks, index, embedding_model
 
     try:
@@ -231,18 +232,21 @@ def format_docs(docs):
 
 def call_gemini_rag(question: str, context: str) -> str:
     prompt = f"""
-        Bạn là một trợ lý thông minh có nhiệm vụ trả lời câu hỏi của người dùng.
-        Hãy sử dụng những đoạn thông tin dưới đây (được truy xuất từ tài liệu) để trả lời.
-        Nếu không có thông tin phù hợp trong đoạn văn, hãy nói rằng bạn không biết câu trả lời.
-        Tuyệt đối không tự bịa ra thông tin nếu nó không có trong phần ngữ cảnh.
+    You are a knowledgeable and reliable AI assistant. Your task is to answer the user's question based solely on the information provided in the context below.
 
-        Câu hỏi: {question}
+    Please ensure your response:
+    - Uses only facts found in the given context.
+    - Clearly states if the answer cannot be determined from the context.
+    - Does not make up or assume any information not explicitly mentioned.
 
-        Ngữ cảnh:
-        {context}
+    Question: {question}
 
-        Trả lời:
+    Context:
+    {context}
+
+    Answer:
     """
+
     model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
     return response.text.strip()
@@ -252,13 +256,16 @@ def call_gemini_rag(question: str, context: str) -> str:
 
 # Query rewriter for web search
 re_write_prompt = ChatPromptTemplate.from_template(
-    """Hãy viết lại câu hỏi dưới đây sao cho ngắn gọn, rõ ràng và phù hợp để tìm kiếm trên Google.
-    
-Yêu cầu: Câu hỏi phải hướng tới thông tin mới nhất, cập nhật tại thời điểm hiện tại (không sử dụng năm cũ hoặc dữ liệu đã lỗi thời) chẳng hạn trong năm 2025.
+    """Please rewrite the following question to make it concise, clear, and well-suited for a Google search.
 
-Câu hỏi gốc: {question}
-Câu hỏi để tìm kiếm trên web:"""
+Requirements:
+- The rewritten question should focus on retrieving the most current and up-to-date information (e.g., during the year 2025).
+- Avoid including outdated years or references to obsolete data.
+
+Original question: {question}
+Rewritten web search query:"""
 )
+
 # question_rewriter = (re_write_prompt|llm|StrOutputParser())
 question_rewriter = (re_write_prompt|RunnableLambda(call_openrouter_for_rewriting)|StrOutputParser())
 
@@ -351,7 +358,7 @@ The system has SQL query capabilities for a database containing:
 - Question is completely unrelated to finance/stocks
 
 **IMPORTANT NOTES:**
-- When in doubt, prefer answering "yes"
+- When in doubt, prefer answering "yes" 
 - All types of financial analysis, statistics, and comparisons are supported
 - Chart/visualization questions are also supported as they can query SQL data for creation
 - NEVER answer "no" if the question contains any of these keywords:"Create", "Plot", "price", "prices", "market", "volume", "dividends", "splits", "stock price", "closing price", "opening price", "companies".
