@@ -437,33 +437,86 @@ ORDER BY avg_volume DESC;
 
 def generate_sql_query(question):
     """Generate SQL query from natural language question using LLM"""
-    # Nếu có metadata text => dùng luôn
-    if get_schema_and_samples().get("metadata_text"):
-        schema_description = get_schema_and_samples()["metadata_text"]
+    # Lấy metadata schema và mẫu query (nếu có)
+    schema_and_samples = get_schema_and_samples()
+    if schema_and_samples.get("metadata_text"):
+        base_schema = schema_and_samples["metadata_text"]
     else:
-        schema_description = "No schema metadata available."
-        
+        base_schema = "No schema metadata available."
+    
+    # Mô tả chi tiết schema + quy tắc SQL cần tuân thủ
+    extended_schema_description = f"""
+Database schema information and query guidelines:
+
+Tables:
+
+1. djia_companies:
+   - Columns: symbol (VARCHAR, PK), name (VARCHAR), sector (VARCHAR), industry (VARCHAR), country (VARCHAR),
+     market_cap (BIGINT), pe_ratio (FLOAT), dividend_yield (FLOAT), 52_week_high (FLOAT), 52_week_low (FLOAT), description (TEXT)
+
+2. djia_prices:
+   - Columns (must be quoted with double quotes): "Date" (TIMESTAMP), "Open" (FLOAT), "High" (FLOAT),
+     "Low" (FLOAT), "Close" (FLOAT), "Volume" (BIGINT), "Dividends" (FLOAT), "Stock Splits" (FLOAT), "Ticker" (VARCHAR)
+
+SQL query rules:
+
+- Always quote columns from djia_prices table, e.g., "Close", "Date", "Volume"
+- Do NOT quote columns from djia_companies table, e.g., symbol, name, sector
+- Cast date columns using "Date"::date for filtering, e.g., WHERE "Date"::date = '2024-03-15'
+- Cast dividends and splits to FLOAT using ::FLOAT when doing calculations
+- Join djia_companies and djia_prices tables using c.symbol = p."Ticker"
+- Use PostgreSQL syntax strictly
+- Write queries for financial metrics like averages, sums, percentage changes, rankings, top/bottom filters
+
+Examples of typical SQL queries:
+
+-- Get closing price for AAPL on 2024-03-15
+SELECT "Date", "Close" FROM djia_prices WHERE "Ticker" = 'AAPL' AND "Date"::date = '2024-03-15';
+
+-- Calculate average closing price for MSFT in 2024
+SELECT AVG("Close") FROM djia_prices WHERE "Ticker" = 'MSFT' AND "Date" BETWEEN '2024-01-01' AND '2024-12-31';
+
+-- Top 5 companies by return in 2024
+WITH start_prices AS (
+  SELECT symbol, "Close" as start_close FROM djia_prices p
+  JOIN djia_companies c ON c.symbol = p."Ticker"
+  WHERE "Date"::date = '2024-01-02'
+),
+end_prices AS (
+  SELECT symbol, "Close" as end_close FROM djia_prices p
+  JOIN djia_companies c ON c.symbol = p."Ticker"
+  WHERE "Date"::date = '2024-12-31'
+)
+SELECT c.name, ROUND(((end_prices.end_close - start_prices.start_close) / start_prices.start_close * 100)::numeric, 2) as pct_return
+FROM start_prices
+JOIN end_prices USING (symbol)
+JOIN djia_companies c USING (symbol)
+ORDER BY pct_return DESC
+LIMIT 5;
+
+"""
+
+    full_schema_prompt = base_schema + "\n\n" + extended_schema_description
+
     prompt = ChatPromptTemplate.from_template("""
-You are an expert SQL developer. Generate a SQL query to answer the user's question.
-Use the following database schema information:
+You are an expert SQL developer. Generate a PostgreSQL query to answer the user's question based on the schema and rules below:
 
 {schema}
 
 User's question: {question}
 
-Return ONLY the SQL query without any explanation or markdown formatting.
-Make sure the query is correct PostgreSQL syntax.
+Return ONLY the SQL query without explanation or markdown.
 """)
 
-    # chain = prompt | llm | StrOutputParser()
     chain = prompt | RunnableLambda(call_openrouter) | StrOutputParser()
 
     try:
         sql_query = chain.invoke({
-            "schema": schema_description,
+            "schema": full_schema_prompt,
             "question": question
         })
         return sql_query.strip()
     except Exception as e:
         print(f"❌ Error generating SQL: {e}")
         return ""
+
