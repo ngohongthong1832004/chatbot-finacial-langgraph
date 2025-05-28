@@ -364,6 +364,32 @@ The system has SQL query capabilities for a database containing:
 - NEVER answer "no" if the question contains any of these keywords:"Create", "Plot", "price", "prices", "market", "volume", "dividends", "splits", "stock price", "closing price", "opening price", "companies".
 - IMPORTANT: If the question have any SQL query keywords and some keyword such as:"Create", "Plot", "price", "market", "volume", "dividends", "splits", "companies" always answer "yes".
 
+### ADDITIONAL RULES FOR CLASSIFICATION:
+
+Evaluate the question using the following logic:
+
+- ✅ Answer "yes" if the question:
+  - Involves retrieving or calculating data such as stock prices, volume, dividends, volatility, returns, averages, rankings, or performance
+  - Mentions any of these patterns: "compare", "plot", "highest", "lowest", "show", "how much", "calculate", "average", "total", "volume of", "change in price", "between dates", "top companies", "most volatile", "return of"
+
+- ❌ Answer "no" if:
+  - The question is theoretical, descriptive, or conceptual (e.g., "What is a dividend?", "Explain stock market volatility")
+  - It only asks about general knowledge, not specific data from the database
+
+### EXAMPLES TO GUIDE YOU:
+
+**Answer "yes" if the question is like:**
+- "Which stock had the highest closing price in 2024?"
+- "Compare the performance of AAPL and MSFT"
+- "Show volume trends for Boeing in Q2 2023"
+- "List companies with average dividend yield above 2%"
+- "What was Apple's max drawdown in 2024?"
+
+**Answer "no" if the question is like:**
+- "What is the definition of P/E ratio?"
+- "How does the stock market work?"
+- "Tell me about Microsoft's history"
+- "What does DJIA represent?"
 
 Respond with only one word: **yes** or **no**.
 """),
