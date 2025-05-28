@@ -15,6 +15,9 @@ const DEFAULT_USERS = [
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 function App() {
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return localStorage.getItem('isDarkMode') === 'true';
+  });
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('isLoggedIn') === 'true';
   });
@@ -30,6 +33,8 @@ function App() {
   const [editingSessionTitle, setEditingSessionTitle] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState(null);
   const messagesEndRef = useRef(null);
 
   // console.log('chatSessions:', chatSessions.reverse());
@@ -389,20 +394,34 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
 
   const deleteSession = (sessionId, e) => {
     e.stopPropagation();
-    const updatedSessions = chatSessions.filter(session => session.id !== sessionId);
-    setChatSessions(updatedSessions);
-    // Save updated sessions for current user
-    localStorage.setItem(`sessions_${username}`, JSON.stringify(updatedSessions));
-    
-    if (sessionId === currentSessionId) {
-      if (updatedSessions.length > 0) {
-        setCurrentSessionId(updatedSessions[updatedSessions.length - 1].id);
-        setMessages(updatedSessions[updatedSessions.length - 1].messages);
-      } else {
-        setCurrentSessionId(null);
-        setMessages([]);
+    setSessionToDelete(sessionId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSession = () => {
+    if (sessionToDelete) {
+      const updatedSessions = chatSessions.filter(session => session.id !== sessionToDelete);
+      setChatSessions(updatedSessions);
+      // Save updated sessions for current user
+      localStorage.setItem(`sessions_${username}`, JSON.stringify(updatedSessions));
+      
+      if (sessionToDelete === currentSessionId) {
+        if (updatedSessions.length > 0) {
+          setCurrentSessionId(updatedSessions[updatedSessions.length - 1].id);
+          setMessages(updatedSessions[updatedSessions.length - 1].messages);
+        } else {
+          setCurrentSessionId(null);
+          setMessages([]);
+        }
       }
     }
+    setShowDeleteModal(false);
+    setSessionToDelete(null);
+  };
+
+  const cancelDeleteSession = () => {
+    setShowDeleteModal(false);
+    setSessionToDelete(null);
   };
 
   const handleRenameSession = (sessionId, e) => {
@@ -618,6 +637,17 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
     scrollToBottom();
   }, [messages]);
 
+  // Add dark mode toggle function
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    localStorage.setItem('isDarkMode', !isDarkMode);
+  };
+
+  // Add useEffect for dark mode
+  useEffect(() => {
+    document.body.className = isDarkMode ? 'dark-mode' : '';
+  }, [isDarkMode]);
+
   if (!isLoggedIn) {
     return (
       <div className="login-container">
@@ -769,10 +799,13 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
               <i className="fas fa-user-circle" style={{ fontSize: '24px', color: 'gray' }}></i>
               <h3>{username}</h3>
             </div>
-          <button onClick={handleLogout} className="logout-button">
-            <i className="fas fa-sign-out-alt"></i>
-            Logout
-          </button>
+            <button onClick={toggleDarkMode} className="theme-toggle-button" title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+              <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
+            </button>
+            <button onClick={handleLogout} className="logout-button">
+              <i className="fas fa-sign-out-alt"></i>
+              Logout
+            </button>
           </div>
         </div>
       </div>
@@ -853,6 +886,32 @@ Bạn muốn lập kế hoạch cho mục tiêu nào?`;
           </form>
         </div>
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>Xác nhận xóa</h3>
+              <button onClick={cancelDeleteSession} className="modal-close">
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Bạn có chắc chắn muốn xóa cuộc trò chuyện này?</p>
+              <p className="modal-warning">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div className="modal-footer">
+              <button onClick={cancelDeleteSession} className="modal-button cancel">
+                Hủy
+              </button>
+              <button onClick={confirmDeleteSession} className="modal-button delete">
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
