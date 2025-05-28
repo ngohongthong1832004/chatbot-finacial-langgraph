@@ -926,23 +926,156 @@ def decide_to_generate(state):
         return "generate_answer"
 
 # Initialize graph
+# def create_rag_graph():
+#     agentic_rag = StateGraph(GraphState)
+
+#     # Nodes
+#     agentic_rag.add_node("retrieve", retrieve)
+#     agentic_rag.add_node("grade_documents", grade_documents)
+#     agentic_rag.add_node("rewrite_query", rewrite_query)
+#     agentic_rag.add_node("web_search", web_search)
+#     agentic_rag.add_node("query_sql", query_sql)
+#     agentic_rag.add_node("generate_answer", generate_answer)
+
+
+#     # ✅ Entry point
+#     agentic_rag.set_entry_point("retrieve")
+
+#     # Edges
+#     agentic_rag.add_edge("retrieve", "grade_documents")
+#     agentic_rag.add_conditional_edges(
+#         "grade_documents",
+#         decide_to_generate,
+#         {
+#             "rewrite_query": "rewrite_query",
+#             "generate_answer": "generate_answer",
+#             "query_sql": "query_sql"
+#         }
+#     )
+#     agentic_rag.add_edge("rewrite_query", "web_search")
+#     agentic_rag.add_edge("web_search", "generate_answer")
+#     agentic_rag.add_edge("query_sql", "generate_answer")
+#     agentic_rag.add_edge("generate_answer", END)
+
+#     return agentic_rag.compile()
+
+cache_store = {}  # Simple in-memory cache for demonstration
+
+def cache_lookup(state):
+    key = state.question.strip().lower()
+    print(f"⚡️ Cache lookup for: {key}")
+    if key in cache_store:
+        print("✅ Found in cache.")
+        state.generation = cache_store[key]
+        return state
+    print("❌ Not found in cache.")
+    return state
+
+def is_cached(state):
+    return "generate_answer" if state.generation else "check_query_type"
+
+
+# --- 2. Query type checker (SQL or non-SQL) ---
+def check_query_type(state):
+    print("🔍 Checking if query should use SQL")
+    if is_sql_question(state.question):
+        state.use_sql = "Yes"
+    return state
+
+
+# --- 3. Tool selector (SQL, Web Search, or RAG) ---
+def tool_selector(state):
+    print("🔧 Deciding tool based on flags")
+    return state
+
+def decide_tool(state):
+    if state.use_sql == "Yes":
+        return "query_sql"
+    elif ENABLE_WEB_SEARCH:
+        return "web_search"
+    else:
+        return "retrieve"
+
+
+# --- 4. Rerank Documents ---
+def rerank_documents(state):
+    print("📊 Reranking retrieved documents by score")
+    docs = state.documents
+    sorted_docs = sorted(docs, key=lambda d: d.metadata.get("score", 0), reverse=True)
+    state.documents = sorted_docs
+    return state
+
+
+# --- 5. Validate Context (ensure it has enough content) ---
+def validate_context(state):
+    print("🔎 Validating context size")
+    total_words = sum(len(doc.page_content.split()) for doc in state.documents)
+    if total_words < 50:
+        print("⚠️ Context is too short, fallback to Web search")
+        state.web_search_needed = "Yes"
+    return state
+
+
+# --- 6. Confidence check after answer generation ---
+def check_confidence(state):
+    print("🌟 Checking answer confidence")
+    answer = state.generation
+    if not answer:
+        return "rewrite_query"
+    elif any(phrase in answer.lower() for phrase in ["không rõ", "không đủ", "không xác định"]):
+        return "rewrite_query"
+    elif len(answer.split()) < 10:
+        return "rewrite_query"
+    else:
+        return "END"
+
 def create_rag_graph():
     agentic_rag = StateGraph(GraphState)
 
-    # Nodes
+    # 🧱 NODES
+    agentic_rag.add_node("cache_lookup", cache_lookup)
+    agentic_rag.add_node("check_query_type", check_query_type)
+    agentic_rag.add_node("tool_selector", tool_selector)
     agentic_rag.add_node("retrieve", retrieve)
+    agentic_rag.add_node("rerank_documents", rerank_documents)
     agentic_rag.add_node("grade_documents", grade_documents)
+    agentic_rag.add_node("validate_context", validate_context)
     agentic_rag.add_node("rewrite_query", rewrite_query)
     agentic_rag.add_node("web_search", web_search)
     agentic_rag.add_node("query_sql", query_sql)
     agentic_rag.add_node("generate_answer", generate_answer)
+    agentic_rag.add_node("check_confidence", check_confidence)
 
+    # 🚪 ENTRY POINT
+    agentic_rag.set_entry_point("cache_lookup")
 
-    # ✅ Entry point
-    agentic_rag.set_entry_point("retrieve")
+    # 🔁 EDGES
+    agentic_rag.add_conditional_edges(
+        "cache_lookup",
+        is_cached,
+        {
+            "generate_answer": "generate_answer",   # dùng kết quả từ cache
+            "check_query_type": "check_query_type"  # nếu chưa có trong cache
+        }
+    )
 
-    # Edges
-    agentic_rag.add_edge("retrieve", "grade_documents")
+    agentic_rag.add_edge("check_query_type", "tool_selector")
+
+    agentic_rag.add_conditional_edges(
+        "tool_selector",
+        decide_tool,
+        {
+            "retrieve": "retrieve",
+            "query_sql": "query_sql",
+            "web_search": "web_search"
+        }
+    )
+
+    # RAG branch
+    agentic_rag.add_edge("retrieve", "rerank_documents")
+    agentic_rag.add_edge("rerank_documents", "validate_context")
+    agentic_rag.add_edge("validate_context", "grade_documents")
+
     agentic_rag.add_conditional_edges(
         "grade_documents",
         decide_to_generate,
@@ -952,10 +1085,22 @@ def create_rag_graph():
             "query_sql": "query_sql"
         }
     )
+
     agentic_rag.add_edge("rewrite_query", "web_search")
     agentic_rag.add_edge("web_search", "generate_answer")
+
+    # SQL branch (hoặc từ tool_selector hoặc grade_documents)
     agentic_rag.add_edge("query_sql", "generate_answer")
-    agentic_rag.add_edge("generate_answer", END)
+
+    # Cuối cùng: check tự tin → xong hoặc quay lại
+    agentic_rag.add_conditional_edges(
+        "generate_answer",
+        check_confidence,
+        {
+            "END": END,
+            "rewrite_query": "rewrite_query"  # Nếu confidence thấp
+        }
+    )
 
     return agentic_rag.compile()
 
