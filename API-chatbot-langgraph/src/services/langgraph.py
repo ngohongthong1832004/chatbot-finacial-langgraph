@@ -376,6 +376,18 @@ Evaluate the question using the following logic:
   - The question is theoretical, descriptive, or conceptual (e.g., "What is a dividend?", "Explain stock market volatility")
   - It only asks about general knowledge, not specific data from the database
 
+### ADDITIONAL RULES FOR CLASSIFICATION:
+
+Evaluate the question using the following logic:
+
+- ✅ Answer "yes" if the question:
+  - Involves retrieving or calculating data such as stock prices, volume, dividends, volatility, returns, averages, rankings, or performance
+  - Mentions any of these patterns: "compare", "plot", "highest", "lowest", "show", "how much", "calculate", "average", "total", "volume of", "change in price", "between dates", "top companies", "most volatile", "return of"
+
+- ❌ Answer "no" if:
+  - The question is theoretical, descriptive, or conceptual (e.g., "What is a dividend?", "Explain stock market volatility")
+  - It only asks about general knowledge, not specific data from the database
+
 ### EXAMPLES TO GUIDE YOU:
 
 **Answer "yes" if the question is like:**
@@ -391,7 +403,7 @@ Evaluate the question using the following logic:
 - "Tell me about Microsoft's history"
 - "What does DJIA represent?"
 
-Respond with only one word: **yes** or **no**.
+Always respond with one word: **yes** or **no**
 """),
     ("human", "Question: {question}")
 ])
@@ -462,16 +474,22 @@ def rewrite_query(state):
 def generate_sql_conclusion(question: str, df: pd.DataFrame) -> str:
     sample = df.head(10).to_dict(orient='records')
     prompt = f"""
-Bạn là chuyên gia phân tích dữ liệu. Dưới đây là câu hỏi của người dùng và dữ liệu SQL vừa truy vấn được (gồm 10 dòng đầu tiên).
+Bạn là chuyên gia phân tích dữ liệu tài chính, làm việc với cơ sở dữ liệu cổ phiếu Dow Jones Industrial Average (DJIA). Cơ sở dữ liệu gồm:
+
+- Bảng djia_companies: chứa thông tin công ty như symbol, name, sector, market_cap, pe_ratio, dividend_yield,...
+- Bảng djia_prices: chứa dữ liệu giá cổ phiếu hàng ngày với các cột: "Date", "Open", "High", "Low", "Close", "Volume", "Dividends", "Stock Splits".
+
+Dưới đây là câu hỏi của người dùng và dữ liệu SQL vừa truy vấn được (10 dòng đầu tiên):
 
 Câu hỏi: {question}
 
 Dữ liệu:
 {json.dumps(sample, ensure_ascii=False, indent=2)}
 
-Hãy viết một đoạn kết luận ngắn gọn (1-2câu) để tóm tắt hoặc đưa ra insight từ dữ liệu này. Không cần giải thích lại câu hỏi. Ngắn ngọn thôi.
+Hãy viết một đoạn kết luận ngắn gọn (1-2 câu) tập trung vào những insight quan trọng từ dữ liệu này, ví dụ như hiệu suất cổ phiếu, xu hướng giá, chỉ số tài chính nổi bật hoặc so sánh quan trọng. Không cần giải thích lại câu hỏi. Ngắn gọn và súc tích.
 """
     return call_openrouter_for_generic(prompt.strip())
+
 
 
 
@@ -617,24 +635,31 @@ The variable `df` is a preloaded pandas DataFrame that contains the dataset. Her
 
 {df_sample}
 
+The DataFrame columns include:
+- "Date": datetime, trading date
+- "Open", "High", "Low", "Close": float, daily stock prices
+- "Volume": integer, trading volume
+- "Dividends", "Stock Splits": float, dividend and split info (may be zero)
+- Other columns may include company sector or ticker symbol
+
 User question: "{question}"
 
 Instructions:
+- Common financial charts include:
+    * Line chart for price trends over time (e.g., "Close" price)
+    * Bar chart for trading volume
+    * Candlestick chart for OHLC prices (if possible)
+- You may group or filter data by "sector", "ticker", or time intervals (month, quarter)
 - Always start your code with `plt.figure(figsize=(10, 7))` and end with `plt.tight_layout()`.
-- Only use the existing `df` variable. Do NOT define or assign any new variables like `df_sorted`, `correlation_matrix`, or `data`.
-- If transformation is needed (e.g., sorting, pivoting, grouping), reassign it directly to `df`, like: df = df.sort_values(...).
-- You MAY use df['column'].values or df['column'].tolist() inside plotting functions (e.g., for labels and values in pie charts).
-- All plotting operations must reference `df` directly.
-- Do NOT use `plt.show()`, `import`, `input`, `eval`, `exec`, or any OS/system functions.
-- Do NOT use control flow statements such as `if`, `while`, or `for`.
-- Every line of code must begin with `df.`, `plt.`, or `sns.` (for seaborn).
-- Do NOT include any explanation, comment, markdown formatting, or code fences (```).
-- Do NOT include any import statements. All required libraries (pandas, matplotlib, seaborn) are already available.
-- Your output will be automatically executed. Only return clean, complete matplotlib code using `df`.
-- ALWAYS use keyword arguments in df.pivot(): e.g., df = df.pivot(index="...", columns="...", values="...") — never pass positional arguments.
-- If using .dt accessors (e.g., df["Date"].dt.month), make sure to convert "Date" to datetime first using: df["Date"] = pd.to_datetime(df["Date"])
-
-
+- Only use the existing `df` variable. Do NOT define new variables outside of reassigning `df`.
+- If transformation is needed (e.g., sorting, pivoting, grouping), reassign it directly to `df`.
+- Use `df["Date"] = pd.to_datetime(df["Date"])` if you need to handle datetime operations.
+- You MAY use df['column'].values or df['column'].tolist() inside plotting functions.
+- All plotting commands must reference `df` directly.
+- Do NOT use plt.show(), import statements, or control flow statements.
+- Each line of code must begin with `df.`, `plt.`, or `sns.` (for seaborn).
+- No explanations, comments, markdown, or code fences in output.
+- Your output will be automatically executed.
 
 Output only the raw code.
 """
@@ -642,6 +667,7 @@ Output only the raw code.
     code = call_openrouter_for_chart(prompt.strip())
     print("📤 Code gen chart from LLM:\n", code)
     return code.strip()
+
 
 
 
