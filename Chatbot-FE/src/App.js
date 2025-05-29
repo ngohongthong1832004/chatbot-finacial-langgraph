@@ -17,7 +17,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('isDarkMode') === 'true';
-  });
+  }); 
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('isLoggedIn') === 'true';
   });
@@ -35,7 +35,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef(null); //Khi có tin nhắn mới tự động cuộn xuống cuối
 
   // console.log('chatSessions:', chatSessions.reverse());
 
@@ -43,7 +43,7 @@ function App() {
   useEffect(() => {
     if (isLoggedIn && username) {
       const userSessions = localStorage.getItem(`sessions_${username}`);
-      if (userSessions) {
+      if (userSessions) { 
         const sessions = JSON.parse(userSessions);
         setChatSessions(sessions);
         if (sessions.length > 0) {
@@ -154,7 +154,7 @@ function App() {
       messages: [],
       createdAt: new Date().toISOString()
     };
-    const updatedSessions = [...chatSessions, newSession];
+    const updatedSessions = [...chatSessions, newSession]; //Dấu ... là spread operator trong JavaScript, dùng để "trải" các phần tử của mảng chatSessions ra thành từng phần tử riêng biệt.
     setChatSessions(updatedSessions);
     setCurrentSessionId(newSession.id);
     setMessages([]);
@@ -165,7 +165,7 @@ function App() {
   const handleOptionClick = async (option) => {
     let message = '';
     let botResponse = '';
-    const active = true; // Set this to false to use predefined responses
+    const active = false; // Set this to false to use predefined responses
     
     switch(option) {
       case 1:
