@@ -25,3 +25,8 @@ tabulate
 matplotlib
 pillow
 seaborn
+# Health monitoring dependencies
+psutil
+requests
+# Logging and monitoring
+structlog

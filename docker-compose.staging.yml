@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  backend-staging:
+    image: chatbot-langgraph-backend:staging
+    container_name: fastapi-backend-staging
+    ports:
+      - "8001:8000"
+    environment:
+      - ENV=staging
+      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@db:5432/dbname}
+    volumes:
+      - ./API-chatbot-langgraph/logs:/app/logs
+    networks:
+      - staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend-staging:
+    image: chatbot-langgraph-frontend:staging
+    container_name: react-frontend-staging
+    ports:
+      - "3001:3000"
+    environment:
+      - REACT_APP_API_URL=http://${SERVER_HOST:-localhost}:8001
+      - REACT_APP_ENV=staging
+    networks:
+      - staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Database for staging (optional - you can use the same as production)
+  db-staging:
+    image: postgres:15-alpine
+    container_name: postgres-staging
+    environment:
+      - POSTGRES_DB=chatbot_staging
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./DATABASE/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+    networks:
+      - staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  staging-network:
+    driver: bridge
+
+volumes:
+  postgres_staging_data:
+    driver: local
