@@ -1,0 +1,219 @@
+stages:
+  - build
+  - deploy-staging
+  - health-check
+  - deploy-production
+  - rollback
+
+variables:
+  DOCKER_DRIVER: overlay2
+  STAGING_PORT_BACKEND: "8001"
+  STAGING_PORT_FRONTEND: "3001"
+  PRODUCTION_PORT_BACKEND: "8000"
+  PRODUCTION_PORT_FRONTEND: "3000"
+  PROJECT_NAME: "chatbot-langgraph"
+
+before_script:
+  - echo "Starting CI/CD pipeline..."
+
+# Build stage
+build:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  script:
+    - echo "Building Docker images..."
+    - docker build -t $PROJECT_NAME-backend:$CI_COMMIT_SHORT_SHA ./API-chatbot-langgraph
+    - docker build -t $PROJECT_NAME-frontend:$CI_COMMIT_SHORT_SHA ./Chatbot-FE
+    - docker tag $PROJECT_NAME-backend:$CI_COMMIT_SHORT_SHA $PROJECT_NAME-backend:latest
+    - docker tag $PROJECT_NAME-frontend:$CI_COMMIT_SHORT_SHA $PROJECT_NAME-frontend:latest
+    - docker save $PROJECT_NAME-backend:$CI_COMMIT_SHORT_SHA > backend-image.tar
+    - docker save $PROJECT_NAME-frontend:$CI_COMMIT_SHORT_SHA > frontend-image.tar
+  artifacts:
+    paths:
+      - backend-image.tar
+      - frontend-image.tar
+    expire_in: 1 hour
+  only:
+    - main
+    - develop
+
+# Deploy to staging
+deploy-staging:
+  stage: deploy-staging
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client docker
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "Deploying to staging environment..."
+    # Copy files to server
+    - scp backend-image.tar frontend-image.tar $SERVER_USER@$SERVER_HOST:/tmp/
+    - scp docker-compose.staging.yml $SERVER_USER@$SERVER_HOST:/opt/$PROJECT_NAME/
+    - scp scripts/deploy-staging.sh $SERVER_USER@$SERVER_HOST:/opt/$PROJECT_NAME/
+    
+    # Execute deployment script on server
+    - |
+      ssh $SERVER_USER@$SERVER_HOST << 'EOF'
+        cd /opt/$PROJECT_NAME
+        
+        # Load new images
+        docker load < /tmp/backend-image.tar
+        docker load < /tmp/frontend-image.tar
+        
+        # Tag images for staging
+        docker tag $PROJECT_NAME-backend:$CI_COMMIT_SHORT_SHA $PROJECT_NAME-backend:staging
+        docker tag $PROJECT_NAME-frontend:$CI_COMMIT_SHORT_SHA $PROJECT_NAME-frontend:staging
+        
+        # Stop existing staging containers
+        docker-compose -f docker-compose.staging.yml down || true
+        
+        # Start staging environment
+        docker-compose -f docker-compose.staging.yml up -d
+        
+        # Wait for services to start
+        sleep 30
+      EOF
+  environment:
+    name: staging
+    url: http://$SERVER_HOST:$STAGING_PORT_FRONTEND
+  only:
+    - main
+
+# Health check staging
+health-check:
+  stage: health-check
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    - echo "Performing health checks on staging..."
+    # Backend health check
+    - |
+      for i in {1..10}; do
+        if curl -f http://$SERVER_HOST:$STAGING_PORT_BACKEND/health; then
+          echo "Backend health check passed"
+          break
+        else
+          echo "Backend health check failed, attempt $i/10"
+          sleep 10
+        fi
+        if [ $i -eq 10 ]; then
+          echo "Backend health check failed after 10 attempts"
+          exit 1
+        fi
+      done
+    
+    # Frontend health check
+    - |
+      for i in {1..10}; do
+        if curl -f http://$SERVER_HOST:$STAGING_PORT_FRONTEND; then
+          echo "Frontend health check passed"
+          break
+        else
+          echo "Frontend health check failed, attempt $i/10"
+          sleep 10
+        fi
+        if [ $i -eq 10 ]; then
+          echo "Frontend health check failed after 10 attempts"
+          exit 1
+        fi
+      done
+    
+    # Performance test (optional)
+    - echo "Running basic performance test..."
+    - curl -w "@curl-format.txt" -o /dev/null -s http://$SERVER_HOST:$STAGING_PORT_BACKEND/health
+  only:
+    - main
+
+# Deploy to production
+deploy-production:
+  stage: deploy-production
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client docker
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "Deploying to production environment..."
+    - |
+      ssh $SERVER_USER@$SERVER_HOST << 'EOF'
+        cd /opt/$PROJECT_NAME
+        
+        # Backup current production images
+        docker tag $PROJECT_NAME-backend:production $PROJECT_NAME-backend:backup || true
+        docker tag $PROJECT_NAME-frontend:production $PROJECT_NAME-frontend:backup || true
+        
+        # Tag staging images as production
+        docker tag $PROJECT_NAME-backend:staging $PROJECT_NAME-backend:production
+        docker tag $PROJECT_NAME-frontend:staging $PROJECT_NAME-frontend:production
+        
+        # Blue-green deployment: start new production containers
+        docker-compose -f docker-compose.production.yml up -d
+        
+        # Wait for services to start
+        sleep 30
+        
+        # Quick health check
+        curl -f http://localhost:$PRODUCTION_PORT_BACKEND/health || exit 1
+        curl -f http://localhost:$PRODUCTION_PORT_FRONTEND || exit 1
+        
+        echo "Production deployment successful"
+      EOF
+  environment:
+    name: production
+    url: http://$SERVER_HOST:$PRODUCTION_PORT_FRONTEND
+  when: manual
+  only:
+    - main
+
+# Rollback job (manual trigger)
+rollback:
+  stage: rollback
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client docker
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "Rolling back to previous version..."
+    - |
+      ssh $SERVER_USER@$SERVER_HOST << 'EOF'
+        cd /opt/$PROJECT_NAME
+        
+        # Stop current production containers
+        docker-compose -f docker-compose.production.yml down
+        
+        # Restore backup images as production
+        docker tag $PROJECT_NAME-backend:backup $PROJECT_NAME-backend:production
+        docker tag $PROJECT_NAME-frontend:backup $PROJECT_NAME-frontend:production
+        
+        # Start production with backup version
+        docker-compose -f docker-compose.production.yml up -d
+        
+        # Wait for services to start
+        sleep 30
+        
+        # Health check after rollback
+        curl -f http://localhost:$PRODUCTION_PORT_BACKEND/health || exit 1
+        curl -f http://localhost:$PRODUCTION_PORT_FRONTEND || exit 1
+        
+        echo "Rollback completed successfully"
+      EOF
+  environment:
+    name: production
+    url: http://$SERVER_HOST:$PRODUCTION_PORT_FRONTEND
+  when: manual
+  only:
+    - main
