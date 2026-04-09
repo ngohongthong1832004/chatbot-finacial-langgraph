@@ -68,8 +68,8 @@ def extract_sections(soup: BeautifulSoup) -> List[Dict[str, Any]]:
         content = []
         next_elem = heading.find_next()
         
-        while next_elem and (not next_elem.name or not (next_elem.name.startswith('h') and 
-                                                       int(next_elem.name[1]) <= heading_level)):
+        while next_elem and (not next_elem.name or not (next_elem.name.startswith('h') and int(next_elem.name[1]) <= heading_level)):
+                                                       
             if next_elem.name == 'p':
                 try:
                     paragraph_class = next_elem.get('class', [''])[0]
