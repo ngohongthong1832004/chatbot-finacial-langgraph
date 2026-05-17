@@ -17,9 +17,9 @@ def load_chunks(jsonl_path: str) -> List[Dict[str, Any]]:
 def create_embeddings(chunks: List[Dict[str, Any]], model_name: str = "all-MiniLM-L6-v2") -> np.ndarray:
     """Create embeddings for chunks using the specified model."""
     model = SentenceTransformer(model_name)
-    texts = [chunk["content"] for chunk in chunks]
+    texts = [chunk["content"] for chunk in chunks] 
     embeddings = model.encode(texts, show_progress_bar=True)
-    return embeddings
+    return embeddings 
 
 def build_faiss_index(embeddings: np.ndarray) -> faiss.IndexFlatL2:
     """Build a FAISS index from embeddings."""
